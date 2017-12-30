@@ -1,0 +1,10 @@
+
+module com { module financials { module getinfo {
+
+    interface Financials
+    {
+      any getRealtime( [in] string ticket, [in] any datacode, [in] any source );
+      any getHistoric( [in] string ticket, [in] any datacode, [in] any date, [in] any source );
+    };
+
+}; }; };
