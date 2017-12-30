@@ -11,6 +11,7 @@
 import csv
 import datetime
 import dateutil.parser
+import html
 import os
 import pathlib
 import pprint
@@ -27,8 +28,8 @@ import jsonParser
 
 
 def log(str):
-    print(str, file=sys.stderr)
-    # pass
+    # print(str, file=sys.stderr)
+    pass
 
 
 class Yahoo(baseclient.BaseClient):
@@ -170,7 +171,7 @@ class Yahoo(baseclient.BaseClient):
             tick[Datacode.TICKER] = str(price['symbol'])
             tick[Datacode.EXCHANGE] = str(price['exchange'])
             tick[Datacode.CURRENCY] = str(price['currency'])
-            tick[Datacode.NAME] = str(price['longName'])
+            tick[Datacode.NAME] = html.unescape(str(price['longName']))
 
             tick[Datacode.TIMESTAMP] = time.time()
 

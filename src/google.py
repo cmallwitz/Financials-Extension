@@ -10,6 +10,7 @@
 
 import datetime
 import locale
+import html
 import re
 import sys
 import time
@@ -123,7 +124,7 @@ class Google(BaseClient):
 
                 elif key == 'name':
                     try:
-                        tick[Datacode.NAME] = str(value)
+                        tick[Datacode.NAME] = html.unescape(str(value))
                     except:
                         pass
 

@@ -56,6 +56,10 @@ class TestYahoo(unittest.TestCase):
         s = financials.getRealtime('VERX.L', Datacode.TIMEZONE.value, 'YAHOO')
         self.assertEqual(s, 'Europe/London', 'test_realtime_UK_ETF TIMEZONE {}'.format(s))
 
+        s = financials.getRealtime('CSP1.L', Datacode.NAME.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_realtime_UK_ETF NAME {}'.format(s))
+        self.assertEqual(s, 'iShares VII Public Limited Company - iShares Core S&P 500 UCITS ETF', 'test_realtime_UK_ETF NAME {}'.format(s))
+
     def test_realtime_DE_equity(self):
 
         s = financials.getRealtime('SAP.DE', Datacode.LAST_PRICE.value, 'YAHOO')
