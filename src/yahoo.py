@@ -32,6 +32,15 @@ def log(str):
     pass
 
 
+def raw(price, key, default=0.0):
+    try:
+        return price[key]['raw']
+    except:
+        pass
+
+    return default
+
+
 class Yahoo(baseclient.BaseClient):
     def __init__(self, ctx):
         super().__init__()
@@ -148,15 +157,15 @@ class Yahoo(baseclient.BaseClient):
 
             tick = self.realtime[ticker]
 
-            tick[Datacode.PREV_CLOSE] = float(price['regularMarketPreviousClose']['raw'])
-            tick[Datacode.OPEN] = float(price['regularMarketOpen']['raw'])
-            tick[Datacode.CHANGE] = float(price['regularMarketChange']['raw'])
-            tick[Datacode.CHANGE_IN_PERCENT] = float(price['regularMarketChangePercent']['raw'])
-            tick[Datacode.LOW] = float(price['regularMarketDayLow']['raw'])
-            tick[Datacode.HIGH] = float(price['regularMarketDayHigh']['raw'])
-            tick[Datacode.LAST_PRICE] = float(price['regularMarketPrice']['raw'])
-            tick[Datacode.VOLUME] = float(price['regularMarketVolume']['raw'])
-            tick[Datacode.AVG_DAILY_VOL_3MOMTH] = float(price['averageDailyVolume3Month']['raw'])
+            tick[Datacode.PREV_CLOSE] = float(raw(price, 'regularMarketPreviousClose'))
+            tick[Datacode.OPEN] = float(raw(price, 'regularMarketOpen'))
+            tick[Datacode.CHANGE] = float(raw(price, 'regularMarketChange'))
+            tick[Datacode.CHANGE_IN_PERCENT] = 100*float(raw(price, 'regularMarketChangePercent'))
+            tick[Datacode.LOW] = float(raw(price, 'regularMarketDayLow'))
+            tick[Datacode.HIGH] = float(raw(price, 'regularMarketDayHigh'))
+            tick[Datacode.LAST_PRICE] = float(raw(price, 'regularMarketPrice'))
+            tick[Datacode.VOLUME] = float(raw(price, 'regularMarketVolume'))
+            tick[Datacode.AVG_DAILY_VOL_3MOMTH] = float(raw(price, 'averageDailyVolume3Month'))
 
             if quoteType:
                 t = int(price['regularMarketTime'])

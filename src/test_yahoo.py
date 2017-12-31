@@ -16,6 +16,8 @@ from datacode import Datacode
 
 financials = financials.createInstance(None)
 
+# TODO migrate to:
+# https://finance.yahoo.com/quote/EURGBP=X?p=EURGBP=X
 
 class TestYahoo(unittest.TestCase):
 
@@ -47,6 +49,17 @@ class TestYahoo(unittest.TestCase):
 
         s = financials.getRealtime('IBM', Datacode.TIMEZONE.value, 'YAHOO')
         self.assertEqual(s, 'America/New_York', 'test_realtime_US_equity TIMEZONE {}'.format(s))
+
+    def test_realtime_US_mutuals(self):
+
+        s = financials.getRealtime('VFIAX', Datacode.LAST_PRICE.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_realtime_US_mutuals LAST_PRICE {}'.format(s))
+
+        s = financials.getRealtime('VFIAX', Datacode.LAST_PRICE_DATE.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_realtime_US_mutuals LAST_PRICE_DATE {}'.format(s))
+
+        s = financials.getRealtime('VFIAX', Datacode.LAST_PRICE_TIME.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_realtime_US_mutuals LAST_PRICE_TIME {}'.format(s))
 
     def test_realtime_UK_ETF(self):
 

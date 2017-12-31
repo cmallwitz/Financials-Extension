@@ -21,6 +21,10 @@ class TestGoogle(unittest.TestCase):
         s = financials.getRealtime('EURGBP', Datacode.LAST_PRICE.value, 'GOOGLE')
         self.assertEqual(type(s), float, 'test_currency LAST_PRICE')
 
+        s = financials.getRealtime('EURGBP', Datacode.CURRENCY.value, 'GOOGLE')
+        self.assertEqual(type(s), str, 'test_currency CURRENCY')
+        self.assertEqual(s, '', 'test_currency CURRENCY')
+
     def test_UK_equity(self):
         s = financials.getRealtime('EURGBP', Datacode.LAST_PRICE.value, 'GOOGLE')
         self.assertEqual(type(s), float, 'test_UK_equity LAST_PRICE')
@@ -78,6 +82,9 @@ class TestGoogle(unittest.TestCase):
         s = financials.getRealtime('FRA:SAP', '21', 'GOOGLE')
         self.assertEqual(type(s), float, 'test_DE_equity \'21\'')
 
+        s = financials.getRealtime('FRA:SAP', Datacode.TIMEZONE.value, 'GOOGLE')
+        self.assertEqual(s, 'Europe/Berlin', 'test_DE_equity TIMEZONE')
+
     def test_DE_ETF(self):
         s = financials.getRealtime('FRA:C060', Datacode.LAST_PRICE.value, 'GOOGLE')
         self.assertEqual(type(s), float, 'test_DE_ETF LAST_PRICE')
@@ -130,6 +137,9 @@ class TestGoogle(unittest.TestCase):
 
         s = financials.getRealtime('NYSE:IBM', Datacode.TIMESTAMP.value, 'GOOGLE')
         self.assertEqual(s, 'Data doesn\'t exist - 999', 'test_US_equity TIMESTAMP')
+
+        s = financials.getRealtime('NYSE:IBM', Datacode.TIMEZONE.value, 'GOOGLE')
+        self.assertEqual(s, 'America/New_York', 'test_US_equity TIMEZONE')
 
     def test_US_mutuals(self):
         s = financials.getRealtime('MUTF:VFIAX', Datacode.LAST_PRICE.value, 'GOOGLE')

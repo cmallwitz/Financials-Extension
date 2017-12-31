@@ -26,6 +26,11 @@ def log(str):
     # print(str, file=sys.stderr)
     pass
 
+# TODO migrate to:
+# https://www.google.com/search?q=NYSE:IBM&tbm=fin
+# https://www.google.com/search?q=NASDAQ:INTC&tbm=fin
+# https://www.google.com/search?q=LON:VOD&tbm=fin
+# https://www.google.com/search?q=EURGBP
 
 class Google(BaseClient):
     def __init__(self, ctx):
@@ -78,7 +83,10 @@ class Google(BaseClient):
             for key, value in result:
 
                 if key == 'exchangeTimezone':
-                    pass
+                    try:
+                        tick[Datacode.TIMEZONE] = str(value)
+                    except:
+                        pass
 
                 elif key == 'priceChange':
                     try:
@@ -138,6 +146,9 @@ class Google(BaseClient):
                     log('ignored {} {}'.format(key, value))
 
             tick[Datacode.TIMESTAMP] = time.time()
+
+            if tick[Datacode.EXCHANGE] == 'CURRENCY' and not Datacode.CURRENCY in tick:
+                tick[Datacode.CURRENCY] = ''
 
             log(tick)
 

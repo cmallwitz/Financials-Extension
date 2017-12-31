@@ -182,7 +182,7 @@ class BaseClient:
             elif datacode == Datacode.EXCHANGE.value and data[Datacode.EXCHANGE]:
                 return data[Datacode.EXCHANGE]
 
-            elif datacode == Datacode.CURRENCY.value and data[Datacode.CURRENCY]:
+            elif datacode == Datacode.CURRENCY.value and Datacode.CURRENCY in data:
                 return data[Datacode.CURRENCY]
 
             elif datacode == Datacode.NAME.value and data[Datacode.NAME]:
