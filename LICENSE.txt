@@ -1,0 +1,8 @@
+
+Released under the [![][shield:LGPL3]][License:3.0]:
+
+* You are permitted to use, copy and redistribute the work "as-is".
+* You may adapt, remix, transform and build upon the material, releasing any derivatives under your own name.
+* You may use the material for commercial purposes as long as the derivative is licenced under the GPL.
+* You must track changes you make in the source files.
+* You must include or make available the source code with your release.
