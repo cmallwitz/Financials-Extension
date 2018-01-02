@@ -1,4 +1,4 @@
-#  datacode.py - Pyuno/LO bridge to implement new functions for LibreOffice Calc
+#  datacode.py
 #
 #  license: GNU LGPL
 #
@@ -37,6 +37,8 @@ class Datacode(Enum):
     TIMEZONE = 105
 
     TIMESTAMP = 999
+
+    # TODO YAHOO fundInceptionDate
 
     @classmethod
     def has_value(cls, value):

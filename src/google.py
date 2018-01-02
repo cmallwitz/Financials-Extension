@@ -31,6 +31,8 @@ def log(str):
 # https://www.google.com/search?q=NASDAQ:INTC&tbm=fin
 # https://www.google.com/search?q=LON:VOD&tbm=fin
 # https://www.google.com/search?q=EURGBP
+# https://www.google.com/search?q=INDEXSP:.INX
+
 
 class Google(BaseClient):
     def __init__(self, ctx):
@@ -147,7 +149,7 @@ class Google(BaseClient):
 
             tick[Datacode.TIMESTAMP] = time.time()
 
-            if tick[Datacode.EXCHANGE] == 'CURRENCY' and not Datacode.CURRENCY in tick:
+            if tick[Datacode.EXCHANGE] == 'CURRENCY' and Datacode.CURRENCY not in tick:
                 tick[Datacode.CURRENCY] = ''
 
             log(tick)

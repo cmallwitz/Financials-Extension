@@ -70,6 +70,8 @@ class FinancialsImpl(unohelper.Base, Financials):
             if not Datacode.has_value(datacode):
                 return 'Datacode {} not supported'.format(datacode)
 
+            source = source.upper()
+
             if source == 'GOOGLE':
                 s = self.google.getRealtime(str(ticker).strip(), datacode)
             elif source == 'YAHOO':
@@ -141,6 +143,8 @@ class FinancialsImpl(unohelper.Base, Financials):
 
             else:
                 return 'Date type not supported: {} \'{}\''.format(type(date), date)
+
+            source = source.upper()
 
             if source == 'YAHOO':
                 s = self.yahoo.getHistoric(str(ticker).strip(), datacode, date)

@@ -16,12 +16,13 @@ from datacode import Datacode
 
 financials = financials.createInstance(None)
 
-# TODO migrate to:
-# https://finance.yahoo.com/quote/EURGBP=X?p=EURGBP=X
 
 class TestYahoo(unittest.TestCase):
-
     def test_realtime_US_equity(self):
+
+        s = financials.getRealtime('^GSPC', Datacode.NAME.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_realtime_US_equity NAME {}'.format(s))
+        self.assertIn('500', s, 'test_realtime_US_equity NAME {}'.format(s))
 
         s = financials.getRealtime('IBM', Datacode.PREV_CLOSE.value, 'YAHOO')
         self.assertEqual(type(s), float, 'test_realtime_US_equity PREV_CLOSE {}'.format(s))
@@ -71,7 +72,8 @@ class TestYahoo(unittest.TestCase):
 
         s = financials.getRealtime('CSP1.L', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(type(s), str, 'test_realtime_UK_ETF NAME {}'.format(s))
-        self.assertEqual(s, 'iShares VII Public Limited Company - iShares Core S&P 500 UCITS ETF', 'test_realtime_UK_ETF NAME {}'.format(s))
+        self.assertEqual(s, 'iShares VII Public Limited Company - iShares Core S&P 500 UCITS ETF',
+                         'test_realtime_UK_ETF NAME {}'.format(s))
 
     def test_realtime_DE_equity(self):
 
@@ -100,12 +102,12 @@ class TestYahoo(unittest.TestCase):
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
         self.assertEqual(s, 167.190002, 'test_historic_US_equity CLOSE {}'.format(s))
 
-        dir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
-        ibm = os.path.join(dir, 'yahoo-IBM.csv')
+        directory = os.path.join(str(pathlib.Path.home()), '.financials-extension')
+        ibm = os.path.join(directory, 'yahoo-IBM.csv')
         try:
             os.unlink(ibm)
         except:
-            pass # ignore if file doesn't exists
+            pass  # ignore if file doesn't exists
 
         financials.yahoo.historicdata = {}
 
@@ -117,18 +119,22 @@ class TestYahoo(unittest.TestCase):
 
     def test_historic_UK_ETF(self):
 
-        dir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
-        verx = os.path.join(dir, 'yahoo-VERX.L.csv')
+        directory = os.path.join(str(pathlib.Path.home()), '.financials-extension')
+        verx = os.path.join(directory, 'yahoo-VERX.L.csv')
         try:
             os.unlink(verx)
         except:
-            pass # ignore if file doesn't exists
+            pass  # ignore if file doesn't exists
 
         financials.yahoo.historicdata = {}
 
-        # Inception Date 2014-09-30
+        #  Inception Date 2014-09-30
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2014-01-06', 'YAHOO')
         self.assertEqual(s, 'Not a trading day \'2014-01-06\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
+
+        #  Inception Date 2014-09-30
+        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2015-01-01', 'YAHOO')
+        self.assertEqual(s, 'Not a trading day \'2015-01-01\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         s = financials.getHistoric('VERX.L', Datacode.LAST_PRICE.value, '2017-01-01', 'YAHOO')
         self.assertEqual(s, 'Not a trading day \'2017-01-01\'', 'test_historic_UK_ETF LAST_PRICE {}'.format(s))
@@ -139,17 +145,21 @@ class TestYahoo(unittest.TestCase):
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2016-10-03', 'YAHOO')
         self.assertEqual(s, 22.26, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
-        # Inception Date 2014-09-30
+        #  Inception Date 2014-09-30
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2014-01-06', 'YAHOO')
         self.assertEqual(s, 'Not a trading day \'2014-01-06\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
 
-        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, 42738, 'YAHOO') # 2017-01-03
+        #  Inception Date 2014-09-30
+        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2015-01-01', 'YAHOO')
+        self.assertEqual(s, 'Not a trading day \'2015-01-01\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
+
+        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, 42738, 'YAHOO')  # 2017-01-03
         self.assertEqual(s, 23.24, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
-        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, 42738.0, 'YAHOO') # 2017-01-03
+        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, 42738.0, 'YAHOO')  # 2017-01-03
         self.assertEqual(s, 23.24, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
-        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, 42646.0, 'YAHOO') # 2016-10-03
+        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, 42646.0, 'YAHOO')  # 2016-10-03
         self.assertEqual(s, 22.26, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
     def test_historic_DE_equity(self):
@@ -164,6 +174,9 @@ class TestYahoo(unittest.TestCase):
         self.assertEqual(s, 72.870003, 'test_historic_DE_equity CLOSE {}'.format(s))
 
     def test_errors(self):
+
+        s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2030-01-01', 'YAHOO')
+        self.assertEqual(s, 'Future date \'2030-01-01\'', 'test_errors CLOSE {}'.format(s))
 
         s = financials.getRealtime('IBM', 9999, 'YAHOO')
         self.assertEqual(s, 'Datacode 9999 not supported', 'test_errors 9999')
@@ -187,18 +200,18 @@ class TestYahoo(unittest.TestCase):
         self.assertEqual(s, 'Date format not supported: -1000000', 'test_errors CLOSE {}'.format(s))
 
     def test_errors_cell_range_passed(self):
-        range = ((1, 2),('3', '4'),(5.0, 6.0))
+        cell_range = ((1, 2), ('3', '4'), (5.0, 6.0))
 
-        s = financials.getHistoric(range, Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
+        s = financials.getHistoric(cell_range, Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
         self.assertEqual(s, 'Cell range not allowed for ticker', 'test_errors')
 
-        s = financials.getHistoric('IBM', range, '2017-01-03', 'YAHOO')
+        s = financials.getHistoric('IBM', cell_range, '2017-01-03', 'YAHOO')
         self.assertEqual(s, 'Cell range not allowed for datacode', 'test_errors')
 
-        s = financials.getHistoric('IBM', Datacode.CLOSE.value, range, 'YAHOO')
+        s = financials.getHistoric('IBM', Datacode.CLOSE.value, cell_range, 'YAHOO')
         self.assertEqual(s, 'Cell range not allowed for date', 'test_errors')
 
-        s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', range)
+        s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', cell_range)
         self.assertEqual(s, 'Cell range not allowed for source', 'test_errors')
 
 

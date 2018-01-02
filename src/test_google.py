@@ -167,19 +167,19 @@ class TestGoogle(unittest.TestCase):
         self.assertEqual(s, 'getHistoric: Source \'GOOGLE\' not supported', 'test_errors')
 
     def test_errors_cell_range_passed(self):
-        range = ((1, 2),('3', '4'),(5.0, 6.0))
+        cell_range = ((1, 2), ('3', '4'), (5.0, 6.0))
 
-        s = financials.getRealtime(range, Datacode.LAST_PRICE.value, 'GOOGLE')
+        s = financials.getRealtime(cell_range, Datacode.LAST_PRICE.value, 'GOOGLE')
         self.assertEqual(s, 'Cell range not allowed for ticker', 'test_errors')
 
-        s = financials.getRealtime('NYS:IBM', range, 'GOOGLE')
+        s = financials.getRealtime('NYS:IBM', cell_range, 'GOOGLE')
         self.assertEqual(s, 'Cell range not allowed for datacode', 'test_errors')
 
-        s = financials.getRealtime('NYS:IBM', Datacode.LAST_PRICE.value, range)
+        s = financials.getRealtime('NYS:IBM', Datacode.LAST_PRICE.value, cell_range)
         self.assertEqual(s, 'Cell range not allowed for source', 'test_errors')
 
     def test_support(self):
-        range = ((1, 2), ('3', '4'), (5.0, 6.0))
+        cell_range = ((1, 2), ('3', '4'), (5.0, 6.0))
 
         s = financials.getRealtime('SUPPORT')
         self.assertTrue(s.startswith("ctx="), 'test_errors SUPPORT {}'.format(s))
@@ -199,7 +199,7 @@ class TestGoogle(unittest.TestCase):
         self.assertTrue("type(datacode)=<class 'str'>" in s, 'test_errors SUPPORT {}'.format(s))
         self.assertTrue("str(datacode)=1" in s, 'test_errors SUPPORT {}'.format(s))
 
-        s = financials.getRealtime('SUPPORT', range)
+        s = financials.getRealtime('SUPPORT', cell_range)
         self.assertTrue(s.startswith("ctx="), 'test_errors SUPPORT {}'.format(s))
         self.assertTrue("type(datacode)=<class 'tuple'>" in s, 'test_errors SUPPORT {}'.format(s))
         self.assertTrue("str(datacode)=((1, 2), ('3', '4'), (5.0, 6.0))" in s, 'test_errors SUPPORT {}'.format(s))

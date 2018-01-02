@@ -160,7 +160,7 @@ class Yahoo(baseclient.BaseClient):
             tick[Datacode.PREV_CLOSE] = float(raw(price, 'regularMarketPreviousClose'))
             tick[Datacode.OPEN] = float(raw(price, 'regularMarketOpen'))
             tick[Datacode.CHANGE] = float(raw(price, 'regularMarketChange'))
-            tick[Datacode.CHANGE_IN_PERCENT] = 100*float(raw(price, 'regularMarketChangePercent'))
+            tick[Datacode.CHANGE_IN_PERCENT] = 100 * float(raw(price, 'regularMarketChangePercent'))
             tick[Datacode.LOW] = float(raw(price, 'regularMarketDayLow'))
             tick[Datacode.HIGH] = float(raw(price, 'regularMarketDayHigh'))
             tick[Datacode.LAST_PRICE] = float(raw(price, 'regularMarketPrice'))
@@ -180,7 +180,12 @@ class Yahoo(baseclient.BaseClient):
             tick[Datacode.TICKER] = str(price['symbol'])
             tick[Datacode.EXCHANGE] = str(price['exchange'])
             tick[Datacode.CURRENCY] = str(price['currency'])
-            tick[Datacode.NAME] = html.unescape(str(price['longName']))
+
+            name = price['longName'] or price['shortName']
+            if name:
+                tick[Datacode.NAME] = html.unescape(str(name))
+            else:
+                tick[Datacode.NAME] = ''
 
             tick[Datacode.TIMESTAMP] = time.time()
 
@@ -206,6 +211,7 @@ class Yahoo(baseclient.BaseClient):
 
         # remove white space
         ticker = "".join(ticker.split())
+        min_tick_date = None
 
         if ticker not in self.historicdata:
             self._read_ticker_csv_file(ticker)
@@ -216,12 +222,18 @@ class Yahoo(baseclient.BaseClient):
             if date in ticks:
                 return self._return_value(ticks[date], datacode)
 
-            if date > max(ticks):
-                return 'Future date \'{}\''.format(date)
-
-            # weekend or trading holiday
-            if date >= min(ticks):  # or date <= max(ticks):
+            # weekend, trading holiday or as yet unfetched
+            if min(ticks) <= date <= max(ticks):
                 return 'Not a trading day \'{}\''.format(date)
+
+            # (potentially) future date
+            if date > max(ticks):
+                t1 = int(dateutil.parser.parse(date).strftime('%s'))
+                t2 = int(time.time())
+                if t1 > t2:
+                    return 'Future date \'{}\''.format(date)
+
+                min_tick_date = int(dateutil.parser.parse(min(ticks)).strftime('%s'))  # remember current earliest date
 
         if not self.crumb:
             self.getRealtime(ticker, datacode)
@@ -232,6 +244,9 @@ class Yahoo(baseclient.BaseClient):
         try:
             t1 = int(dateutil.parser.parse(date).strftime('%s'))
             t2 = int(time.time())
+
+            if min_tick_date:
+                t1 = min_tick_date
 
             if t1 >= t2:
                 return 'Future date \'{}\''.format(date)
@@ -248,8 +263,8 @@ class Yahoo(baseclient.BaseClient):
         try:
 
             url = 'https://query1.finance.yahoo.com/v7/finance/download/{}' \
-                  '?period1={}&period2={}&interval=1d&events=history&crumb={}'.format(
-                ticker, t1, t2, urllib.parse.quote_plus(self.crumb))
+                  '?period1={}&period2={}&interval=1d&events=history&crumb={}' \
+                .format(ticker, t1, t2, urllib.parse.quote_plus(self.crumb))
 
             text = self.urlopen(url)
 
@@ -269,9 +284,12 @@ class Yahoo(baseclient.BaseClient):
                 if date in ticks:
                     return self._return_value(ticks[date], datacode)
 
+                # future date
+                if date > max(ticks):
+                    return 'Future date \'{}\''.format(date)
+
                 # weekend or trading holiday
-                if date >= min(ticks) or date <= max(ticks):
-                    return 'Not a trading day \'{}\''.format(date)
+                return 'Not a trading day \'{}\''.format(date)
 
         except BaseException as e:
             log(traceback.format_exc())

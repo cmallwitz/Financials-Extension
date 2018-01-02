@@ -17,9 +17,10 @@ import select
 from http.client import HTTPConnection, HTTPSConnection
 from http import cookiejar
 
-import urllib.parse
+import urllib.request
 
 from datacode import Datacode
+
 
 def log(str):
     # print(str, file=sys.stderr)
@@ -65,9 +66,8 @@ class BaseClient:
             connection = None
 
         if not connection:
-            log('Creating HHTP connection --------- ----------------------------------------')
-            Connection = HTTPConnection if scheme == 'http:' else HTTPSConnection
-            connection = Connection(host, **kwargs)
+            log('Creating HTTP connection --------- ----------------------------------------')
+            connection = HTTPConnection(host, **kwargs) if scheme == 'http:' else HTTPSConnection(host, **kwargs)
 
         log('Creating HTTP request ------------ ----------------------------------------')
         log(url)
@@ -107,7 +107,7 @@ class BaseClient:
             scheme, _, host, path = url.split('/', 3)
             redirect_to = response.getheader('Location')
             if host not in redirect_to:
-                redirect_to = scheme + '//' + host +  redirect_to
+                redirect_to = scheme + '//' + host + redirect_to
 
             if response.getheader('Location'):
                 response = self.request('POST' if data else 'GET', redirect_to, data, headers, **kwargs)
@@ -191,9 +191,7 @@ class BaseClient:
             elif datacode == Datacode.TIMEZONE.value and data[Datacode.TIMEZONE]:
                 return str(data[Datacode.TIMEZONE])
 
-            return 'Data doesn\'t exist - {}'.format(datacode)
-
         except BaseException as e:
             return 'BaseClient.return_value(\'{}\', {}) - {}'.format(data, datacode, e)
 
-        return None
+        return "Data doesn't exist - {}".format(datacode)
