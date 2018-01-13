@@ -12,12 +12,12 @@ import csv
 import datetime
 import dateutil.parser
 import html
+import logging
 import os
 import pathlib
 import pprint
 import pytz
 import re
-import sys
 import time
 import traceback
 import urllib.parse
@@ -27,14 +27,13 @@ import baseclient
 import jsonParser
 
 
-def log(str):
-    # print(str, file=sys.stderr)
-    pass
+logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 
 
-def raw(price, key, default=0.0):
+def raw(m, key, default=0.0):
     try:
-        return price[key]['raw']
+        return m[key]['raw']
     except:
         pass
 
@@ -95,10 +94,10 @@ class Yahoo(baseclient.BaseClient):
         # remove white space
         ticker = "".join(ticker.split())
 
-        # use cached value for up to 60 seconds
+        # use cached value for up to 5 minutes
         if ticker in self.realtime:
             tick = self.realtime[ticker]
-            if time.time() - 60 < tick[Datacode.TIMESTAMP]:
+            if time.time() - 5*60 < tick[Datacode.TIMESTAMP]:
                 return self._return_value(tick, datacode)
             else:
                 del self.realtime[ticker]
@@ -108,7 +107,7 @@ class Yahoo(baseclient.BaseClient):
         try:
             text = self.urlopen(url)
         except BaseException as e:
-            log(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return 'Yahoo.getRealtime({}, {}) - urlopen: {}'.format(ticker, datacode, e)
 
         try:
@@ -117,7 +116,7 @@ class Yahoo(baseclient.BaseClient):
 
             r = '"CrumbStore":{"crumb":"([^"]{11})"'
             pattern = re.compile(r)
-            match = re.search(pattern, text)
+            match = pattern.search(text)
 
             if match:
                 self.crumb = match.group(1)
@@ -126,7 +125,7 @@ class Yahoo(baseclient.BaseClient):
                     print(text, file=text_file)
 
         except BaseException as e:
-            log(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return 'Yahoo.getRealtime({}, {}) - crumb: {}'.format(ticker, datacode, e)
 
         try:
@@ -148,6 +147,7 @@ class Yahoo(baseclient.BaseClient):
 
             price = results['price']
             quoteType = results['quoteType']
+            summaryDetail = results['summaryDetail']
 
             if not price:
                 return 'Could not find price for \'{}\''.format(ticker)
@@ -166,6 +166,10 @@ class Yahoo(baseclient.BaseClient):
             tick[Datacode.LAST_PRICE] = float(raw(price, 'regularMarketPrice'))
             tick[Datacode.VOLUME] = float(raw(price, 'regularMarketVolume'))
             tick[Datacode.AVG_DAILY_VOL_3MOMTH] = float(raw(price, 'averageDailyVolume3Month'))
+
+            tick[Datacode.LOW_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekLow'))
+            tick[Datacode.HIGH_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekHigh'))
+            tick[Datacode.MARKET_CAP] = float(raw(summaryDetail, 'marketCap'))
 
             if quoteType:
                 t = int(price['regularMarketTime'])
@@ -193,7 +197,7 @@ class Yahoo(baseclient.BaseClient):
             with open(os.path.join(self.basedir, 'yahoo-{}.js'.format(ticker)), "w") as text_file:
                 pprint.pprint(results.asList(), stream=text_file)
 
-            log(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return 'Yahoo.getRealtime({}, {}) - process: {}'.format(ticker, datacode, e)
 
         return self._return_value(self.realtime[ticker], datacode)
@@ -257,7 +261,7 @@ class Yahoo(baseclient.BaseClient):
             t1 = t1 - 2682000  # pad with extra month
 
         except BaseException as e:
-            log(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return 'Yahoo.getHistoric({}, {}, {}) - date: {}'.format(ticker, datacode, date, e)
 
         try:
@@ -274,7 +278,7 @@ class Yahoo(baseclient.BaseClient):
             self._read_ticker_csv_file(ticker)
 
         except BaseException as e:
-            log(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return 'Yahoo.getHistoric({}, {}, {}) - read: {}'.format(ticker, datacode, date, e)
 
         try:
@@ -292,7 +296,7 @@ class Yahoo(baseclient.BaseClient):
                 return 'Not a trading day \'{}\''.format(date)
 
         except BaseException as e:
-            log(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return 'Yahoo.getHistoric({}, {}, {}) - process: {}'.format(ticker, datacode, date, e)
 
         return None

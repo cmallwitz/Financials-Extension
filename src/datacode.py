@@ -24,6 +24,10 @@ class Datacode(Enum):
 
     LAST_PRICE = 21
 
+    HIGH_52_WEEK = 24
+    LOW_52_WEEK = 26
+    MARKET_CAP = 27
+
     VOLUME = 35
     AVG_DAILY_VOL_3MOMTH = 39
 
@@ -42,4 +46,4 @@ class Datacode(Enum):
 
     @classmethod
     def has_value(cls, value):
-        return (any(value == item.value for item in cls))
+        return any(value == item.value for item in cls)

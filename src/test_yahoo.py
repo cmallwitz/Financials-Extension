@@ -7,14 +7,19 @@
 #  License as published by the Free Software Foundation; either
 #  version 3 of the License, or (at your option) any later version.
 
+import argparse
+import logging
 import os
 import pathlib
+import sys
 import unittest
 
 import financials
 from datacode import Datacode
 
 financials = financials.createInstance(None)
+
+logging.basicConfig(level=logging.ERROR)
 
 
 class TestYahoo(unittest.TestCase):
@@ -38,6 +43,15 @@ class TestYahoo(unittest.TestCase):
 
         s = financials.getRealtime('IBM', Datacode.HIGH.value, 'YAHOO')
         self.assertEqual(type(s), float, 'test_realtime_US_equity HIGH {}'.format(s))
+
+        s = financials.getRealtime('IBM', Datacode.HIGH_52_WEEK.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_realtime_US_equity HIGH_52_WEEK {}'.format(s))
+
+        s = financials.getRealtime('IBM', Datacode.LOW_52_WEEK.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_realtime_US_equity LOW_52_WEEK {}'.format(s))
+
+        s = financials.getRealtime('IBM', Datacode.MARKET_CAP.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_realtime_US_equity MARKET_CAP {}'.format(s))
 
         s = financials.getRealtime('IBM', Datacode.VOLUME.value, 'YAHOO')
         self.assertEqual(type(s), float, 'test_realtime_US_equity VOLUME {}'.format(s))
@@ -216,4 +230,8 @@ class TestYahoo(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('unittest_args', nargs='*')
+    args = parser.parse_args()
+    unit_argv = [sys.argv[0]] + args.unittest_args
+    unittest.main(argv=unit_argv)

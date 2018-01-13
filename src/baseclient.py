@@ -10,21 +10,24 @@
 
 import codecs
 import gzip
+import logging
 import random
-import sys
 import select
 
-from http.client import HTTPConnection, HTTPSConnection
+from http.client import HTTPConnection, HTTPSConnection, HTTPException
 from http import cookiejar
 
 import urllib.request
 
 from datacode import Datacode
 
+logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 
-def log(str):
-    # print(str, file=sys.stderr)
-    pass
+
+class RedirectException(HTTPException):
+    def __init__(self, location):
+        self.location = location
 
 
 class BaseClient:
@@ -66,11 +69,11 @@ class BaseClient:
             connection = None
 
         if not connection:
-            log('Creating HTTP connection --------- ----------------------------------------')
+            logger.debug('Creating connection --------------------------------------------------')
             connection = HTTPConnection(host, **kwargs) if scheme == 'http:' else HTTPSConnection(host, **kwargs)
 
-        log('Creating HTTP request ------------ ----------------------------------------')
-        log(url)
+        logger.debug('Creating request -----------------------------------------------------')
+        logger.info('url=%s', url)
 
         # generate and add cookie headers
         request = urllib.request.Request(url)
@@ -80,38 +83,38 @@ class BaseClient:
             _headers['Cookie'] = request.get_header('Cookie')
 
         for key, value in _headers.items():
-            log('{}: {}'.format(key, value))
+            logger.debug('Header: %s=%s', key, value)
 
         # request
         connection.request(method, '/' + path, data, _headers)
         response = connection.getresponse()
 
-        log('Processing HTTP response --------- ----------------------------------------')
+        logger.debug('Processing response --------------------------------------------------')
 
-        # log('response.status={}'.format(response.status))
+        # logger.debug('response.status={}'.format(response.status))
         for key, value in response.getheaders():
-            log('{}: {}'.format(key, value))
+            logger.debug('Header: %s=%s', key, value)
 
         self.cookies.extract_cookies(response, request)
         self.connections[(scheme, host)] = connection
 
         return response
 
-    def urlopen(self, url, data=None, headers={}, **kwargs):
+    def urlopen(self, url, redirect=True, data=None, headers={}, **kwargs):
 
         response = self.request('POST' if data else 'GET', url, data, headers, **kwargs)
         text = response.read()
 
         if 300 <= response.status < 400:
+            location = response.getheader('Location')
 
-            scheme, _, host, path = url.split('/', 3)
-            redirect_to = response.getheader('Location')
-            if host not in redirect_to:
-                redirect_to = scheme + '//' + host + redirect_to
-
-            if response.getheader('Location'):
-                response = self.request('POST' if data else 'GET', redirect_to, data, headers, **kwargs)
-                text = response.read()
+            if redirect:
+                scheme, _, host, path = url.split('/', 3)
+                if location:
+                    response = self.request('POST' if data else 'GET', location, data, headers, **kwargs)
+                    text = response.read()
+            else:
+                raise RedirectException(location)
 
         assert response.status < 400, \
             'HTTP Status={} Reason={} url={}'.format(response.status, response.reason, url)
@@ -164,6 +167,15 @@ class BaseClient:
             elif datacode == Datacode.LAST_PRICE.value and Datacode.LAST_PRICE in data:
                 return data[Datacode.LAST_PRICE]
 
+            elif datacode == Datacode.LOW_52_WEEK.value and Datacode.LOW_52_WEEK in data:
+                return data[Datacode.LOW_52_WEEK]
+
+            elif datacode == Datacode.HIGH_52_WEEK.value and Datacode.HIGH_52_WEEK in data:
+                return data[Datacode.HIGH_52_WEEK]
+
+            elif datacode == Datacode.MARKET_CAP.value and Datacode.MARKET_CAP in data:
+                return data[Datacode.MARKET_CAP]
+
             elif datacode == Datacode.VOLUME.value and Datacode.VOLUME in data:
                 return data[Datacode.VOLUME]
 
@@ -195,3 +207,13 @@ class BaseClient:
             return 'BaseClient.return_value(\'{}\', {}) - {}'.format(data, datacode, e)
 
         return "Data doesn't exist - {}".format(datacode)
+
+    def save_wrapper(self, f):
+        try:
+            value = f()
+            logger.debug(value)
+            return value
+        except BaseException as e:
+            pass
+
+        return None
