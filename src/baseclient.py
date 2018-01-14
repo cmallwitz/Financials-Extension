@@ -30,6 +30,12 @@ class RedirectException(HTTPException):
         self.location = location
 
 
+class HttpException(HTTPException):
+    def __init__(self, url, status):
+        self.url = url
+        self.status = status
+
+
 class BaseClient:
     def __init__(self):
         self.connections = {}
@@ -108,16 +114,19 @@ class BaseClient:
         if 300 <= response.status < 400:
             location = response.getheader('Location')
 
-            if redirect:
-                scheme, _, host, path = url.split('/', 3)
-                if location:
-                    response = self.request('POST' if data else 'GET', location, data, headers, **kwargs)
-                    text = response.read()
+            if location and redirect:
+
+                if location.startswith('/'):
+                    scheme, _, host, path = url.split('/', 3)
+                    location = '{}//{}{}'.format(scheme, host, location)
+
+                response = self.request('POST' if data else 'GET', location, data, headers, **kwargs)
+                text = response.read()
             else:
                 raise RedirectException(location)
 
-        assert response.status < 400, \
-            'HTTP Status={} Reason={} url={}'.format(response.status, response.reason, url)
+        if response.status >= 400:
+            raise HttpException(url, response.status)
 
         if response.getheader('Content-Encoding') == 'gzip':
             text = gzip.decompress(text)

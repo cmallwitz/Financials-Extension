@@ -187,31 +187,39 @@ class TestYahoo(unittest.TestCase):
         s = financials.getHistoric('C060.DE', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
         self.assertEqual(s, 72.870003, 'test_historic_DE_equity CLOSE {}'.format(s))
 
-    def test_errors(self):
+    def test_realtime_errors(self):
+
+        s = financials.getRealtime('NO_NAME', Datacode.LAST_PRICE.value, 'YAHOO')
+        self.assertIsNone(s, 'test_realtime_errors LAST_PRICE {}'.format(s))
+
+    def test_historic_errors(self):
+
+        s = financials.getHistoric('NO_NAME', Datacode.LAST_PRICE.value, '2018-01-08', 'YAHOO')
+        self.assertIsNone(s, 'test_historic_errors LAST_PRICE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2030-01-01', 'YAHOO')
-        self.assertEqual(s, 'Future date \'2030-01-01\'', 'test_errors CLOSE {}'.format(s))
+        self.assertEqual(s, 'Future date \'2030-01-01\'', 'test_historic_errors CLOSE {}'.format(s))
 
         s = financials.getRealtime('IBM', 9999, 'YAHOO')
-        self.assertEqual(s, 'Datacode 9999 not supported', 'test_errors 9999')
+        self.assertEqual(s, 'Datacode 9999 not supported', 'test_historic_errors 9999')
 
         s = financials.getRealtime('IBM', Datacode.ADJ_CLOSE.value, 'YAHOO')
-        self.assertEqual(s, 'Data doesn\'t exist - 91', 'test_errors ADJ_CLOSE {}'.format(s))
+        self.assertEqual(s, 'Data doesn\'t exist - 91', 'test_historic_errors ADJ_CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2030-01-01', 'YAHOO')
-        self.assertEqual(s, 'Future date \'2030-01-01\'', 'test_errors CLOSE {}'.format(s))
+        self.assertEqual(s, 'Future date \'2030-01-01\'', 'test_historic_errors CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '1990-01-01', 'YAHOO')
-        self.assertEqual(s, 'Date before 2000 \'1990-01-01\'', 'test_errors CLOSE {}'.format(s))
+        self.assertEqual(s, 'Date before 2000 \'1990-01-01\'', 'test_historic_errors CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, 'abcdef', 'YAHOO')
-        self.assertEqual(s, 'Date format not supported: \'abcdef\'', 'test_errors CLOSE {}'.format(s))
+        self.assertEqual(s, 'Date format not supported: \'abcdef\'', 'test_historic_errors CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, True, 'YAHOO')
-        self.assertEqual(s, 'Date type not supported: <class \'bool\'> \'True\'', 'test_errors CLOSE {}'.format(s))
+        self.assertEqual(s, 'Date type not supported: <class \'bool\'> \'True\'', 'test_historic_errors CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, -1000000, 'YAHOO')
-        self.assertEqual(s, 'Date format not supported: -1000000', 'test_errors CLOSE {}'.format(s))
+        self.assertEqual(s, 'Date format not supported: -1000000', 'test_historic_errors CLOSE {}'.format(s))
 
     def test_errors_cell_range_passed(self):
         cell_range = ((1, 2), ('3', '4'), (5.0, 6.0))

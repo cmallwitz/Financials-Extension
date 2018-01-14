@@ -211,7 +211,7 @@ class TestGoogle(unittest.TestCase):
         self.assertEqual(s, 'Datacode is empty', 'test_errors')
 
         s = financials.getRealtime('DOES_NOT_EXISTS', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(s, 'Data for \'DOES_NOT_EXISTS\' not found', 'test_errors')
+        self.assertIsNone(s, 'test_errors')
 
         s = financials.getRealtime('NYS:IBM', 'Foo', 'GOOGLE')
         self.assertEqual(s, 'Datacode is not a number', 'test_errors')

@@ -23,7 +23,7 @@ import traceback
 import urllib.parse
 
 from datacode import Datacode
-import baseclient
+from baseclient import BaseClient, HttpException
 import jsonParser
 
 
@@ -40,7 +40,7 @@ def raw(m, key, default=0.0):
     return default
 
 
-class Yahoo(baseclient.BaseClient):
+class Yahoo(BaseClient):
     def __init__(self, ctx):
         super().__init__()
 
@@ -134,8 +134,7 @@ class Yahoo(baseclient.BaseClient):
             if start < 0:
                 with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w") as text_file:
                     print(text, file=text_file)
-
-                return 'Could not find QuoteSummaryStore for \'{}\''.format(ticker)
+                return None
 
             start = start + len('"QuoteSummaryStore":')
             results = self.js.parseString(text[start:])
@@ -276,6 +275,10 @@ class Yahoo(baseclient.BaseClient):
                 print(text, file=csv_file)
 
             self._read_ticker_csv_file(ticker)
+
+        except HttpException as e:
+            logger.error(traceback.format_exc())
+            return None
 
         except BaseException as e:
             logger.error(traceback.format_exc())

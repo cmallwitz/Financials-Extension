@@ -77,7 +77,7 @@ class Google(BaseClient):
             result = pattern.findall(text)
 
             if len(result) == 0:
-                return 'Data for \'{}\' not found'.format(ticker)
+                return None
 
             if ticker not in self.realtime:
                 self.realtime[ticker] = {}
