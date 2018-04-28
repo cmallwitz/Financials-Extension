@@ -28,6 +28,16 @@ logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
 
 
+def handle_abbreviations(s):
+    s = str(s).strip()
+    if s.endswith('T'):
+        return float(s.replace('T', ''))*1000
+    if s.endswith('M'):
+        return float(s.replace('M', ''))*1000000
+    if s.endswith('B'):
+        return float(s.replace('B', ''))*1000000000
+    return float(s)
+
 class Google(BaseClient):
     def __init__(self, ctx):
         super().__init__()
@@ -165,7 +175,7 @@ class Google(BaseClient):
 
             tick[Datacode.CHANGE] = self.save_wrapper(
                 lambda: locale.atof(
-                    html.unescape(header.find('./div[1]/span[2]/span[1]').text).strip()))
+                    html.unescape(header.find('./div[1]/span[2]/span[1]').text).replace('−', '-').strip()))
 
             tick[Datacode.CHANGE_IN_PERCENT] = self.save_wrapper(
                 lambda: float(
@@ -173,12 +183,16 @@ class Google(BaseClient):
                         .replace('(', '').replace(')', '').replace('%', '')))
 
             try:
-                value = html.unescape(header.find('./div[2]/span[1]/span[2]').text).strip().replace('·', '').strip()
+                value = html.unescape(header.find('./div[2]/span[1]/span[2]').text).replace('·', '').strip()
                 logger.debug(value)
                 dt = dateutil.parser.parse(value)
                 tick[Datacode.LAST_PRICE_DATE] = dt.date()
                 tick[Datacode.LAST_PRICE_TIME] = dt.time()
-                tick[Datacode.TIMEZONE] = value.split(' ')[-1]
+
+                time_bits = value.split(' ')
+                if len(time_bits) >= 4:
+                    tick[Datacode.TIMEZONE] = time_bits[-1]
+
             except BaseException as e:
                 pass
 
@@ -186,6 +200,37 @@ class Google(BaseClient):
             logger.debug(ET.tostring(footer))
 
             # parse 'footer' for remaining fields
+            table = footer.find('./div[1]/div[1]/div[1]/table[1]')
+
+            tick[Datacode.OPEN] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[1]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.HIGH] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[2]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.LOW] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[3]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.MARKET_CAP] = self.save_wrapper(
+                lambda: handle_abbreviations(
+                    html.unescape(table.find('./tr[4]/td[2]').text).replace(',', '').replace('-', '').strip()))
+
+            table = footer.find('./div[1]/div[1]/div[2]/table[1]')
+
+            tick[Datacode.PREV_CLOSE] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[2]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.HIGH_52_WEEK] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[3]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.LOW_52_WEEK] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[4]/td[2]').text).replace(',', '').strip()))
 
             tick[Datacode.TIMESTAMP] = time.time()
 

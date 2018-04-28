@@ -144,6 +144,11 @@ class Yahoo(BaseClient):
                     print(text, file=text_file)
                 return None
 
+        except BaseException as e:
+            logger.error(traceback.format_exc())
+            return 'Yahoo.getRealtime({}, {}) - parsing: {}'.format(ticker, datacode, e)
+
+        try:
             price = results['price']
             quoteType = results['quoteType']
             summaryDetail = results['summaryDetail']
@@ -216,7 +221,10 @@ class Yahoo(BaseClient):
         ticker = "".join(ticker.split())
         min_tick_date = None
 
-        if ticker not in self.historicdata:
+        # dividend and splits will change past adjusted prices
+        # the moment we are asked for ADJ_CLOSE we ignore the ticker cache to refresh
+
+        if Datacode.ADJ_CLOSE != datacode and ticker not in self.historicdata:
             self._read_ticker_csv_file(ticker)
 
         if ticker in self.historicdata:
@@ -225,7 +233,7 @@ class Yahoo(BaseClient):
             if date in ticks:
                 return self._return_value(ticks[date], datacode)
 
-            # weekend, trading holiday or as yet unfetched
+            # weekend, trading holiday or as yet un-fetched
             if min(ticks) <= date <= max(ticks):
                 return 'Not a trading day \'{}\''.format(date)
 
@@ -276,7 +284,7 @@ class Yahoo(BaseClient):
 
             self._read_ticker_csv_file(ticker)
 
-        except HttpException as e:
+        except HttpException:
             logger.error(traceback.format_exc())
             return None
 

@@ -22,7 +22,8 @@ financials = financials.createInstance(None)
 logging.basicConfig(level=logging.ERROR)
 
 
-class TestYahoo(unittest.TestCase):
+class Test(unittest.TestCase):
+
     def test_realtime_US_equity(self):
 
         s = financials.getRealtime('^GSPC', Datacode.NAME.value, 'YAHOO')
@@ -128,8 +129,9 @@ class TestYahoo(unittest.TestCase):
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
         self.assertEqual(s, 167.190002, 'test_historic_US_equity CLOSE {}'.format(s))
 
+        # Note: quarterly dividend and splits will change past adjusted prices
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 160.947433, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(s, 159.378235, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 
@@ -143,8 +145,8 @@ class TestYahoo(unittest.TestCase):
         financials.yahoo.historicdata = {}
 
         #  Inception Date 2014-09-30
-        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2014-01-06', 'YAHOO')
-        self.assertEqual(s, 'Not a trading day \'2014-01-06\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
+        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2018-04-02', 'YAHOO') # Easter Monday
+        self.assertEqual(s, 'Not a trading day \'2018-04-02\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         #  Inception Date 2014-09-30
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2015-01-01', 'YAHOO')
@@ -160,8 +162,8 @@ class TestYahoo(unittest.TestCase):
         self.assertEqual(s, 22.26, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         #  Inception Date 2014-09-30
-        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2014-01-06', 'YAHOO')
-        self.assertEqual(s, 'Not a trading day \'2014-01-06\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
+        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2018-04-02', 'YAHOO')
+        self.assertEqual(s, 'Not a trading day \'2018-04-02\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         #  Inception Date 2014-09-30
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2015-01-01', 'YAHOO')

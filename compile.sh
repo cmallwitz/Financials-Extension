@@ -27,7 +27,8 @@ cp -f "${PWD}"/src/financials.py "${PWD}"/build/
 cp -f "${PWD}"/src/datacode.py "${PWD}"/build/
 cp -f "${PWD}"/src/baseclient.py "${PWD}"/build/
 cp -f "${PWD}"/src/jsonParser.py "${PWD}"/build/
-cp -f "${PWD}"/src/google.py "${PWD}"/build/
+cp -f "${PWD}"/src/naivehtmlparser.py "${PWD}"/build/
+cp -f "${PWD}"/src/google2.py "${PWD}"/build/
 cp -f "${PWD}"/src/yahoo.py "${PWD}"/build/
 
 echo "Package into oxt file..."
