@@ -24,6 +24,7 @@ import urllib.parse
 
 from datacode import Datacode
 from baseclient import BaseClient, HttpException
+from http import cookiejar
 import jsonParser
 
 
@@ -104,8 +105,22 @@ class Yahoo(BaseClient):
 
         url = 'https://finance.yahoo.com/quote/{}?p={}'.format(ticker, ticker)
 
+        cookies = [cookiejar.Cookie(version=0,
+                                    name="B",
+                                    value="bm9kft1dge284&b=3&s=uj",
+                                    port=None, port_specified=None,
+                                    domain=".yahoo.com", domain_specified=True, domain_initial_dot=True,
+                                    path="/", path_specified=True,
+                                    secure=True,
+                                    expires=None,
+                                    discard=False,
+                                    comment=None,
+                                    comment_url=None,
+                                    rest=None)
+                   ]
+
         try:
-            text = self.urlopen(url)
+            text = self.urlopen(url, redirect=True, data=None, headers=None, cookies=cookies)
         except BaseException as e:
             logger.error(traceback.format_exc())
             return 'Yahoo.getRealtime({}, {}) - urlopen: {}'.format(ticker, datacode, e)

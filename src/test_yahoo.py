@@ -24,6 +24,13 @@ logging.basicConfig(level=logging.ERROR)
 
 class Test(unittest.TestCase):
 
+    def test_currency(self):
+        s = financials.getRealtime('EURGBP=X', Datacode.CURRENCY.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_currency CURRENCY')
+
+        s = financials.getRealtime('EURGBP=X', Datacode.LAST_PRICE.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_currency LAST_PRICE')
+
     def test_realtime_US_equity(self):
 
         s = financials.getRealtime('^GSPC', Datacode.NAME.value, 'YAHOO')
@@ -68,6 +75,9 @@ class Test(unittest.TestCase):
 
     def test_realtime_US_mutuals(self):
 
+        s = financials.getRealtime('VGSLX', Datacode.LAST_PRICE.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_realtime_US_mutuals LAST_PRICE {}'.format(s))
+
         s = financials.getRealtime('VFIAX', Datacode.LAST_PRICE.value, 'YAHOO')
         self.assertEqual(type(s), float, 'test_realtime_US_mutuals LAST_PRICE {}'.format(s))
 
@@ -89,6 +99,9 @@ class Test(unittest.TestCase):
         self.assertEqual(type(s), str, 'test_realtime_UK_ETF NAME {}'.format(s))
         self.assertEqual(s, 'iShares VII Public Limited Company - iShares Core S&P 500 UCITS ETF',
                          'test_realtime_UK_ETF NAME {}'.format(s))
+
+        s = financials.getRealtime('C060.DE', 104, 'YAHOO')
+        self.assertEqual(type(s), str, 't_realtime_UK_ETF AME {}'.format(s))
 
     def test_realtime_DE_equity(self):
 
@@ -131,7 +144,7 @@ class Test(unittest.TestCase):
 
         # Note: quarterly dividend and splits will change past adjusted prices
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 159.378235, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(s, 157.628433, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 

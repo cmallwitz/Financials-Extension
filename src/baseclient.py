@@ -67,11 +67,16 @@ class BaseClient:
             'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8'
         }
 
-    def request(self, method: str, url: str, data=None, headers={}, **kwargs):
+    def request(self, method: str, url: str, data=None, headers={}, cookies=[], **kwargs):
 
         _headers = self.default_headers.copy()
-        for key, value in headers.items():
-            _headers[key] = value
+        if headers:
+            for key, value in headers.items():
+                _headers[key] = value
+
+        if cookies:
+            for c in cookies:
+                self.cookies.set_cookie(c)
 
         connection = None
 
@@ -116,9 +121,9 @@ class BaseClient:
 
         return response
 
-    def urlopen(self, url, redirect=True, data=None, headers={}, **kwargs):
+    def urlopen(self, url, redirect=True, data=None, headers={}, cookies=[], **kwargs):
 
-        response = self.request('POST' if data else 'GET', url, data, headers, **kwargs)
+        response = self.request('POST' if data else 'GET', url, data, headers, cookies, **kwargs)
         text = response.read()
 
         # Allow two redirects: used by Yahoo for some cookie based consent
@@ -132,7 +137,7 @@ class BaseClient:
                     scheme, _, host, path = url.split('/', 3)
                     location = '{}//{}{}'.format(scheme, host, location)
 
-                response = self.request('POST' if data else 'GET', location, data, headers, **kwargs)
+                response = self.request('POST' if data else 'GET', location, data, headers, cookies, **kwargs)
                 text = response.read()
 
                 if 300 <= response.status < 400:
@@ -144,7 +149,7 @@ class BaseClient:
                             scheme, _, host, path = url.split('/', 3)
                             location = '{}//{}{}'.format(scheme, host, location)
 
-                        response = self.request('POST' if data else 'GET', location, data, headers, **kwargs)
+                        response = self.request('POST' if data else 'GET', location, data, headers, cookies, **kwargs)
                         text = response.read()
                     else:
                         raise RedirectException(location)
