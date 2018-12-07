@@ -107,7 +107,7 @@ class Yahoo(BaseClient):
 
         cookies = [cookiejar.Cookie(version=0,
                                     name="B",
-                                    value="bm9kft1dge284&b=3&s=uj",
+                                    value="9898htldgiar5&b=3&s=gt",
                                     port=None, port_specified=None,
                                     domain=".yahoo.com", domain_specified=True, domain_initial_dot=True,
                                     path="/", path_specified=True,

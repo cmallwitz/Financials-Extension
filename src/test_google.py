@@ -40,6 +40,12 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('LON:VOD', Datacode.NAME.value, 'GOOGLE')
         self.assertEqual(type(s), str, 'test_UK_equity NAME')
 
+        s = financials.getRealtime('LON:VOD', Datacode.EXCHANGE.value, 'GOOGLE')
+        self.assertEqual(s, 'LON', 'test_UK_equity EXCHANGE')
+
+        s = financials.getRealtime('LON:VOD', Datacode.PREV_CLOSE.value, 'GOOGLE')
+        self.assertEqual(type(s), float, 'test_UK_equity PREV_CLOSE {}'.format(s))
+
         # MARKET_CAP missing for UK stock but available for German stock - weekend issue (FX) ?
         s = financials.getRealtime('LON:VOD', Datacode.MARKET_CAP.value, 'GOOGLE')
         self.assertEqual(type(s), float, 'test_UK_equity MARKET_CAP {}'.format(s))
@@ -97,10 +103,10 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'EUR', 'test_DE_ETF CURRENCY')
 
         s = financials.getRealtime('FRA:C060', Datacode.TICKER.value, 'GOOGLE')
-        self.assertEqual(s, 'C060', 'test_DE_ETF CURRENCY')
+        self.assertEqual(s, 'C060', 'test_DE_ETF TICKER')
 
         s = financials.getRealtime('FRA:C060', Datacode.EXCHANGE.value, 'GOOGLE')
-        self.assertEqual(s, 'FRA', 'test_DE_ETF CURRENCY')
+        self.assertEqual(s, 'FRA', 'test_DE_ETF EXCHANGE')
 
         s = financials.getRealtime('FRA:C060', Datacode.CURRENCY.value, 'GOOGLE')
         self.assertEqual(s, 'EUR', 'test_DE_ETF CURRENCY')
@@ -185,8 +191,8 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('NYSE:IBM', Datacode.TIMEZONE.value, 'GOOGLE')
         # self.assertEqual(s, 'America/New_York', 'test_US_equity TIMEZONE')
-        self.assertEqual(s, 'GMT-4', 'test_US_equity TIMEZONE')
-        # self.assertEqual(s, 'GMT-5', 'test_US_equity TIMEZONE')
+        # self.assertEqual(s, 'GMT-4', 'test_US_equity TIMEZONE')
+        self.assertEqual(s, 'GMT-5', 'test_US_equity TIMEZONE')
 
     def test_US_mutuals(self):
         s = financials.getRealtime('MUTF:VFIAX', Datacode.LAST_PRICE.value, 'GOOGLE')

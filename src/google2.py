@@ -38,6 +38,11 @@ def handle_abbreviations(s):
         return float(s.replace('B', ''))*1000000000
     return float(s)
 
+
+def un_span(s):
+    return s.replace('<span>', '').replace('</span>', '')
+
+
 class Google(BaseClient):
     def __init__(self, ctx):
         super().__init__()
@@ -100,15 +105,20 @@ class Google(BaseClient):
 
         tick = self.realtime[ticker]
 
-        # after first <div ... role="heading"> - get name
         try:
             r = '<div [^>]+ role="heading">'
             pattern = re.compile(r)
-            match = pattern.search(text)
 
+            # ignore first <div ... role="heading">
+            match = pattern.search(text)
             if not match:
                 return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
+            start = match.span(0)[1]
 
+            # after second <div ... role="heading"> - get name
+            match = pattern.search(text, start)
+            if not match:
+                return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
             start = match.span(0)[1]
 
             r = '<div [^>]*>(.*?)</div>'
@@ -127,7 +137,7 @@ class Google(BaseClient):
             start = match.span(0)[1]
 
             tick[Datacode.NAME] = self.save_wrapper(
-                lambda: html.unescape(match.group(1)).strip())
+                lambda: html.unescape(un_span(match.group(1)).strip()))
 
             # third div is TICKER
             match = pattern.search(text, start)
