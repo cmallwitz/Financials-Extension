@@ -1,12 +1,12 @@
 # Financials-Extension
 
-Extension for LibreOffice Calc to access stock market data. Currently supports Yahoo and Google.
+Extension for LibreOffice Calc to make stock/FX market data available in spread sheet. Currently supports Yahoo and Google using web scraping.
 
-Requires the following packages: python-dateutil python3-dateutil python3-pyparsing
+Requires the following packages: python3-dateutil python3-pyparsing
 
-Only tested this with
-- Ubuntu 16.04 and LibreOffice 5
-- Ubuntu 18.04 and LibreOffice 6
+Tested this with
+- Ubuntu 16.04 and LibreOffice Calc 5
+- Ubuntu 18.04 and LibreOffice Calc 6
 
 To Build:
 
