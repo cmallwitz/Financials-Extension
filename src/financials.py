@@ -172,9 +172,7 @@ class FinancialsImpl(unohelper.Base, Financials):
             ' '.join(platform.uname()),
             sys.executable,
             sys.version.replace("\n", " "),
-            str(pathlib.Path.home()),
-            type(datacode),
-            str(datacode))
+            str(pathlib.Path.home()))
 
         if datacode:
             s = '{}\ntype(datacode)={}\nstr(datacode)={}'.format(

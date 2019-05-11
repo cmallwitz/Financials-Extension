@@ -208,7 +208,7 @@ class Yahoo(BaseClient):
             if name:
                 tick[Datacode.NAME] = html.unescape(str(name))
             else:
-                tick[Datacode.NAME] = ''
+                tick[Datacode.NAME] = tick[Datacode.TICKER]
 
             tick[Datacode.TIMESTAMP] = time.time()
 

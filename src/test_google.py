@@ -167,6 +167,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('NYSE:IBM', Datacode.NAME.value, 'GOOGLE')
         self.assertEqual(type(s), str, 'test_US_equity NAME')
+        self.assertEqual(s, 'IBM Common Stock', 'test_US_equity NAME')
 
         s = financials.getRealtime('NYSE:IBM', Datacode.LOW.value, 'GOOGLE')
         self.assertEqual(type(s), float, 'test_US_equity LOW {}'.format(s))
@@ -191,8 +192,8 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('NYSE:IBM', Datacode.TIMEZONE.value, 'GOOGLE')
         # self.assertEqual(s, 'America/New_York', 'test_US_equity TIMEZONE')
-        # self.assertEqual(s, 'GMT-4', 'test_US_equity TIMEZONE')
-        self.assertEqual(s, 'GMT-5', 'test_US_equity TIMEZONE')
+        self.assertEqual(s, 'GMT-4', 'test_US_equity TIMEZONE')
+        # self.assertEqual(s, 'GMT-5', 'test_US_equity TIMEZONE')
 
     def test_US_mutuals(self):
         s = financials.getRealtime('MUTF:VFIAX', Datacode.LAST_PRICE.value, 'GOOGLE')

@@ -40,7 +40,7 @@ def handle_abbreviations(s):
 
 
 def un_span(s):
-    return s.replace('<span>', '').replace('</span>', '')
+    return re.sub(r'<span [^>]*>', '', s).replace('</span>', '')
 
 
 class Google(BaseClient):

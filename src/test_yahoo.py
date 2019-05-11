@@ -69,6 +69,8 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('IBM', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(type(s), str, 'test_realtime_US_equity NAME {}'.format(s))
+        self.assertEqual(s, 'International Business Machines Corporation',
+                         'test_realtime_US_equity NAME {}'.format(s))
 
         s = financials.getRealtime('IBM', Datacode.TIMEZONE.value, 'YAHOO')
         self.assertEqual(s, 'America/New_York', 'test_realtime_US_equity TIMEZONE {}'.format(s))
@@ -144,7 +146,7 @@ class Test(unittest.TestCase):
 
         # Note: quarterly dividend and splits will change past adjusted prices
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 157.628433, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(s, 152.209076, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 
