@@ -23,19 +23,22 @@ from naivehtmlparser import NaiveHTMLParser
 
 from datacode import Datacode
 from baseclient import BaseClient, RedirectException
+from tz import whois_timezone_info
 
 logger = logging.getLogger(__name__)
+
+
 # logger.setLevel(logging.DEBUG)
 
 
 def handle_abbreviations(s):
     s = str(s).strip()
     if s.endswith('T'):
-        return float(s.replace('T', ''))*1000
+        return float(s.replace('T', '')) * 1000
     if s.endswith('M'):
-        return float(s.replace('M', ''))*1000000
+        return float(s.replace('M', '')) * 1000000
     if s.endswith('B'):
-        return float(s.replace('B', ''))*1000000000
+        return float(s.replace('B', '')) * 1000000000
     return float(s)
 
 
@@ -106,32 +109,10 @@ class Google(BaseClient):
         tick = self.realtime[ticker]
 
         try:
-            r = '<div [^>]+ role="heading">'
+            r = '<span[^>]+role="heading"[^>]+>(.*?)</span>'
             pattern = re.compile(r)
 
-            # ignore first <div ... role="heading">
             match = pattern.search(text)
-            if not match:
-                return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
-            start = match.span(0)[1]
-
-            # after second <div ... role="heading"> - get name
-            match = pattern.search(text, start)
-            if not match:
-                return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
-            start = match.span(0)[1]
-
-            r = '<div [^>]*>(.*?)</div>'
-            pattern = re.compile(r)
-
-            # first div ignored
-            match = pattern.search(text, start)
-            if not match:
-                return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
-            start = match.span(0)[1]
-
-            # second div is NAME
-            match = pattern.search(text, start)
             if not match:
                 return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
             start = match.span(0)[1]
@@ -139,7 +120,30 @@ class Google(BaseClient):
             tick[Datacode.NAME] = self.save_wrapper(
                 lambda: html.unescape(un_span(match.group(1)).strip()))
 
-            # third div is TICKER
+            # match = pattern.search(text, start)
+            # if not match:
+            #     return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
+            # start = match.span(0)[1]
+
+            r = '<div [^>]*>(.*?)</div>'
+            pattern = re.compile(r)
+
+            # # first div ignored
+            # match = pattern.search(text, start)
+            # if not match:
+            #     return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
+            # start = match.span(0)[1]
+
+            # # second div is NAME
+            # match = pattern.search(text, start)
+            # if not match:
+            #     return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
+            # start = match.span(0)[1]
+            #
+            # tick[Datacode.NAME] = self.save_wrapper(
+            #     lambda: html.unescape(un_span(match.group(1)).strip()))
+
+            # first div is TICKER
             match = pattern.search(text, start)
             if not match:
                 return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
@@ -178,24 +182,28 @@ class Google(BaseClient):
 
             tick[Datacode.LAST_PRICE] = self.save_wrapper(
                 lambda: locale.atof(
-                    html.unescape(header.find('./div[1]/span[1]/span[1]/span[1]').text).strip()))
+                    html.unescape(header.find('./span[1]/span[1]/span[1]').text).strip()))
 
             tick[Datacode.CURRENCY] = self.save_wrapper(
-                lambda: html.unescape(header.find('./div[1]/span[1]/span[1]/span[2]').text).strip())
+                lambda: html.unescape(header.find('./span[1]/span[1]/span[2]').text).strip())
 
             tick[Datacode.CHANGE] = self.save_wrapper(
                 lambda: locale.atof(
-                    html.unescape(header.find('./div[1]/span[2]/span[1]').text).replace('−', '-').strip()))
+                    html.unescape(header.find('./span[2]/span[1]').text).replace('−', '-').strip()))
 
             tick[Datacode.CHANGE_IN_PERCENT] = self.save_wrapper(
                 lambda: float(
-                    html.unescape(header.find('./div[1]/span[2]/span[2]/span[1]').text).strip()
+                    html.unescape(header.find('./span[2]/span[2]/span[1]').text).strip()
                         .replace('(', '').replace(')', '').replace('%', '')))
 
+            if tick[Datacode.CHANGE_IN_PERCENT] != 0.0:
+                if html.unescape(header.find('./span[2]/span[2]/span[1]').text).strip().startswith('('):
+                    tick[Datacode.CHANGE_IN_PERCENT] = -tick[Datacode.CHANGE_IN_PERCENT]
+
             try:
-                value = html.unescape(header.find('./div[2]/span[1]/span[2]').text).replace('·', '').strip()
+                value = html.unescape(header.find('./div[1]/span[1]/span[2]').text).replace('·', '').strip()
                 logger.debug(value)
-                dt = dateutil.parser.parse(value)
+                dt = dateutil.parser.parse(value, tzinfos=whois_timezone_info)
                 tick[Datacode.LAST_PRICE_DATE] = dt.date()
                 tick[Datacode.LAST_PRICE_TIME] = dt.time()
 

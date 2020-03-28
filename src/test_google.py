@@ -115,7 +115,6 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'Data doesn\'t exist - 27', 'test_DE_ETF TIMESTAMP {}'.format(s))
 
     def test_TY_equity(self):
-
         s = financials.getRealtime('TYO:6503', Datacode.OPEN.value, 'GOOGLE')
         self.assertEqual(type(s), float, 'test_TY_equity OPEN {}'.format(s))
 
