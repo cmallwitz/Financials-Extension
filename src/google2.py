@@ -1,4 +1,4 @@
-#  google.py
+#  google2.py
 #
 #  license: GNU LGPL
 #
@@ -13,7 +13,6 @@ import locale
 import logging
 import html
 import os
-import pathlib
 import re
 import time
 import traceback
@@ -52,9 +51,6 @@ class Google(BaseClient):
 
         self.realtime = {}
         self.location = None
-
-        self.basedir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
-        os.makedirs(self.basedir, exist_ok=True)
 
     def getRealtime(self, ticker: str, datacode: int):
 
@@ -98,7 +94,7 @@ class Google(BaseClient):
         try:
             text = self.urlopen(url)
             with open(os.path.join(self.basedir, 'google-{}.html'.format(ticker)), "w") as text_file:
-                print(text, file=text_file)
+                print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException as e:
             logger.error(traceback.format_exc())
             return 'Google.getRealtime(\'{}\', {}) - urlopen: {} {}'.format(ticker, datacode, e, url)
@@ -120,28 +116,8 @@ class Google(BaseClient):
             tick[Datacode.NAME] = self.save_wrapper(
                 lambda: html.unescape(un_span(match.group(1)).strip()))
 
-            # match = pattern.search(text, start)
-            # if not match:
-            #     return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
-            # start = match.span(0)[1]
-
             r = '<div [^>]*>(.*?)</div>'
             pattern = re.compile(r)
-
-            # # first div ignored
-            # match = pattern.search(text, start)
-            # if not match:
-            #     return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
-            # start = match.span(0)[1]
-
-            # # second div is NAME
-            # match = pattern.search(text, start)
-            # if not match:
-            #     return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
-            # start = match.span(0)[1]
-            #
-            # tick[Datacode.NAME] = self.save_wrapper(
-            #     lambda: html.unescape(un_span(match.group(1)).strip()))
 
             # first div is TICKER
             match = pattern.search(text, start)
@@ -191,14 +167,11 @@ class Google(BaseClient):
                 lambda: locale.atof(
                     html.unescape(header.find('./span[2]/span[1]').text).replace('−', '-').strip()))
 
+            # percentage is always wrapped in (...) and always positive even if there is a price drop
             tick[Datacode.CHANGE_IN_PERCENT] = self.save_wrapper(
                 lambda: float(
                     html.unescape(header.find('./span[2]/span[2]/span[1]').text).strip()
                         .replace('(', '').replace(')', '').replace('%', '')))
-
-            if tick[Datacode.CHANGE_IN_PERCENT] != 0.0:
-                if html.unescape(header.find('./span[2]/span[2]/span[1]').text).strip().startswith('('):
-                    tick[Datacode.CHANGE_IN_PERCENT] = -tick[Datacode.CHANGE_IN_PERCENT]
 
             try:
                 value = html.unescape(header.find('./div[1]/span[1]/span[2]').text).replace('·', '').strip()

@@ -14,7 +14,6 @@ import dateutil.parser
 import html
 import logging
 import os
-import pathlib
 import pprint
 import pytz
 import re
@@ -49,9 +48,6 @@ class Yahoo(BaseClient):
         self.realtime = {}
         self.historicdata = {}
         self.js = jsonParser.jsonObject
-
-        self.basedir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
-        os.makedirs(self.basedir, exist_ok=True)
 
     def _read_ticker_csv_file(self, ticker):
 
@@ -95,10 +91,10 @@ class Yahoo(BaseClient):
         # remove white space
         ticker = "".join(ticker.split())
 
-        # use cached value for up to 5 minutes
+        # use cached value for up to 60 seconds
         if ticker in self.realtime:
             tick = self.realtime[ticker]
-            if time.time() - 5*60 < tick[Datacode.TIMESTAMP]:
+            if time.time() - 60 < tick[Datacode.TIMESTAMP]:
                 return self._return_value(tick, datacode)
             else:
                 del self.realtime[ticker]
@@ -137,7 +133,7 @@ class Yahoo(BaseClient):
                 self.crumb = match.group(1)
             else:
                 with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w") as text_file:
-                    print(text, file=text_file)
+                    print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
 
         except BaseException as e:
             logger.error(traceback.format_exc())
@@ -148,7 +144,7 @@ class Yahoo(BaseClient):
 
             if start < 0:
                 with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w") as text_file:
-                    print(text, file=text_file)
+                    print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
                 return None
 
             start = start + len('"QuoteSummaryStore":')
@@ -156,7 +152,7 @@ class Yahoo(BaseClient):
 
             if not results:
                 with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w") as text_file:
-                    print(text, file=text_file)
+                    print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
                 return None
 
         except BaseException as e:
@@ -214,7 +210,7 @@ class Yahoo(BaseClient):
 
         except BaseException as e:
             with open(os.path.join(self.basedir, 'yahoo-{}.js'.format(ticker)), "w") as text_file:
-                pprint.pprint(results.asList(), stream=text_file)
+                pprint.pprint(f"// '{url}'\r\n\r\n{results.asList()}", stream=text_file)
 
             logger.error(traceback.format_exc())
             return 'Yahoo.getRealtime({}, {}) - process: {}'.format(ticker, datacode, e)

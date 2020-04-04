@@ -11,6 +11,8 @@
 import codecs
 import gzip
 import logging
+import os
+import pathlib
 import random
 import select
 
@@ -40,6 +42,9 @@ class BaseClient:
     def __init__(self):
         self.connections = {}
         self.cookies = cookiejar.CookieJar()
+
+        self.basedir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
+        os.makedirs(self.basedir, exist_ok=True)
 
         user_agents = [
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55.0'

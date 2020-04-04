@@ -10,14 +10,16 @@
 import datetime
 import dateutil.parser
 import inspect
+import locale
 import os
 import sys
 
 import pathlib
 import platform
+import time
+from functools import wraps
 
 import unohelper
-
 from com.financials.getinfo import Financials
 
 # Add current directory to import path
@@ -28,9 +30,30 @@ if current_dir not in sys.path:
 from datacode import Datacode
 import google2 as google
 import yahoo
+from version import version
 
 implementation_name = "com.financials.getinfo.python.FinancialsImpl"  # as defined in Financials.xcu
 implementation_services = ("com.sun.star.sheet.AddIn",)
+
+basedir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
+os.makedirs(basedir, exist_ok=True)
+
+
+def profile(fn):
+    @wraps(fn)
+    def with_profiling(*args, **kwargs):
+        start = time.perf_counter()
+        r = fn(*args, **kwargs)
+        elapsed = time.perf_counter() - start
+
+        with open(os.path.join(basedir, 'trace.log'), "a+") as text_file:
+            print(
+                f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')} {fn.__name__} *args={args} r='{r}' {(1000 * elapsed):.3f} ms",
+                file=text_file)
+
+        return r
+
+    return with_profiling
 
 
 class FinancialsImpl(unohelper.Base, Financials):
@@ -41,6 +64,7 @@ class FinancialsImpl(unohelper.Base, Financials):
         self.google = google.createInstance(ctx)
         self.yahoo = yahoo.createInstance(ctx)
 
+    @profile
     def getRealtime(self, ticker, datacode=None, source=None):
 
         if ticker == 'SUPPORT':
@@ -90,6 +114,7 @@ class FinancialsImpl(unohelper.Base, Financials):
 
         return x
 
+    @profile
     def getHistoric(self, ticker, datacode=None, date=None, source=None):
 
         if ticker == 'SUPPORT':
@@ -128,7 +153,7 @@ class FinancialsImpl(unohelper.Base, Financials):
             if type(date) == float or type(date) == int:
 
                 try:
-                    offset = int(date) # offset for 1899-12-30
+                    offset = int(date)  # offset for 1899-12-30
                     d = dateutil.parser.parse('1899-12-30') + datetime.timedelta(days=offset)
                     d = d.date().isoformat()
                 except:
@@ -163,16 +188,29 @@ class FinancialsImpl(unohelper.Base, Financials):
 
         return x
 
+    @profile
     def support(self, datacode):
 
-        s = 'ctx={}\nid(self)={}\npid={}\nuname={}\nsys.executable={}\nsys.version={}\nhome={}'.format(
+        locale_en_us_utf_8_status = None
+
+        try:
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+            locale_en_us_utf_8_status = 'Locale available: en_US.UTF-8'
+        except locale.Error:
+            locale_en_us_utf_8_status = 'Missing system locale: en_US.UTF-8'
+
+        s = 'ctx={}\nid(self)={}\nversion={}\nlocale={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}'.format(
             self.ctx,
             id(self),
-            os.getpid(),
+            version,
+            locale_en_us_utf_8_status,
+            os.path.realpath(__file__),
+            os.path.realpath(os.getcwd()),
+            str(pathlib.Path.home()),
             ' '.join(platform.uname()),
+            os.getpid(),
             sys.executable,
-            sys.version.replace("\n", " "),
-            str(pathlib.Path.home()))
+            sys.version.replace("\n", " "))
 
         if datacode:
             s = '{}\ntype(datacode)={}\nstr(datacode)={}'.format(
@@ -181,6 +219,7 @@ class FinancialsImpl(unohelper.Base, Financials):
                 str(datacode))
 
         return s
+
 
 def createInstance(ctx):
     return FinancialsImpl(ctx)
