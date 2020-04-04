@@ -8,32 +8,40 @@
 #  version 3 of the License, or (at your option) any later version.
 
 
-import datetime
-import locale
-import logging
 import html
+import logging
+import os
 import re
 import time
 import traceback
+import xml.etree.ElementTree as ET
 
-import urllib.parse
+import dateutil
 
+from baseclient import BaseClient, RedirectException
 from datacode import Datacode
-from baseclient import BaseClient
+from naivehtmlparser import NaiveHTMLParser
+from tz import whois_timezone_info
 
 logger = logging.getLogger(__name__)
+
+
 # logger.setLevel(logging.DEBUG)
 
 
 def handle_abbreviations(s):
     s = str(s).strip()
     if s.endswith('T'):
-        return float(s.replace('T', ''))*1000
+        return float(s.replace('T', '')) * 1000
     if s.endswith('M'):
-        return float(s.replace('M', ''))*1000000
+        return float(s.replace('M', '')) * 1000000
     if s.endswith('B'):
-        return float(s.replace('B', ''))*1000000000
+        return float(s.replace('B', '')) * 1000000000
     return float(s)
+
+
+def un_span(s):
+    return re.sub(r'<span [^>]*>', '', s).replace('</span>', '')
 
 
 class Google(BaseClient):
@@ -41,6 +49,7 @@ class Google(BaseClient):
         super().__init__()
 
         self.realtime = {}
+        self.location = None
 
     def getRealtime(self, ticker: str, datacode: int):
 
@@ -55,148 +64,169 @@ class Google(BaseClient):
         # remove white space
         ticker = "".join(ticker.split())
 
-        # use cached value for up to 5 minutes
+        # use cached value for up to 60 seconds
         if ticker in self.realtime:
             tick = self.realtime[ticker]
-            if time.time() - 5*60 < tick[Datacode.TIMESTAMP]:
+            if time.time() - 60 < tick[Datacode.TIMESTAMP]:
                 return self._return_value(tick, datacode)
             else:
                 del self.realtime[ticker]
 
-        url = 'https://finance.google.com/finance?{}'.format(urllib.parse.urlencode({'q': ticker}))
+        q_param = 'q=' + ticker
+
+        if not self.location:
+            url = 'https://www.google.com/search?hl=en&tbm=fin&' + q_param
+
+            try:
+                self.urlopen(url, redirect=False)
+            except RedirectException as e:
+                self.location = e.location.replace('&' + q_param, '')
+            except BaseException as e:
+                logger.error(traceback.format_exc())
+                return 'Google.getRealtime(\'{}\', {}) - location: {}'.format(ticker, datacode, e)
+
+        if not self.location:
+            url = 'https://www.google.com/search?tbm=fin&' + q_param
+        else:
+            url = self.location + '&' + q_param
 
         try:
             text = self.urlopen(url)
+            with open(os.path.join(self.basedir, 'google-{}.html'.format(ticker)), "w") as text_file:
+                print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException as e:
             logger.error(traceback.format_exc())
-            return 'Google.getRealtime(\'{}\', {}) - read: {}'.format(ticker, datacode, e)
+            return 'Google.getRealtime(\'{}\', {}) - urlopen: {} {}'.format(ticker, datacode, e, url)
+
+        if ticker not in self.realtime:
+            self.realtime[ticker] = {}
+
+        tick = self.realtime[ticker]
 
         try:
-            r = '<meta\s*itemprop="([^"]+)"\s*content="([^"]+)"\s*/>'
+            r = '<span[^>]+role="heading"[^>]+>(.*?)</span>'
             pattern = re.compile(r)
-            result = pattern.findall(text)
 
-            if len(result) == 0:
-                return None
+            match = pattern.search(text)
+            if not match:
+                return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
+            start = match.span(0)[1]
 
-            if ticker not in self.realtime:
-                self.realtime[ticker] = {}
+            tick[Datacode.NAME] = self.save_wrapper(
+                lambda: html.unescape(un_span(match.group(1)).strip()))
 
-            tick = self.realtime[ticker]
+            r = '<div [^>]*>(.*?)</div>'
+            pattern = re.compile(r)
 
-            for key, value in result:
-
-                if key == 'exchangeTimezone':
-                    tick[Datacode.TIMEZONE] = self.save_wrapper(lambda: str(value))
-
-                elif key == 'priceChange':
-                    tick[Datacode.CHANGE] = self.save_wrapper(lambda: float(value))
-
-                elif key == 'quoteTime':
-                    try:
-                        dt = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
-                        tick[Datacode.LAST_PRICE_DATE] = dt.date()
-                        tick[Datacode.LAST_PRICE_TIME] = dt.time()
-                    except:
-                        pass
-
-                elif key == 'priceChangePercent':
-                    tick[Datacode.CHANGE_IN_PERCENT] = self.save_wrapper(lambda: (float(value)))
-
-                elif key == 'price':
-                    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-                    tick[Datacode.LAST_PRICE] = self.save_wrapper(lambda: locale.atof(str(value)))
-
-                elif key == 'priceCurrency':
-                    tick[Datacode.CURRENCY] = self.save_wrapper(lambda: str(value))
-
-                elif key == 'exchange':
-                    tick[Datacode.EXCHANGE] = self.save_wrapper(lambda: str(value))
-
-                elif key == 'name':
-                    tick[Datacode.NAME] = self.save_wrapper(lambda: html.unescape(str(value)))
-
-                elif key == 'tickerSymbol':
-                    tick[Datacode.TICKER] = self.save_wrapper(lambda: str(value))
-
-                else:
-                    logger.info('ignored key=%s value=%s', key, value)
-
-            start = 0
-
-            r = '<td[^>]+data-snapfield="range">[^<]+</td>\s*<td class="val">\s*([^<]+)\s*</td>'
-            pattern = re.compile(r, flags=re.DOTALL)
+            # first div is TICKER
             match = pattern.search(text, start)
+            if not match:
+                return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
+
+            ticker = self.save_wrapper(
+                lambda: html.unescape(match.group(1)).replace(' ', ''))
+
+            tick[Datacode.EXCHANGE] = self.save_wrapper(lambda: ticker.split(':')[0])
+            tick[Datacode.TICKER] = self.save_wrapper(lambda: ticker.split(':')[1])
+
+        except BaseException as e:
+            return 'Google.getRealtime({}, {}) - process: {}'.format(ticker, datacode, e)
+
+        try:
+            r = '<sticky-header [^>]*>(.*?)</sticky-header>'
+            pattern = re.compile(r, flags=re.DOTALL)
+            match = re.search(pattern, text)
 
             if match:
-                lowhigh = self.save_wrapper(
-                    lambda: list(map(
-                        lambda s: float(s),
-                        html.unescape(match.group(1))
-                            .replace('-', '').replace(',', '').strip().split())))
+                text = match.group(1)
+            else:
+                return 'Data for \'{}\' not found'.format(ticker)
 
-                if lowhigh and len(lowhigh) == 2:
-                    tick[Datacode.LOW] = lowhigh[0]
-                    tick[Datacode.HIGH] = lowhigh[1]
-                    start = match.span(0)[1]
+            parser = NaiveHTMLParser()
+            root = parser.feed(text)
+            parser.close()
 
-            r = '<td[^>]+data-snapfield="range_52week">[^<]+</td>\s*<td class="val">\s*([^<]+)\s*</td>'
-            pattern = re.compile(r, flags=re.DOTALL)
-            match = pattern.search(text, start)
+            cards = root.findall('.//g-card-section')
 
-            if match:
-                lowhigh = self.save_wrapper(
-                    lambda: list(map(
-                        lambda s: float(s),
-                        html.unescape(match.group(1))
-                            .replace('-', '').replace(',', '').strip().split())))
+            if len(cards) < 4:
+                return 'Data for \'{}\' not found'.format(ticker)
 
-                if lowhigh and len(lowhigh) == 2:
-                    tick[Datacode.LOW_52_WEEK] = lowhigh[0]
-                    tick[Datacode.HIGH_52_WEEK] = lowhigh[1]
-                    start = match.span(0)[1]
+            header = cards[1]
 
-            r = '<td[^>]+data-snapfield="open">[^<]+</td>\s*<td class="val">\s*([^<]+)\s*</td>'
-            pattern = re.compile(r, flags=re.DOTALL)
-            match = pattern.search(text, start)
+            tick[Datacode.LAST_PRICE] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(header.find('./span[1]/span[1]/span[1]').text).replace(',', '').strip()))
 
-            if match:
-                tick[Datacode.OPEN] = self.save_wrapper(
-                    lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
-                start = match.span(0)[1]
+            tick[Datacode.CURRENCY] = self.save_wrapper(
+                lambda: html.unescape(header.find('./span[1]/span[1]/span[2]').text).strip())
 
-            r = '<td[^>]+data-snapfield="vol_and_avg">[^<]+</td>\s*<td class="val">\s*([^<]+)\s*</td>'
-            pattern = re.compile(r, flags=re.DOTALL)
-            match = pattern.search(text, start)
+            tick[Datacode.CHANGE] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(header.find('./span[2]/span[1]').text).replace('−', '-').replace(',', '').strip()))
 
-            if match:
-                volavg = self.save_wrapper(
-                    lambda: list(map(
-                        lambda s: handle_abbreviations(s),
-                        html.unescape(match.group(1)).replace('/', ' ').strip().split())))
+            # percentage is always wrapped in (...) and always positive even if there is a price drop
+            tick[Datacode.CHANGE_IN_PERCENT] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(header.find('./span[2]/span[2]/span[1]').text).strip()
+                        .replace('(', '').replace(')', '').replace('%', '')))
 
-                if volavg:
-                    if len(volavg) > 0:
-                        tick[Datacode.VOLUME] = volavg[0]
-                    start = match.span(0)[1]
+            try:
+                value = html.unescape(header.find('./div[1]/span[1]/span[2]').text).replace('·', '').strip()
+                logger.debug(value)
+                dt = dateutil.parser.parse(value, tzinfos=whois_timezone_info)
+                tick[Datacode.LAST_PRICE_DATE] = dt.date()
+                tick[Datacode.LAST_PRICE_TIME] = dt.time()
 
-            r = '<td[^>]+data-snapfield="market_cap">[^<]+</td>\s*<td class="val">\s*([^<]+)'
-            pattern = re.compile(r, flags=re.DOTALL)
-            match = pattern.search(text, start)
+                time_bits = value.split(' ')
+                if len(time_bits) >= 4:
+                    tick[Datacode.TIMEZONE] = time_bits[-1]
 
-            if match:
-                mcap = self.save_wrapper(
-                    lambda: handle_abbreviations(html.unescape(match.group(1)).replace('-', ' ').strip()))
+            except BaseException as e:
+                pass
 
-                if mcap:
-                    tick[Datacode.MARKET_CAP] = mcap
+            footer = cards[3]
+            logger.debug(ET.tostring(footer))
 
-                # start = match.span(0)[1]
+            # parse 'footer' for remaining fields
+            table = footer.find('./div[1]/div[1]/div[1]/table[1]')
+
+            tick[Datacode.OPEN] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[1]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.HIGH] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[2]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.LOW] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[3]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.MARKET_CAP] = self.save_wrapper(
+                lambda: handle_abbreviations(
+                    html.unescape(table.find('./tr[4]/td[2]').text).replace(',', '').replace('-', '').strip()))
+
+            table = footer.find('./div[1]/div[1]/div[2]/table[1]')
+
+            # for indices: first item on right side is LOW
+            if html.unescape(table.find('./tr[1]/td[1]').text).strip() == 'Low':
+                tick[Datacode.LOW] = self.save_wrapper(
+                    lambda: float(
+                        html.unescape(table.find('./tr[1]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.PREV_CLOSE] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[2]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.HIGH_52_WEEK] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[3]/td[2]').text).replace(',', '').strip()))
+
+            tick[Datacode.LOW_52_WEEK] = self.save_wrapper(
+                lambda: float(
+                    html.unescape(table.find('./tr[4]/td[2]').text).replace(',', '').strip()))
 
             tick[Datacode.TIMESTAMP] = time.time()
-
-            if tick[Datacode.EXCHANGE] == 'CURRENCY' and Datacode.CURRENCY not in tick:
-                tick[Datacode.CURRENCY] = ''
 
             logger.info(tick)
 

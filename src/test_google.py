@@ -214,6 +214,15 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('INDEXDB:DAX', Datacode.CHANGE.value, 'GOOGLE')
         self.assertEqual(type(s), float, 'test_index CHANGE')
 
+        s = financials.getRealtime('INDEXDB:DAX', Datacode.OPEN.value, 'GOOGLE')
+        self.assertEqual(type(s), float, 'test_index OPEN')
+
+        s = financials.getRealtime('INDEXDB:DAX', Datacode.LOW.value, 'GOOGLE')
+        self.assertEqual(type(s), float, 'test_index LOW')
+
+        s = financials.getRealtime('INDEXDB:DAX', Datacode.HIGH.value, 'GOOGLE')
+        self.assertEqual(type(s), float, 'test_index HIGH')
+
     def test_errors(self):
         s = financials.getRealtime(None, Datacode.LAST_PRICE.value, 'GOOGLE')
         self.assertEqual(s, 'Ticker is empty', 'test_errors')

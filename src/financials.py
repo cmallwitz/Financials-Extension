@@ -28,7 +28,7 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 from datacode import Datacode
-import google2 as google
+import google
 import yahoo
 from version import version
 
