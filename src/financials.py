@@ -10,7 +10,6 @@
 import datetime
 import dateutil.parser
 import inspect
-import locale
 import os
 import sys
 
@@ -191,19 +190,10 @@ class FinancialsImpl(unohelper.Base, Financials):
     @profile
     def support(self, datacode):
 
-        locale_en_us_utf_8_status = None
-
-        try:
-            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-            locale_en_us_utf_8_status = 'Locale available: en_US.UTF-8'
-        except locale.Error:
-            locale_en_us_utf_8_status = 'Missing system locale: en_US.UTF-8'
-
-        s = 'ctx={}\nid(self)={}\nversion={}\nlocale={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}'.format(
+        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}'.format(
             self.ctx,
             id(self),
             version,
-            locale_en_us_utf_8_status,
             os.path.realpath(__file__),
             os.path.realpath(os.getcwd()),
             str(pathlib.Path.home()),
