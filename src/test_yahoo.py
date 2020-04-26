@@ -102,8 +102,8 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'iShares VII Public Limited Company - iShares Core S&P 500 UCITS ETF',
                          'test_realtime_UK_ETF NAME {}'.format(s))
 
-        s = financials.getRealtime('C060.DE', 104, 'YAHOO')
-        self.assertEqual(type(s), str, 't_realtime_UK_ETF AME {}'.format(s))
+        s = financials.getRealtime('C060.DE', Datacode.NAME.value, 'YAHOO')
+        self.assertEqual(type(s), str, 't_realtime_UK_ETF NAME {}'.format(s))
 
     def test_realtime_DE_equity(self):
 
@@ -202,7 +202,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 82.889999, 'test_historic_DE_equity CLOSE {}'.format(s))
 
         s = financials.getHistoric('C060.DE', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 72.870003, 'test_historic_DE_equity CLOSE {}'.format(s))
+        self.assertEqual(s, 68.209999, 'test_historic_DE_equity CLOSE {}'.format(s))
 
     def test_realtime_errors(self):
 

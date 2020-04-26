@@ -8,6 +8,7 @@
 #  version 3 of the License, or (at your option) any later version.
 
 
+import dateutil
 import html
 import logging
 import os
@@ -15,8 +16,6 @@ import re
 import time
 import traceback
 import xml.etree.ElementTree as ET
-
-import dateutil
 
 from baseclient import BaseClient, RedirectException
 from datacode import Datacode
@@ -31,12 +30,12 @@ logger = logging.getLogger(__name__)
 
 def handle_abbreviations(s):
     s = str(s).strip()
-    if s.endswith('T'):
-        return float(s.replace('T', '')) * 1000
     if s.endswith('M'):
-        return float(s.replace('M', '')) * 1000000
-    if s.endswith('B'):
-        return float(s.replace('B', '')) * 1000000000
+        return float(s[:-1]) * 1000000
+    elif s.endswith('B'):
+        return float(s[:-1]) * 1000000000
+    elif s.endswith('T'):
+        return float(s[:-1]) * 1000000000000
     return float(s)
 
 
@@ -56,7 +55,7 @@ class Google(BaseClient):
         """
         Retrieve realtime data for ticker from Google Finance and cache it for further lookups
 
-        :param ticker: the ticker symbol e.g. VOD.L or LON:VOD
+        :param ticker: the ticker symbol e.g. LON:VOD
         :param datacode: the requested datacode
         :return:
         """
@@ -103,13 +102,37 @@ class Google(BaseClient):
 
         tick = self.realtime[ticker]
 
+        tick[Datacode.TIMESTAMP] = time.time()
+
+        tick[Datacode.NAME] = None
+        tick[Datacode.TICKER] = None
+        tick[Datacode.CURRENCY] = None
+        tick[Datacode.LAST_PRICE] = None
+        tick[Datacode.CHANGE] = None
+        tick[Datacode.CHANGE_IN_PERCENT] = None
+        tick[Datacode.VOLUME] = None
+        tick[Datacode.LOW_52_WEEK] = None
+        tick[Datacode.HIGH_52_WEEK] = None
+        tick[Datacode.LAST_PRICE_DATE] = None
+        tick[Datacode.LAST_PRICE_TIME] = None
+        tick[Datacode.TIMEZONE] = None
+
+        tick[Datacode.OPEN] = None
+        tick[Datacode.HIGH] = None
+        tick[Datacode.LOW] = None
+        tick[Datacode.PREV_CLOSE] = None
+        tick[Datacode.MARKET_CAP] = None
+
+        tick[Datacode.EXCHANGE] = None
+        tick[Datacode.AVG_DAILY_VOL_3MOMTH] = None
+
         try:
             r = '<span[^>]+role="heading"[^>]+>(.*?)</span>'
             pattern = re.compile(r)
 
             match = pattern.search(text)
             if not match:
-                return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
+                return None
             start = match.span(0)[1]
 
             tick[Datacode.NAME] = self.save_wrapper(
@@ -225,8 +248,6 @@ class Google(BaseClient):
             tick[Datacode.LOW_52_WEEK] = self.save_wrapper(
                 lambda: float(
                     html.unescape(table.find('./tr[4]/td[2]').text).replace(',', '').strip()))
-
-            tick[Datacode.TIMESTAMP] = time.time()
 
             logger.info(tick)
 

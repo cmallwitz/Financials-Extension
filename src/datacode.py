@@ -42,8 +42,6 @@ class Datacode(Enum):
 
     TIMESTAMP = 999
 
-    # TODO YAHOO fundInceptionDate
-
     @classmethod
     def has_value(cls, value):
         return any(value == item.value for item in cls)

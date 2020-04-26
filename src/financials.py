@@ -29,6 +29,7 @@ if current_dir not in sys.path:
 from datacode import Datacode
 import google
 import yahoo
+import ft
 from version import version
 
 implementation_name = "com.financials.getinfo.python.FinancialsImpl"  # as defined in Financials.xcu
@@ -47,7 +48,7 @@ def profile(fn):
 
         with open(os.path.join(basedir, 'trace.log'), "a+") as text_file:
             print(
-                f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')} {fn.__name__} *args={args} r='{r}' {(1000 * elapsed):.3f} ms",
+                f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')} {fn.__name__} *args={args[1:]} r='{r}' {(1000 * elapsed):.3f} ms",
                 file=text_file)
 
         return r
@@ -62,6 +63,7 @@ class FinancialsImpl(unohelper.Base, Financials):
         self.ctx = ctx
         self.google = google.createInstance(ctx)
         self.yahoo = yahoo.createInstance(ctx)
+        self.ft = ft.createInstance(ctx)
 
     @profile
     def getRealtime(self, ticker, datacode=None, source=None):
@@ -100,6 +102,8 @@ class FinancialsImpl(unohelper.Base, Financials):
                 s = self.google.getRealtime(ticker, datacode)
             elif source == 'YAHOO':
                 s = self.yahoo.getRealtime(ticker, datacode)
+            elif source == 'FT':
+                s = self.ft.getRealtime(ticker, datacode)
             else:
                 s = 'Source \'{}\' not supported'.format(source)
 

@@ -29,6 +29,7 @@ cp -f "${PWD}"/src/baseclient.py "${PWD}"/build/
 cp -f "${PWD}"/src/jsonParser.py "${PWD}"/build/
 cp -f "${PWD}"/src/naivehtmlparser.py "${PWD}"/build/
 cp -f "${PWD}"/src/tz.py "${PWD}"/build/
+cp -f "${PWD}"/src/ft.py "${PWD}"/build/
 cp -f "${PWD}"/src/google.py "${PWD}"/build/
 cp -f "${PWD}"/src/yahoo.py "${PWD}"/build/
 

@@ -42,6 +42,7 @@ class BaseClient:
     def __init__(self):
         self.connections = {}
         self.cookies = cookiejar.CookieJar()
+        self.last_url = None
 
         self.basedir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
         os.makedirs(self.basedir, exist_ok=True)
@@ -91,6 +92,8 @@ class BaseClient:
 
         logger.debug('Creating request -----------------------------------------------------')
         logger.info('url=%s', url)
+
+        self.last_url = url
 
         # generate and add cookie headers
         request = urllib.request.Request(url)
@@ -176,6 +179,9 @@ class BaseClient:
         :return: value or None
         """
 
+        if data is None:
+            return None
+
         try:
             if datacode == Datacode.PREV_CLOSE.value and Datacode.PREV_CLOSE in data:
                 return data[Datacode.PREV_CLOSE]
@@ -187,10 +193,16 @@ class BaseClient:
                 return data[Datacode.CHANGE]
 
             elif datacode == Datacode.LAST_PRICE_DATE.value and Datacode.LAST_PRICE_DATE in data:
-                return data[Datacode.LAST_PRICE_DATE].isoformat()
+                if data[Datacode.LAST_PRICE_DATE]:
+                    return data[Datacode.LAST_PRICE_DATE].isoformat()
+                else:
+                    return data[Datacode.LAST_PRICE_DATE]
 
             elif datacode == Datacode.LAST_PRICE_TIME.value and Datacode.LAST_PRICE_TIME in data:
-                return data[Datacode.LAST_PRICE_TIME].isoformat()
+                if data[Datacode.LAST_PRICE_TIME]:
+                    return data[Datacode.LAST_PRICE_TIME].isoformat()
+                else:
+                    return data[Datacode.LAST_PRICE_TIME]
 
             elif datacode == Datacode.CHANGE_IN_PERCENT.value and Datacode.CHANGE_IN_PERCENT in data:
                 return data[Datacode.CHANGE_IN_PERCENT]
@@ -210,7 +222,7 @@ class BaseClient:
             elif datacode == Datacode.HIGH_52_WEEK.value and Datacode.HIGH_52_WEEK in data:
                 return data[Datacode.HIGH_52_WEEK]
 
-            elif datacode == Datacode.MARKET_CAP.value and Datacode.MARKET_CAP in data and data[Datacode.MARKET_CAP]:
+            elif datacode == Datacode.MARKET_CAP.value and Datacode.MARKET_CAP in data:
                 return data[Datacode.MARKET_CAP]
 
             elif datacode == Datacode.VOLUME.value and Datacode.VOLUME in data:
@@ -228,17 +240,20 @@ class BaseClient:
             elif datacode == Datacode.TICKER.value and Datacode.TICKER in data:
                 return data[Datacode.TICKER]
 
-            elif datacode == Datacode.EXCHANGE.value and data[Datacode.EXCHANGE]:
+            elif datacode == Datacode.EXCHANGE.value and Datacode.EXCHANGE in data:
                 return data[Datacode.EXCHANGE]
 
             elif datacode == Datacode.CURRENCY.value and Datacode.CURRENCY in data:
                 return data[Datacode.CURRENCY]
 
-            elif datacode == Datacode.NAME.value and data[Datacode.NAME]:
+            elif datacode == Datacode.NAME.value and Datacode.NAME in data:
                 return data[Datacode.NAME]
 
-            elif datacode == Datacode.TIMEZONE.value and Datacode.TIMEZONE in data and data[Datacode.TIMEZONE]:
-                return str(data[Datacode.TIMEZONE])
+            elif datacode == Datacode.TIMEZONE.value and Datacode.TIMEZONE in data:
+                if data[Datacode.TIMEZONE] is not None and type(data[Datacode.TIMEZONE]) != str:
+                    return str(data[Datacode.TIMEZONE])
+                else:
+                    return data[Datacode.TIMEZONE]
 
         except BaseException as e:
             return 'BaseClient.return_value(\'{}\', {}) - {}'.format(data, datacode, e)

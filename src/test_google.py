@@ -24,11 +24,7 @@ class Test(unittest.TestCase):
 
     def test_currency(self):
         s = financials.getRealtime('EURGBP', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual('Google.getRealtime(EURGBP, 21) - no match', s, 'test_currency LAST_PRICE')
-
-        # s = financials.getRealtime('EURGBP', Datacode.CURRENCY.value, 'GOOGLE')
-        # self.assertEqual(type(s), str, 'test_currency CURRENCY')
-        # self.assertEqual(s, '', 'test_currency CURRENCY')
+        self.assertIsNone(s, 'test_currency LAST_PRICE')
 
     def test_UK_equity(self):
         s = financials.getRealtime('LON:VOD', Datacode.LAST_PRICE.value, 'GOOGLE')
@@ -112,7 +108,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'EUR', 'test_DE_ETF CURRENCY')
 
         s = financials.getRealtime('FRA:C060', Datacode.MARKET_CAP.value, 'GOOGLE')
-        self.assertEqual(s, 'Data doesn\'t exist - 27', 'test_DE_ETF TIMESTAMP {}'.format(s))
+        self.assertIsNone(s, 'test_DE_ETF MARKET_CAP {}'.format(s))
 
     def test_TY_equity(self):
         s = financials.getRealtime('TYO:6503', Datacode.OPEN.value, 'GOOGLE')
@@ -202,7 +198,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'USD', 'test_US_mutuals CURRENCY')
 
         s = financials.getRealtime('MUTF:VFIAX', Datacode.TIMEZONE.value, 'GOOGLE')
-        self.assertEqual(s, 'Data doesn\'t exist - 105', 'test_US_mutuals')
+        self.assertIsNone(s, 'test_US_mutuals TIMEZONE')
 
     def test_index(self):
         s = financials.getRealtime('INDEXDB:DAX', Datacode.LAST_PRICE.value, 'GOOGLE')
@@ -231,7 +227,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'Datacode is empty', 'test_errors')
 
         s = financials.getRealtime('DOES_NOT_EXISTS', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(s, 'Google.getRealtime(DOES_NOT_EXISTS, 21) - no match', 'test_errors')
+        self.assertIsNone(s, 'test_errors')
 
         s = financials.getRealtime('NYS:IBM', 'Foo', 'GOOGLE')
         self.assertEqual(s, 'Datacode is not a number', 'test_errors')

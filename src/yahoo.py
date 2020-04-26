@@ -83,7 +83,7 @@ class Yahoo(BaseClient):
         """
         Retrieve realtime data for ticker from Yahoo Finance and cache it for further lookups
 
-        :param ticker: the ticker symbol e.g. VOD.L or LON:VOD
+        :param ticker: the ticker symbol e.g. VOD.L
         :param datacode: the requested datacode
         :return:
         """
@@ -117,6 +117,8 @@ class Yahoo(BaseClient):
 
         try:
             text = self.urlopen(url, redirect=True, data=None, headers=None, cookies=cookies)
+            with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w") as text_file:
+                print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException as e:
             logger.error(traceback.format_exc())
             return 'Yahoo.getRealtime({}, {}) - urlopen: {}'.format(ticker, datacode, e)
@@ -131,9 +133,6 @@ class Yahoo(BaseClient):
 
             if match:
                 self.crumb = match.group(1)
-            else:
-                with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w") as text_file:
-                    print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
 
         except BaseException as e:
             logger.error(traceback.format_exc())
@@ -143,16 +142,12 @@ class Yahoo(BaseClient):
             start = text.find('"QuoteSummaryStore":{')
 
             if start < 0:
-                with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w") as text_file:
-                    print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
                 return None
 
             start = start + len('"QuoteSummaryStore":')
             results = self.js.parseString(text[start:])
 
             if not results:
-                with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w") as text_file:
-                    print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
                 return None
 
         except BaseException as e:
@@ -171,6 +166,8 @@ class Yahoo(BaseClient):
                 self.realtime[ticker] = {}
 
             tick = self.realtime[ticker]
+
+            tick[Datacode.TIMESTAMP] = time.time()
 
             tick[Datacode.PREV_CLOSE] = float(raw(price, 'regularMarketPreviousClose'))
             tick[Datacode.OPEN] = float(raw(price, 'regularMarketOpen'))
@@ -206,8 +203,6 @@ class Yahoo(BaseClient):
             else:
                 tick[Datacode.NAME] = tick[Datacode.TICKER]
 
-            tick[Datacode.TIMESTAMP] = time.time()
-
         except BaseException as e:
             with open(os.path.join(self.basedir, 'yahoo-{}.js'.format(ticker)), "w") as text_file:
                 pprint.pprint(f"// '{url}'\r\n\r\n{results.asList()}", stream=text_file)
@@ -222,7 +217,7 @@ class Yahoo(BaseClient):
         """
         Retrieve historic data for ticker from Yahoo Finance and cache it for further lookups
 
-        :param ticker: the ticker symbol e.g. VOD.L or LON:VOD
+        :param ticker: the ticker symbol e.g. VOD.L
         :param datacode: the requested datacode
         :param date: the requested date
         :return:
