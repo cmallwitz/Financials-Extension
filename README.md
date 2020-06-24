@@ -57,6 +57,7 @@ python3 src/test_google.py
 
 ### Tested with:
 - Debian 10.3  / LibreOffice Calc 6.1.5.2 / Python 3.7.3
+- Ubuntu 20.04 / LibreOffice Calc 6.4.3.2 / Python 3.8.2
 - Ubuntu 19.10 / LibreOffice Calc 6.3.5.2 / Python 3.7.6
 - Ubuntu 19.04 / LibreOffice Calc 6.2 / Python 3.7.3
 - Ubuntu 18.04 / LibreOffice Calc 6 / Python 3.6.7

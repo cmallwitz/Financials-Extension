@@ -154,6 +154,10 @@ class Yahoo(BaseClient):
             logger.error(traceback.format_exc())
             return 'Yahoo.getRealtime({}, {}) - parsing: {}'.format(ticker, datacode, e)
 
+        with open(os.path.join(self.basedir, 'yahoo-{}.js'.format(ticker)), "w") as text_file:
+            print(f"// '{url}' QuoteSummaryStore:\n", file=text_file)
+            pprint.pprint(results.asList(), stream=text_file)
+
         try:
             price = results['price']
             quoteType = results['quoteType']
@@ -204,11 +208,15 @@ class Yahoo(BaseClient):
                 tick[Datacode.NAME] = tick[Datacode.TICKER]
 
         except BaseException as e:
-            with open(os.path.join(self.basedir, 'yahoo-{}.js'.format(ticker)), "w") as text_file:
-                pprint.pprint(f"// '{url}'\r\n\r\n{results.asList()}", stream=text_file)
-
             logger.error(traceback.format_exc())
             return 'Yahoo.getRealtime({}, {}) - process: {}'.format(ticker, datacode, e)
+
+        try:
+            summaryProfile = results['summaryProfile']
+            tick[Datacode.SECTOR] = str(summaryProfile['sector'])
+            tick[Datacode.INDUSTRY] = str(summaryProfile['industry'])
+        except KeyError as e:
+            pass
 
         return self._return_value(self.realtime[ticker], datacode)
 

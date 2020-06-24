@@ -48,21 +48,31 @@ class BaseClient:
         os.makedirs(self.basedir, exist_ok=True)
 
         user_agents = [
-            'Mozilla/5.0 (Windows NT 6.1; rv:73.0) Gecko/20100101 Firefox/73.0',
             'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:74.0) Gecko/20100101 Firefox/74.0',
-            'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0'
+            'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0',
+            'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:75.0) Gecko/20100101 Firefox/75.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:76.0) Gecko/20100101 Firefox/76.0',
+            'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:77.0) Gecko/20100101 Firefox/77.0',
+            'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0',
 
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36',
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36'
         ]
 
         self.default_headers = {
             'User-Agent': random.sample(user_agents, 1)[0],
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Encoding': 'gzip, deflate',
-            'Accept-Language': 'en-US,en;q=0.5'
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'max-age=0'
         }
+
+        self.response = None
 
     def request(self, method: str, url: str, data=None, headers={}, cookies=[], **kwargs):
 
@@ -122,13 +132,13 @@ class BaseClient:
 
     def urlopen(self, url, redirect=True, data=None, headers={}, cookies=[], **kwargs):
 
-        response = self.request('POST' if data else 'GET', url, data, headers, cookies, **kwargs)
-        text = response.read()
+        self.response = self.request('POST' if data else 'GET', url, data, headers, cookies, **kwargs)
+        text = self.response.read()
 
         # Allow two redirects: used by Yahoo for some cookie based consent
 
-        if 300 <= response.status < 400:
-            location = response.getheader('Location')
+        if 300 <= self.response.status < 400:
+            location = self.response.getheader('Location')
 
             if location and redirect:
 
@@ -136,11 +146,11 @@ class BaseClient:
                     scheme, _, host, path = url.split('/', 3)
                     location = '{}//{}{}'.format(scheme, host, location)
 
-                response = self.request('POST' if data else 'GET', location, data, headers, cookies, **kwargs)
-                text = response.read()
+                self.response = self.request('POST' if data else 'GET', location, data, headers, cookies, **kwargs)
+                text = self.response.read()
 
-                if 300 <= response.status < 400:
-                    location = response.getheader('Location')
+                if 300 <= self.response.status < 400:
+                    location = self.response.getheader('Location')
 
                     if location and redirect:
 
@@ -148,21 +158,21 @@ class BaseClient:
                             scheme, _, host, path = url.split('/', 3)
                             location = '{}//{}{}'.format(scheme, host, location)
 
-                        response = self.request('POST' if data else 'GET', location, data, headers, cookies, **kwargs)
-                        text = response.read()
+                        self.response = self.request('POST' if data else 'GET', location, data, headers, cookies, **kwargs)
+                        text = self.response.read()
                     else:
                         raise RedirectException(location)
 
             else:
                 raise RedirectException(location)
 
-        if response.status >= 400:
-            raise HttpException(url, response.status)
+        if self.response.status >= 400:
+            raise HttpException(url, self.response.status)
 
-        if response.getheader('Content-Encoding') == 'gzip':
+        if self.response.getheader('Content-Encoding') == 'gzip':
             text = gzip.decompress(text)
 
-        content_type = response.headers.get_content_charset()
+        content_type = self.response.headers.get_content_charset()
         if content_type is None:
             content_type = 'utf-8'
         text = codecs.decode(text, encoding=content_type, errors='ignore')
@@ -236,6 +246,12 @@ class BaseClient:
 
             elif datacode == Datacode.ADJ_CLOSE.value and Datacode.ADJ_CLOSE in data:
                 return data[Datacode.ADJ_CLOSE]
+
+            elif datacode == Datacode.SECTOR.value and Datacode.SECTOR in data:
+                return data[Datacode.SECTOR]
+
+            elif datacode == Datacode.INDUSTRY.value and Datacode.INDUSTRY in data:
+                return data[Datacode.INDUSTRY]
 
             elif datacode == Datacode.TICKER.value and Datacode.TICKER in data:
                 return data[Datacode.TICKER]

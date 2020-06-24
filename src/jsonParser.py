@@ -8,20 +8,25 @@
 # Updated 8 Jan 2007 - fixed dict grouping bug, and made elements and
 #   members optional in array and object collections
 #
+# Updated 9 Aug 2016 - use more current pyparsing constructs/idioms
+#
+
+# https://github.com/pyparsing/pyparsing/blob/master/examples/jsonParser.py - revision 53d1b4a on 1 Nov 2019
+
 json_bnf = """
-object 
-    { members } 
-    {} 
-members 
-    string : value 
-    members , string : value 
-array 
+object
+    { members }
+    {}
+members
+    string : value
+    members , string : value
+array
     [ elements ]
-    [] 
-elements 
-    value 
-    elements , value 
-value 
+    []
+elements
+    value
+    elements , value
+value
     string
     number
     object
@@ -31,39 +36,37 @@ value
     null
 """
 
-from pyparsing import *
+import pyparsing as pp
+from pyparsing import pyparsing_common as ppc
 
-TRUE = Keyword("true").setParseAction(replaceWith(True))
-FALSE = Keyword("false").setParseAction(replaceWith(False))
-NULL = Keyword("null").setParseAction(replaceWith(None))
 
-jsonString = dblQuotedString.setParseAction(removeQuotes)
-jsonNumber = Combine(Optional('-') + ('0' | Word('123456789', nums)) +
-                     Optional('.' + Word(nums)) +
-                     Optional(Word('eE', exact=1) + Word(nums + '+-', nums)))
+def make_keyword(kwd_str, kwd_value):
+    return pp.Keyword(kwd_str).setParseAction(pp.replaceWith(kwd_value))
 
-jsonObject = Forward()
-jsonValue = Forward()
-jsonElements = delimitedList(jsonValue)
-jsonArray = Group(Suppress('[') + Optional(jsonElements) + Suppress(']'))
-jsonValue << (jsonString | jsonNumber | Group(jsonObject) | jsonArray | TRUE | FALSE | NULL)
-memberDef = Group(jsonString + Suppress(':') + jsonValue)
-jsonMembers = delimitedList(memberDef)
-jsonObject << Dict(Suppress('{') + Optional(jsonMembers) + Suppress('}'))
 
-jsonComment = cppStyleComment
+TRUE = make_keyword("true", True)
+FALSE = make_keyword("false", False)
+NULL = make_keyword("null", None)
+
+LBRACK, RBRACK, LBRACE, RBRACE, COLON = map(pp.Suppress, "[]{}:")
+
+jsonString = pp.dblQuotedString().setParseAction(pp.removeQuotes)
+jsonNumber = ppc.number()
+
+jsonObject = pp.Forward()
+jsonValue = pp.Forward()
+jsonElements = pp.delimitedList(jsonValue)
+jsonArray = pp.Group(LBRACK + pp.Optional(jsonElements, []) + RBRACK)
+jsonValue << (
+    jsonString | jsonNumber | pp.Group(jsonObject) | jsonArray | TRUE | FALSE | NULL
+)
+memberDef = pp.Group(jsonString + COLON + jsonValue)
+jsonMembers = pp.delimitedList(memberDef)
+jsonObject << pp.Dict(LBRACE + pp.Optional(jsonMembers) + RBRACE)
+
+jsonComment = pp.cppStyleComment
 jsonObject.ignore(jsonComment)
 
-
-def convertNumbers(s, l, toks):
-    n = toks[0]
-    try:
-        return int(n)
-    except ValueError as ve:
-        return float(n)
-
-
-jsonNumber.setParseAction(convertNumbers)
 
 if __name__ == "__main__":
     testdata = """
@@ -72,7 +75,7 @@ if __name__ == "__main__":
             "title": "example glossary",
             "GlossDiv": {
                 "title": "S",
-                "GlossList": 
+                "GlossList":
                     {
                     "ID": "SGML",
                     "SortAs": "SGML",
@@ -96,20 +99,14 @@ if __name__ == "__main__":
     }
     """
 
-    import pprint
-
     results = jsonObject.parseString(testdata)
-    pprint.pprint(results.asList())
-    print
-
+    results.pprint()
+    print()
 
     def testPrint(x):
-        print
-        type(x), repr(x)
+        print(type(x), repr(x))
 
-
-    print
-    results.glossary.GlossDiv.GlossList.keys()
+    print(list(results.glossary.GlossDiv.GlossList.keys()))
     testPrint(results.glossary.title)
     testPrint(results.glossary.GlossDiv.GlossList.ID)
     testPrint(results.glossary.GlossDiv.GlossList.FalseValue)

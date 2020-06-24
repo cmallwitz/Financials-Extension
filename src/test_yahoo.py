@@ -72,6 +72,14 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'International Business Machines Corporation',
                          'test_realtime_US_equity NAME {}'.format(s))
 
+        s = financials.getRealtime('IBM', Datacode.SECTOR.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_realtime_US_equity SECTOR {}'.format(s))
+        self.assertEqual(s, 'Technology', 'test_realtime_US_equity SECTOR {}'.format(s))
+
+        s = financials.getRealtime('IBM', Datacode.INDUSTRY.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_realtime_US_equity INDUSTRY {}'.format(s))
+        self.assertEqual(s, 'Information Technology Services', 'test_realtime_US_equity INDUSTRY {}'.format(s))
+
         s = financials.getRealtime('IBM', Datacode.TIMEZONE.value, 'YAHOO')
         self.assertEqual(s, 'America/New_York', 'test_realtime_US_equity TIMEZONE {}'.format(s))
 
@@ -113,6 +121,47 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('SAP.DE', Datacode.TIMEZONE.value, 'YAHOO')
         self.assertEqual(s, 'Europe/Berlin', 'test_realtime_DE_equity TIMEZONE {}'.format(s))
 
+        s = financials.getRealtime('SAP.DE', Datacode.SECTOR.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_realtime_DE_equity SECTOR {}'.format(s))
+        self.assertEqual(s, 'Technology', 'test_realtime_DE_equity SECTOR {}'.format(s))
+
+        s = financials.getRealtime('SAP.DE', Datacode.INDUSTRY.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_realtime_DE_equity INDUSTRY {}'.format(s))
+        self.assertEqual(s, 'Software—Application', 'test_realtime_DE_equity INDUSTRY {}'.format(s))
+
+    def test_TY_equity(self):
+        s = financials.getRealtime('6503.T', Datacode.OPEN.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_TY_equity OPEN {}'.format(s))
+
+        s = financials.getRealtime('6503.T', Datacode.LOW.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_TY_equity LOW {}'.format(s))
+
+        s = financials.getRealtime('6503.T', Datacode.HIGH.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_TY_equity HIGH {}'.format(s))
+
+        s = financials.getRealtime('6503.T', Datacode.LOW_52_WEEK.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_TY_equity LOW_52_WEEK {}'.format(s))
+
+        s = financials.getRealtime('6503.T', Datacode.HIGH_52_WEEK.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_TY_equity HIGH_52_WEEK {}'.format(s))
+
+        s = financials.getRealtime('6503.T', Datacode.MARKET_CAP.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_TY_equity MARKET_CAP {}'.format(s))
+
+        s = financials.getRealtime('6503.T', Datacode.VOLUME.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_TY_equity VOLUME {}'.format(s))
+
+        s = financials.getRealtime('6503.T', Datacode.CURRENCY.value, 'YAHOO')
+        self.assertEqual(s, 'JPY', 'test_TY_equity CURRENCY')
+
+        s = financials.getRealtime('6503.T', Datacode.SECTOR.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_TY_equity SECTOR {}'.format(s))
+        self.assertEqual(s, 'Industrials', 'test_TY_equity SECTOR {}'.format(s))
+
+        s = financials.getRealtime('6503.T', Datacode.INDUSTRY.value, 'YAHOO')
+        self.assertEqual(type(s), str, 'test_TY_equity INDUSTRY {}'.format(s))
+        self.assertEqual(s, 'Electrical Equipment & Parts', 'test_TY_equity INDUSTRY {}'.format(s))
+
     def test_historic_US_equity(self):
 
         s = financials.getHistoric('IBM', Datacode.LAST_PRICE.value, '2017-01-01', 'YAHOO')
@@ -146,7 +195,7 @@ class Test(unittest.TestCase):
 
         # Note: quarterly dividend and splits will change past adjusted prices - will fail after the next dividend
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 145.416626, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(s, 143.492233, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 

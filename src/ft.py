@@ -7,7 +7,7 @@
 #  License as published by the Free Software Foundation; either
 #  version 3 of the License, or (at your option) any later version.
 
-import dateutil
+import dateutil.parser
 import html
 import logging
 import os
@@ -126,16 +126,26 @@ class FT(BaseClient):
                 tick[Datacode.TICKER] = self.save_wrapper(
                     lambda: html.unescape(match.group(1)).strip())
 
-            r = '<span [^>]*>Price \(([A-Z]+)\)</span><span [^>]*>([0-9,\.]+)</span>'
+            r = '<div class="mod-tearsheet-overview__esi">(.*?)<i.*?</i>(.*?)<'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 start = match.span(0)[1]
-                tick[Datacode.CURRENCY] = self.save_wrapper(
+                tick[Datacode.SECTOR] = self.save_wrapper(
                     lambda: html.unescape(match.group(1)).strip())
+                tick[Datacode.INDUSTRY] = self.save_wrapper(
+                    lambda: html.unescape(match.group(2)).strip())
+
+            r = r'<span [^>]*>Price \(([A-Z]+|--)\)</span><span [^>]*>([0-9,\.]+)</span>'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                start = match.span(0)[1]
+                if match.group(1) != '--':
+                    tick[Datacode.CURRENCY] = self.save_wrapper(
+                        lambda: html.unescape(match.group(1)).strip())
                 tick[Datacode.LAST_PRICE] = self.save_wrapper(
                     lambda: float(html.unescape(match.group(2)).replace(',', '').strip()))
 
-            r = '<span[^>]*>Today\'s Change</span><span[^>]*><span[^>]*>(?:<i[^>]*></i>)?([0-9,\.-]+) */ *([0-9,\.-]+)%</span>'
+            r = r'<span[^>]*>Today\'s Change</span><span[^>]*><span[^>]*>(?:<i[^>]*></i>)?([0-9,\.-]+) */ *([0-9,\.-]+)%</span>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 start = match.span(0)[1]
@@ -144,14 +154,14 @@ class FT(BaseClient):
                 tick[Datacode.CHANGE_IN_PERCENT] = self.save_wrapper(
                     lambda: float(html.unescape(match.group(2)).replace(',', '').strip()))
 
-            r = '<span[^>]*>Shares traded</span><span[^>]*>([0-9mk,\.]+)</span>'
+            r = r'<span[^>]*>Shares traded</span><span[^>]*>([0-9mk,\.]+)</span>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 start = match.span(0)[1]
                 tick[Datacode.VOLUME] = self.save_wrapper(
                     lambda: handle_abbreviations(html.unescape(match.group(1))))
 
-            r = '<span[^>]*>52 week range</span><span[^>]*>([0-9,\.]+) *- *([0-9,\.]+)</span>'
+            r = r'<span[^>]*>52 week range</span><span[^>]*>([0-9,\.]+) *- *([0-9,\.]+)</span>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 start = match.span(0)[1]
@@ -160,10 +170,7 @@ class FT(BaseClient):
                 tick[Datacode.HIGH_52_WEEK] = self.save_wrapper(
                     lambda: float(html.unescape(match.group(2)).replace(',', '').strip()))
 
-            # <div class="mod-disclaimer">Data delayed at least 15 minutes, as of Apr 13 2020 15:01 BST.</div>
-            # <div class="mod-disclaimer">.+?as of (.+)\.?</div>
-
-            r = '<div class="mod-disclaimer">.+?as of (.+?)\.?</div>'
+            r = r'<div class="mod-disclaimer">.+?as of (.+?)\.?</div>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 start = match.span(0)[1]
@@ -183,14 +190,14 @@ class FT(BaseClient):
 
             # second attempt at 52 week range
             if Datacode.LOW_52_WEEK not in tick or not tick[Datacode.LOW_52_WEEK]:
-                r = '<span class="mod-ui-range-bar__container__label--lo"><span[^>]*>([0-9,\.]+)</span>'
+                r = r'<span class="mod-ui-range-bar__container__label--lo"><span[^>]*>([0-9,\.]+)</span>'
                 match = re.compile(r, flags=re.DOTALL).search(text, start)
                 if match:
                     tick[Datacode.LOW_52_WEEK] = self.save_wrapper(
                         lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
 
             if Datacode.HIGH_52_WEEK not in tick or not tick[Datacode.HIGH_52_WEEK]:
-                r = '<span class="mod-ui-range-bar__container__label--hi"><span[^>]*>([0-9,\.]+)</span>'
+                r = r'<span class="mod-ui-range-bar__container__label--hi"><span[^>]*>([0-9,\.]+)</span>'
                 match = re.compile(r, flags=re.DOTALL).search(text, start)
                 if match:
                     tick[Datacode.HIGH_52_WEEK] = self.save_wrapper(
@@ -202,37 +209,37 @@ class FT(BaseClient):
             if match:
                 start = match.span(0)[1]
 
-            r = '<th>Open</th><td>([0-9,\.]+)</td>'
+            r = r'<th>Open</th><td>([0-9,\.]+)</td>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.OPEN] = self.save_wrapper(
                     lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
 
-            r = '<th>High</th><td>([0-9,\.]+)</td>'
+            r = r'<th>High</th><td>([0-9,\.]+)</td>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.HIGH] = self.save_wrapper(
                     lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
 
-            r = '<th>Low</th><td>([0-9,\.]+)</td>'
+            r = r'<th>Low</th><td>([0-9,\.]+)</td>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.LOW] = self.save_wrapper(
                     lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
 
-            r = '<th>\s*Previous close\s*</th><td>\s*([0-9,\.]+)\s*</td>'
+            r = r'<th>\s*Previous close\s*</th><td>\s*([0-9,\.]+)\s*</td>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.PREV_CLOSE] = self.save_wrapper(
                     lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
 
-            r = '<th>\s*Average volume\s*</th><td>\s*([0-9,\.btnm]+)\s*</td>'
+            r = r'<th>\s*Average volume\s*</th><td>\s*([0-9,\.btnm]+)\s*</td>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.AVG_DAILY_VOL_3MOMTH] = self.save_wrapper(
                     lambda: handle_abbreviations(html.unescape(match.group(1))))
 
-            r = '<th>\s*Market cap\s*</th><td>\s*([0-9,\.btnm]+)\s*<'
+            r = r'<th>\s*Market cap\s*</th><td>\s*([0-9,\.btnm]+)\s*<'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.MARKET_CAP] = self.save_wrapper(
@@ -252,9 +259,9 @@ class FT(BaseClient):
     def guess_asset_class(self, ticker):
 
         if len(ticker) == 6:
-            if ticker[0:2] in ['USD', 'EUR', 'GBP']:
+            if ticker[0:2] in ['USD', 'EUR', 'GBP', 'JPY', 'CHF']:
                 return 'currencies'
-            if ticker[3:5] in ['USD', 'EUR', 'GBP']:
+            if ticker[3:5] in ['USD', 'EUR', 'GBP', 'JPY', 'CHF']:
                 return 'currencies'
 
         colon_count = ticker.count(':')

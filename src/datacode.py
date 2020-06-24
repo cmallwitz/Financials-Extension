@@ -34,6 +34,9 @@ class Datacode(Enum):
     CLOSE = 90
     ADJ_CLOSE = 91
 
+    SECTOR = 98
+    INDUSTRY = 99
+
     TICKER = 101
     EXCHANGE = 102
     CURRENCY = 103
