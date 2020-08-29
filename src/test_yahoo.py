@@ -165,21 +165,21 @@ class Test(unittest.TestCase):
     def test_historic_US_equity(self):
 
         s = financials.getHistoric('IBM', Datacode.LAST_PRICE.value, '2017-01-01', 'YAHOO')
-        self.assertEqual(s, 'Not a trading day \'2017-01-01\'', 'test_historic_US_equity LAST_PRICE {}'.format(s))
+        self.assertEqual('Not a trading day \'2017-01-01\'', s, 'test_historic_US_equity LAST_PRICE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-01', 'YAHOO')
-        self.assertEqual(s, 'Not a trading day \'2017-01-01\'', 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertEqual('Not a trading day \'2017-01-01\'', s, 'test_historic_US_equity CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.LAST_PRICE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 'Data doesn\'t exist - 21', 'test_historic_US_equity LAST_PRICE {}'.format(s))
+        self.assertEqual('Data doesn\'t exist - 21', s, 'test_historic_US_equity LAST_PRICE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 167.190002, 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertEqual(167.190002, s, 'test_historic_US_equity CLOSE {}'.format(s))
 
         financials.yahoo.historicdata = {}
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 167.190002, 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertEqual(167.190002, s, 'test_historic_US_equity CLOSE {}'.format(s))
 
         directory = os.path.join(str(pathlib.Path.home()), '.financials-extension')
         ibm = os.path.join(directory, 'yahoo-IBM.csv')
@@ -191,11 +191,11 @@ class Test(unittest.TestCase):
         financials.yahoo.historicdata = {}
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 167.190002, 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertEqual(167.190002, s, 'test_historic_US_equity CLOSE {}'.format(s))
 
         # Note: quarterly dividend and splits will change past adjusted prices - will fail after the next dividend
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 143.492233, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(141.637695, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 

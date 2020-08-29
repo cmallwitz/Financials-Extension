@@ -22,7 +22,7 @@ There is a file **examples.ods** there too with usage examples and possible argu
 
 You have to check the respective web sites to work out what symbol is the right one for you. If a web site doesn't have 
 the symbol/asset you want, this extension can't help you either. Having said that, I mostly look at US and West European 
-equities, ETFs and mutual funds and major FX rates - if you have issues with the data available for other asset or 
+equities, ETFs and mutual funds and major FX rates - if you have issues with the data available for other assets or 
 assets in other regions, drop me a line (best to include full URLs and possibly the same asset listed on more than one 
 site for comparison). While data for last price is most likely consistent across sites, they will differ when it comes to 
 less well defined data points.     

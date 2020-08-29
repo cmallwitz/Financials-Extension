@@ -93,19 +93,19 @@ class Test(unittest.TestCase):
 
     def test_DE_ETF(self):
         s = financials.getRealtime('FRA:C060', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_DE_ETF LAST_PRICE {}'.format(s))
+        self.assertEqual(float, type(s), 'test_DE_ETF LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('FRA:C060', Datacode.CURRENCY.value, 'GOOGLE')
-        self.assertEqual(s, 'EUR', 'test_DE_ETF CURRENCY')
+        self.assertEqual('EUR', s, 'test_DE_ETF CURRENCY')
 
         s = financials.getRealtime('FRA:C060', Datacode.TICKER.value, 'GOOGLE')
-        self.assertEqual(s, 'C060', 'test_DE_ETF TICKER')
+        self.assertEqual('C060', s, 'test_DE_ETF TICKER')
 
         s = financials.getRealtime('FRA:C060', Datacode.EXCHANGE.value, 'GOOGLE')
-        self.assertEqual(s, 'FRA', 'test_DE_ETF EXCHANGE')
+        self.assertEqual('FRA', s, 'test_DE_ETF EXCHANGE')
 
         s = financials.getRealtime('FRA:C060', Datacode.CURRENCY.value, 'GOOGLE')
-        self.assertEqual(s, 'EUR', 'test_DE_ETF CURRENCY')
+        self.assertEqual('EUR', s, 'test_DE_ETF CURRENCY')
 
         s = financials.getRealtime('FRA:C060', Datacode.MARKET_CAP.value, 'GOOGLE')
         self.assertIsNone(s, 'test_DE_ETF MARKET_CAP {}'.format(s))

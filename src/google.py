@@ -138,10 +138,10 @@ class Google(BaseClient):
             tick[Datacode.NAME] = self.save_wrapper(
                 lambda: html.unescape(un_span(match.group(1)).strip()))
 
-            r = '<div [^>]*>(.*?)</div>'
+            # next div is TICKER
+            r = '<div [^>]*><div [^>]*>(.*?)</div></div>'
             pattern = re.compile(r)
 
-            # first div is TICKER
             match = pattern.search(text, start)
             if not match:
                 return 'Google.getRealtime({}, {}) - no match'.format(ticker, datacode)
