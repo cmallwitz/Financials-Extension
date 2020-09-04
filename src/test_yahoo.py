@@ -64,8 +64,8 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('IBM', Datacode.VOLUME.value, 'YAHOO')
         self.assertEqual(type(s), float, 'test_realtime_US_equity VOLUME {}'.format(s))
 
-        s = financials.getRealtime('IBM', Datacode.AVG_DAILY_VOL_3MOMTH.value, 'YAHOO')
-        self.assertEqual(type(s), float, 'test_realtime_US_equity AVG_DAILY_VOL_3MOMTH {}'.format(s))
+        s = financials.getRealtime('IBM', Datacode.AVG_DAILY_VOL_3MONTH.value, 'YAHOO')
+        self.assertEqual(type(s), float, 'test_realtime_US_equity AVG_DAILY_VOL_3MONTH {}'.format(s))
 
         s = financials.getRealtime('IBM', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(type(s), str, 'test_realtime_US_equity NAME {}'.format(s))

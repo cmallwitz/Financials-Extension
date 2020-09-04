@@ -37,8 +37,8 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('INTC:NSQ', Datacode.CHANGE_IN_PERCENT.value, 'FT')
         self.assertEqual(type(s), float, 'test_US_equity CHANGE_IN_PERCENT {}'.format(s))
 
-        s = financials.getRealtime('INTC:NSQ', Datacode.AVG_DAILY_VOL_3MOMTH.value, 'FT')
-        self.assertEqual(type(s), float, 'test_US_equity AVG_DAILY_VOL_3MOMTH {}'.format(s))
+        s = financials.getRealtime('INTC:NSQ', Datacode.AVG_DAILY_VOL_3MONTH.value, 'FT')
+        self.assertEqual(type(s), float, 'test_US_equity AVG_DAILY_VOL_3MONTH {}'.format(s))
 
         s = financials.getRealtime('INTC:NSQ', Datacode.MARKET_CAP.value, 'FT')
         self.assertEqual(type(s), float, 'test_US_equity MARKET_CAP {}'.format(s))

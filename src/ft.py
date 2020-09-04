@@ -107,7 +107,7 @@ class FT(BaseClient):
         tick[Datacode.MARKET_CAP] = None
 
         tick[Datacode.EXCHANGE] = None
-        tick[Datacode.AVG_DAILY_VOL_3MOMTH] = None
+        tick[Datacode.AVG_DAILY_VOL_3MONTH] = None
 
         try:
             r = '<div class="mod-tearsheet-overview__header"><h1 [^>]*>(.*?)</h1>'
@@ -236,7 +236,7 @@ class FT(BaseClient):
             r = r'<th>\s*Average volume\s*</th><td>\s*([0-9,\.btnm]+)\s*</td>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
-                tick[Datacode.AVG_DAILY_VOL_3MOMTH] = self.save_wrapper(
+                tick[Datacode.AVG_DAILY_VOL_3MONTH] = self.save_wrapper(
                     lambda: handle_abbreviations(html.unescape(match.group(1))))
 
             r = r'<th>\s*Market cap\s*</th><td>\s*([0-9,\.btnm]+)\s*<'

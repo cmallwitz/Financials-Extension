@@ -181,7 +181,7 @@ class Yahoo(BaseClient):
             tick[Datacode.HIGH] = float(raw(price, 'regularMarketDayHigh'))
             tick[Datacode.LAST_PRICE] = float(raw(price, 'regularMarketPrice'))
             tick[Datacode.VOLUME] = float(raw(price, 'regularMarketVolume'))
-            tick[Datacode.AVG_DAILY_VOL_3MOMTH] = float(raw(price, 'averageDailyVolume3Month'))
+            tick[Datacode.AVG_DAILY_VOL_3MONTH] = float(raw(price, 'averageDailyVolume3Month'))
 
             tick[Datacode.LOW_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekLow'))
             tick[Datacode.HIGH_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekHigh'))

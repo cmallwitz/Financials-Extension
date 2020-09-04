@@ -238,8 +238,8 @@ class BaseClient:
             elif datacode == Datacode.VOLUME.value and Datacode.VOLUME in data:
                 return data[Datacode.VOLUME]
 
-            elif datacode == Datacode.AVG_DAILY_VOL_3MOMTH.value and Datacode.AVG_DAILY_VOL_3MOMTH in data:
-                return data[Datacode.AVG_DAILY_VOL_3MOMTH]
+            elif datacode == Datacode.AVG_DAILY_VOL_3MONTH.value and Datacode.AVG_DAILY_VOL_3MONTH in data:
+                return data[Datacode.AVG_DAILY_VOL_3MONTH]
 
             elif datacode == Datacode.CLOSE.value and Datacode.CLOSE in data:
                 return data[Datacode.CLOSE]

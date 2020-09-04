@@ -124,7 +124,7 @@ class Google(BaseClient):
         tick[Datacode.MARKET_CAP] = None
 
         tick[Datacode.EXCHANGE] = None
-        tick[Datacode.AVG_DAILY_VOL_3MOMTH] = None
+        tick[Datacode.AVG_DAILY_VOL_3MONTH] = None
 
         try:
             r = '<span[^>]+role="heading"[^>]+>(.*?)</span>'

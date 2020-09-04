@@ -29,7 +29,7 @@ class Datacode(Enum):
     MARKET_CAP = 27
 
     VOLUME = 35
-    AVG_DAILY_VOL_3MOMTH = 39
+    AVG_DAILY_VOL_3MONTH = 39
 
     CLOSE = 90
     ADJ_CLOSE = 91
