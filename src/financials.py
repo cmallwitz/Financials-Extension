@@ -102,21 +102,21 @@ class FinancialsImpl(unohelper.Base, Financials):
             source = str(source).upper()
 
             if source == 'GOOGLE':
-                dc = self.google.getRealtime(ticker, datacode)
+                s = self.google.getRealtime(ticker, datacode)
             elif source == 'YAHOO':
-                dc = self.yahoo.getRealtime(ticker, datacode)
+                s = self.yahoo.getRealtime(ticker, datacode)
             elif source == 'FT':
-                dc = self.ft.getRealtime(ticker, datacode)
+                s = self.ft.getRealtime(ticker, datacode)
             else:
-                dc = 'Source \'{}\' not supported'.format(source)
+                s = 'Source \'{}\' not supported'.format(source)
 
         except Exception as ex:
             return str(ex)
 
         try:
-            x = float(dc)
+            x = float(s)
         except:
-            x = dc
+            x = s
 
         return x
 
