@@ -31,6 +31,13 @@ class Datacode(Enum):
     VOLUME = 35
     AVG_DAILY_VOL_3MONTH = 39
 
+    # BETA = 67
+    # EPS = 68
+    # PE_RATIO = 69
+    # DIV = 70
+    # DIV_YIELD = 71
+    # EX_DIV_DATE = 72
+
     CLOSE = 90
     ADJ_CLOSE = 91
 

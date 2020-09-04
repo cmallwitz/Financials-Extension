@@ -230,7 +230,7 @@ class Test(unittest.TestCase):
         self.assertIsNone(s, 'test_errors')
 
         s = financials.getRealtime('NYS:IBM', 'Foo', 'GOOGLE')
-        self.assertEqual(s, 'Datacode is not a number', 'test_errors')
+        self.assertEqual(s, 'Datacode is invalid', 'test_errors')
 
         # Historic data not supported on GOOGLE
 

@@ -27,6 +27,36 @@ assets in other regions, drop me a line (best to include full URLs and possibly 
 site for comparison). While data for last price is most likely consistent across sites, they will differ when it comes to 
 less well defined data points.     
 
+### List of supported data points
+
+You can either specify numbers or names (lower or upper case)
+
+|Name|Number|
+| :--- | :--- |
+|PREV_CLOSE|5|
+|OPEN|6|
+|CHANGE|7|
+|LAST_PRICE_DATE|8|
+|LAST_PRICE_TIME|10|
+|CHANGE_IN_PERCENT|11|
+|LOW|14|
+|HIGH|16|
+|LAST_PRICE|21|
+|HIGH_52_WEEK|24|
+|LOW_52_WEEK|26|
+|MARKET_CAP|27|
+|VOLUME|35|
+|AVG_DAILY_VOL_3MONTH|39|
+|CLOSE|90|
+|ADJ_CLOSE|91|
+|SECTOR|98|
+|INDUSTRY|99|
+|TICKER|101|
+|EXCHANGE|102|
+|CURRENCY|103|
+|NAME|104|
+|TIMEZONE|105|
+
 ### Dealing with missing data:
 
 First of all, a hint for using LibreCalc: if you want to refresh data you can press SHIFT-CTRL-F9 - this will force a 

@@ -14,7 +14,7 @@ import os
 cur_dir = os.getcwd()
 
 addin_id = "com.financials.getinfo"
-addin_version = "2.1.1"
+addin_version = "2.2.0"
 addin_displayname = "Financial Market Extension"
 addin_publisher_link = "https://github.com/cmallwitz/Financials-Extension"
 addin_publisher_name = "The Publisher"

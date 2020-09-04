@@ -88,9 +88,12 @@ class FinancialsImpl(unohelper.Base, Financials):
                 return 'Datacode is empty'
 
             try:
-                datacode = int(float(str(datacode).strip()))
+                dc = str(datacode).strip().upper()
+                if dc in Datacode.__members__:
+                    dc = Datacode[dc].value
+                datacode = int(float(dc))
             except:
-                return 'Datacode is not a number'
+                return 'Datacode is invalid'
 
             if not Datacode.has_value(datacode):
                 return 'Datacode {} not supported'.format(datacode)
@@ -99,21 +102,21 @@ class FinancialsImpl(unohelper.Base, Financials):
             source = str(source).upper()
 
             if source == 'GOOGLE':
-                s = self.google.getRealtime(ticker, datacode)
+                dc = self.google.getRealtime(ticker, datacode)
             elif source == 'YAHOO':
-                s = self.yahoo.getRealtime(ticker, datacode)
+                dc = self.yahoo.getRealtime(ticker, datacode)
             elif source == 'FT':
-                s = self.ft.getRealtime(ticker, datacode)
+                dc = self.ft.getRealtime(ticker, datacode)
             else:
-                s = 'Source \'{}\' not supported'.format(source)
+                dc = 'Source \'{}\' not supported'.format(source)
 
         except Exception as ex:
             return str(ex)
 
         try:
-            x = float(s)
+            x = float(dc)
         except:
-            x = s
+            x = dc
 
         return x
 
@@ -146,9 +149,12 @@ class FinancialsImpl(unohelper.Base, Financials):
                 return 'Date is empty'
 
             try:
-                datacode = int(float(str(datacode).strip()))
+                dc = str(datacode).strip().upper()
+                if dc in Datacode.__members__:
+                    dc = Datacode[dc].value
+                datacode = int(float(dc))
             except:
-                return 'Datacode {} is not a number'.format(datacode)
+                return 'Datacode {} is invalid'.format(datacode)
 
             if not Datacode.has_value(datacode):
                 return 'Datacode {} not supported'.format(datacode)
