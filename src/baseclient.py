@@ -244,6 +244,30 @@ class BaseClient:
             elif datacode == Datacode.AVG_DAILY_VOL_3MONTH.value and Datacode.AVG_DAILY_VOL_3MONTH in data:
                 return data[Datacode.AVG_DAILY_VOL_3MONTH]
 
+            elif datacode == Datacode.BETA.value and Datacode.BETA in data:
+                return data[Datacode.BETA]
+
+            elif datacode == Datacode.EPS.value and Datacode.EPS in data:
+                return data[Datacode.EPS]
+
+            elif datacode == Datacode.PE_RATIO.value and Datacode.PE_RATIO in data:
+                return data[Datacode.PE_RATIO]
+
+            elif datacode == Datacode.DIV.value and Datacode.DIV in data:
+                return data[Datacode.DIV]
+
+            elif datacode == Datacode.DIV_YIELD.value and Datacode.DIV_YIELD in data:
+                return data[Datacode.DIV_YIELD]
+
+            elif datacode == Datacode.EX_DIV_DATE.value and Datacode.EX_DIV_DATE in data:
+                if data[Datacode.EX_DIV_DATE]:
+                    return data[Datacode.EX_DIV_DATE].isoformat()
+                else:
+                    return data[Datacode.EX_DIV_DATE]
+
+            elif datacode == Datacode.PAYOUT_RATIO.value and Datacode.PAYOUT_RATIO in data:
+                return data[Datacode.PAYOUT_RATIO]
+
             elif datacode == Datacode.CLOSE.value and Datacode.CLOSE in data:
                 return data[Datacode.CLOSE]
 

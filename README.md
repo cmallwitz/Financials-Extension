@@ -24,38 +24,45 @@ You have to check the respective web sites to work out what symbol is the right 
 the symbol/asset you want, this extension can't help you either. Having said that, I mostly look at US and West European 
 equities, ETFs and mutual funds and major FX rates - if you have issues with the data available for other assets or 
 assets in other regions, drop me a line (best to include full URLs and possibly the same asset listed on more than one 
-site for comparison). While data for last price is most likely consistent across sites, they will differ when it comes to 
-less well defined data points.     
+site for comparison). While data for last price is most likely consistent across sites, they may differ for other data 
+points.     
 
 ### List of supported data points
 
-You can either specify numbers or names (lower or upper case)
+You can either specify numbers or names (lower or upper case) - not all bits are available from all sources and they are not necessarily consistent across sources either.
 
-|Name|Number|
-| :--- | :--- |
-|PREV_CLOSE|5|
-|OPEN|6|
-|CHANGE|7|
-|LAST_PRICE_DATE|8|
-|LAST_PRICE_TIME|10|
-|CHANGE_IN_PERCENT|11|
-|LOW|14|
-|HIGH|16|
-|LAST_PRICE|21|
-|HIGH_52_WEEK|24|
-|LOW_52_WEEK|26|
-|MARKET_CAP|27|
-|VOLUME|35|
-|AVG_DAILY_VOL_3MONTH|39|
-|CLOSE|90|
-|ADJ_CLOSE|91|
-|SECTOR|98|
-|INDUSTRY|99|
-|TICKER|101|
-|EXCHANGE|102|
-|CURRENCY|103|
-|NAME|104|
-|TIMEZONE|105|
+|Name|Number|Yahoo|FT|Google|
+| :--- | :--- | :---: | :---: | :---: |
+|PREV_CLOSE|5|Yes|Yes|Yes|
+|OPEN|6|Yes|Yes|Yes|
+|CHANGE|7|Yes|Yes|Yes|
+|LAST_PRICE_DATE|8|Yes|Yes|Yes|
+|LAST_PRICE_TIME|10|Yes|Yes|Yes|
+|CHANGE_IN_PERCENT|11|Yes|Yes|Yes|
+|LOW|14|Yes|Yes|Yes|
+|HIGH|16|Yes|Yes|Yes|
+|LAST_PRICE|21|Yes|Yes|Yes|
+|HIGH_52_WEEK|24|Yes|Yes|Yes|
+|LOW_52_WEEK|26|Yes|Yes|Yes|
+|MARKET_CAP|27|Yes|Yes|Yes|
+|VOLUME|35|Yes|Yes|No|
+|AVG_DAILY_VOL_3MONTH|39|Yes|Yes|No|
+|BETA|67|Yes|Yes|No|
+|EPS|68|Yes|Yes|No|
+|PE_RATIO|69|Yes|Yes|No|
+|DIV|70|Yes|Yes|No|
+|DIV_YIELD|71|Yes|Yes|No|
+|EX_DIV_DATE|72|Yes|Yes|No|
+|PAYOUT_RATIO|73|Yes|No|No|
+|CLOSE|90|(historic)|No|No|
+|ADJ_CLOSE|91|(historic)|No|No|
+|SECTOR|98|Yes|Yes|No|
+|INDUSTRY|99|Yes|Yes|No|
+|TICKER|101|Yes|Yes|Yes|
+|EXCHANGE|102|Yes|No|Yes|
+|CURRENCY|103|Yes|Yes|Yes|
+|NAME|104|Yes|Yes|Yes|
+|TIMEZONE|105|Yes|Yes|Yes|
 
 ### Dealing with missing data:
 

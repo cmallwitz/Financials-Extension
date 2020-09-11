@@ -40,6 +40,15 @@ def raw(m, key, default=0.0):
     return default
 
 
+def fmt(m, key, default=0.0):
+    try:
+        return m[key]['fmt']
+    except:
+        pass
+
+    return default
+
+
 class Yahoo(BaseClient):
     def __init__(self, ctx):
         super().__init__()
@@ -182,10 +191,20 @@ class Yahoo(BaseClient):
             tick[Datacode.LAST_PRICE] = float(raw(price, 'regularMarketPrice'))
             tick[Datacode.VOLUME] = float(raw(price, 'regularMarketVolume'))
             tick[Datacode.AVG_DAILY_VOL_3MONTH] = float(raw(price, 'averageDailyVolume3Month'))
-
+            tick[Datacode.BETA] = float(raw(summaryDetail, 'beta'))
+            tick[Datacode.EPS] = self.save_wrapper(lambda: float(raw(results['defaultKeyStatistics'], 'trailingEps')))
+            tick[Datacode.PE_RATIO] = float(raw(summaryDetail, 'trailingPE'))
+            tick[Datacode.DIV] = float(raw(summaryDetail, 'dividendRate'))
+            tick[Datacode.DIV_YIELD] = float(raw(summaryDetail, 'dividendYield'))
+            tick[Datacode.EX_DIV_DATE] = self.save_wrapper(lambda: dateutil.parser.parse(str(fmt(summaryDetail, 'exDividendDate'))).date())
+            tick[Datacode.PAYOUT_RATIO] = float(raw(summaryDetail, 'payoutRatio'))
             tick[Datacode.LOW_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekLow'))
             tick[Datacode.HIGH_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekHigh'))
             tick[Datacode.MARKET_CAP] = float(raw(summaryDetail, 'marketCap'))
+
+            tick[Datacode.TIMEZONE] = None
+            tick[Datacode.LAST_PRICE_DATE] = None
+            tick[Datacode.LAST_PRICE_TIME] = None
 
             if quoteType:
                 t = int(price['regularMarketTime'])
@@ -211,12 +230,8 @@ class Yahoo(BaseClient):
             logger.error(traceback.format_exc())
             return 'Yahoo.getRealtime({}, {}) - process: {}'.format(ticker, datacode, e)
 
-        try:
-            summaryProfile = results['summaryProfile']
-            tick[Datacode.SECTOR] = str(summaryProfile['sector'])
-            tick[Datacode.INDUSTRY] = str(summaryProfile['industry'])
-        except KeyError as e:
-            pass
+        tick[Datacode.SECTOR] = self.save_wrapper(lambda: str(results['summaryProfile']['sector']))
+        tick[Datacode.INDUSTRY] = self.save_wrapper(lambda: str(results['summaryProfile']['industry']))
 
         return self._return_value(self.realtime[ticker], datacode)
 

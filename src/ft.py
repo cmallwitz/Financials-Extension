@@ -108,6 +108,13 @@ class FT(BaseClient):
 
         tick[Datacode.EXCHANGE] = None
         tick[Datacode.AVG_DAILY_VOL_3MONTH] = None
+        tick[Datacode.BETA] = None
+        tick[Datacode.EPS] = None
+        tick[Datacode.PE_RATIO] = None
+        tick[Datacode.DIV] = None
+        tick[Datacode.DIV_YIELD] = None
+        tick[Datacode.EX_DIV_DATE] = None
+        tick[Datacode.PAYOUT_RATIO] = None
 
         try:
             r = '<div class="mod-tearsheet-overview__header"><h1 [^>]*>(.*?)</h1>'
@@ -159,6 +166,13 @@ class FT(BaseClient):
             if match:
                 start = match.span(0)[1]
                 tick[Datacode.VOLUME] = self.save_wrapper(
+                    lambda: handle_abbreviations(html.unescape(match.group(1))))
+
+            r = r'<span[^>]*>Beta</span><span[^>]*>([0-9,\.]+)</span>'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                start = match.span(0)[1]
+                tick[Datacode.BETA] = self.save_wrapper(
                     lambda: handle_abbreviations(html.unescape(match.group(1))))
 
             r = r'<span[^>]*>52 week range</span><span[^>]*>([0-9,\.]+) *- *([0-9,\.]+)</span>'
@@ -239,11 +253,49 @@ class FT(BaseClient):
                 tick[Datacode.AVG_DAILY_VOL_3MONTH] = self.save_wrapper(
                     lambda: handle_abbreviations(html.unescape(match.group(1))))
 
+            r = r'<th>\s*P/E.*?</th><td>\s*([0-9,\.\-]+)\s*<'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                value = html.unescape(match.group(1))
+                if value == '--':
+                    tick[Datacode.PE_RATIO] = 0.0
+                else:
+                    tick[Datacode.PE_RATIO] = self.save_wrapper(
+                        lambda: float(value))
+
             r = r'<th>\s*Market cap\s*</th><td>\s*([0-9,\.btnm]+)\s*<'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.MARKET_CAP] = self.save_wrapper(
                     lambda: handle_abbreviations(html.unescape(match.group(1))))
+
+            r = r'<th>\s*EPS.*?</th><td>\s*([0-9,\.\-]+)\s*<'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                tick[Datacode.EPS] = self.save_wrapper(
+                    lambda: float(html.unescape(match.group(1))))
+
+            r = r'<th>\s*Annual div.*?</th><td>\s*([0-9,\.]+)\s*<'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                tick[Datacode.DIV] = self.save_wrapper(
+                    lambda: float(html.unescape(match.group(1))))
+
+            r = r'<th>\s*Annual div yield.*?</th><td>\s*([0-9,\.]+)%\s*<'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                tick[Datacode.DIV_YIELD] = self.save_wrapper(
+                    lambda: float(html.unescape(match.group(1))))
+
+            r = r'<th>\s*Div ex-date\s*</th><td><span[^>]*>(.*?)</span><'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                try:
+                    value = html.unescape(match.group(1)).strip()
+                    dt = dateutil.parser.parse(value, tzinfos=whois_timezone_info)
+                    tick[Datacode.EX_DIV_DATE] = dt.date()
+                except BaseException as e:
+                    pass
 
         except BaseException as e:
             logger.error(traceback.format_exc())

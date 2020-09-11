@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
 
     def test_UK_equity(self):
         s = financials.getRealtime('LON:VOD', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_UK_equity LAST_PRICE {}'.format(s))
+        self.assertEqual(float, type(s), 'test_UK_equity LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('LON:VOD', Datacode.TICKER.value, 'GOOGLE')
         self.assertEqual(s, 'VOD', 'test_UK_equity TICKER')
@@ -40,21 +40,21 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'LON', 'test_UK_equity EXCHANGE')
 
         s = financials.getRealtime('LON:VOD', Datacode.PREV_CLOSE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_UK_equity PREV_CLOSE {}'.format(s))
+        self.assertEqual(float, type(s), 'test_UK_equity PREV_CLOSE {}'.format(s))
 
         # MARKET_CAP missing for UK stock but available for German stock - weekend issue (FX) ?
         s = financials.getRealtime('LON:VOD', Datacode.MARKET_CAP.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_UK_equity MARKET_CAP {}'.format(s))
+        self.assertEqual(float, type(s), 'test_UK_equity MARKET_CAP {}'.format(s))
 
     def test_UK_ETF(self):
         s = financials.getRealtime('LON:CSP1', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_UK_ETF LAST_PRICE {}'.format(s))
+        self.assertEqual(float, type(s), 'test_UK_ETF LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('LON:CSP1', Datacode.CURRENCY.value, 'GOOGLE')
         self.assertEqual(s, 'GBX', 'test_UK_ETF CURRENCY')
 
         s = financials.getRealtime('LON:FTAL', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_UK_ETF LAST_PRICE {}'.format(s))
+        self.assertEqual(float, type(s), 'test_UK_ETF LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('LON:FTAL', Datacode.CURRENCY.value, 'GOOGLE')
         self.assertEqual(s, 'GBP', 'test_UK_ETF CURRENCY')
@@ -64,10 +64,10 @@ class Test(unittest.TestCase):
 
     def test_DE_equity(self):
         s = financials.getRealtime('FRA:SAP', 7, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_DE_equity 7')
+        self.assertEqual(float, type(s), 'test_DE_equity 7')
 
         s = financials.getRealtime('FRA:SAP', '7', 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_DE_equity \'7\'')
+        self.assertEqual(float, type(s), 'test_DE_equity \'7\'')
 
         s = financials.getRealtime('FRA:SAP', 8, 'GOOGLE')
         self.assertEqual(type(s), str, 'test_DE_equity 8')
@@ -82,10 +82,10 @@ class Test(unittest.TestCase):
         self.assertEqual(type(s), str, 'test_DE_equity 10')
 
         s = financials.getRealtime('FRA:SAP', '11', 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_DE_equity \'11\'')
+        self.assertEqual(float, type(s), 'test_DE_equity \'11\'')
 
         s = financials.getRealtime('FRA:SAP', '21', 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_DE_equity \'21\'')
+        self.assertEqual(float, type(s), 'test_DE_equity \'21\'')
 
         s = financials.getRealtime('FRA:SAP', Datacode.TIMEZONE.value, 'GOOGLE')
         # self.assertEqual(s, 'Europe/Berlin', 'test_DE_equity TIMEZONE')
@@ -112,32 +112,32 @@ class Test(unittest.TestCase):
 
     def test_TY_equity(self):
         s = financials.getRealtime('TYO:6503', Datacode.OPEN.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_TY_equity OPEN {}'.format(s))
+        self.assertEqual(float, type(s), 'test_TY_equity OPEN {}'.format(s))
 
         s = financials.getRealtime('TYO:6503', Datacode.LOW.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_TY_equity LOW {}'.format(s))
+        self.assertEqual(float, type(s), 'test_TY_equity LOW {}'.format(s))
 
         s = financials.getRealtime('TYO:6503', Datacode.HIGH.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_TY_equity HIGH {}'.format(s))
+        self.assertEqual(float, type(s), 'test_TY_equity HIGH {}'.format(s))
 
         s = financials.getRealtime('TYO:6503', Datacode.LOW_52_WEEK.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_TY_equity LOW_52_WEEK {}'.format(s))
+        self.assertEqual(float, type(s), 'test_TY_equity LOW_52_WEEK {}'.format(s))
 
         s = financials.getRealtime('TYO:6503', Datacode.HIGH_52_WEEK.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_TY_equity HIGH_52_WEEK {}'.format(s))
+        self.assertEqual(float, type(s), 'test_TY_equity HIGH_52_WEEK {}'.format(s))
 
         s = financials.getRealtime('TYO:6503', Datacode.MARKET_CAP.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_TY_equity MARKET_CAP {}'.format(s))
+        self.assertEqual(float, type(s), 'test_TY_equity MARKET_CAP {}'.format(s))
 
         # s = financials.getRealtime('TYO:6503', Datacode.VOLUME.value, 'GOOGLE')
-        # self.assertEqual(type(s), float, 'test_TY_equity VOLUME {}'.format(s))
+        # self.assertEqual(float, type(s), 'test_TY_equity VOLUME {}'.format(s))
 
         s = financials.getRealtime('TYO:6503', Datacode.CURRENCY.value, 'GOOGLE')
         self.assertEqual(s, 'JPY', 'test_TY_equity CURRENCY')
 
     def test_US_equity(self):
         s = financials.getRealtime(' NASDAQ : AAPL ', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_US_equity LAST_PRICE {}'.format(s))
+        self.assertEqual(float, type(s), 'test_US_equity LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime(' NASDAQ : AAPL ', Datacode.TICKER.value, 'GOOGLE')
         self.assertEqual(s, 'AAPL', 'test_US_equity TICKER')
@@ -149,7 +149,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'USD', 'test_US_equity CURRENCY')
 
         s = financials.getRealtime('NYSE:IBM', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_US_equity LAST_PRICE {}'.format(s))
+        self.assertEqual(float, type(s), 'test_US_equity LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('NYSE:IBM', Datacode.TICKER.value, 'GOOGLE')
         self.assertEqual(s, 'IBM', 'test_US_equity TICKER')
@@ -165,34 +165,34 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'IBM Common Stock', 'test_US_equity NAME')
 
         s = financials.getRealtime('NYSE:IBM', Datacode.LOW.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_US_equity LOW {}'.format(s))
+        self.assertEqual(float, type(s), 'test_US_equity LOW {}'.format(s))
 
         s = financials.getRealtime('NYSE:IBM', Datacode.HIGH.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_US_equity HIGH {}'.format(s))
+        self.assertEqual(float, type(s), 'test_US_equity HIGH {}'.format(s))
 
         s = financials.getRealtime('NYSE:IBM', Datacode.LOW_52_WEEK.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_US_equity LOW_52_WEEK {}'.format(s))
+        self.assertEqual(float, type(s), 'test_US_equity LOW_52_WEEK {}'.format(s))
 
         s = financials.getRealtime('NYSE:IBM', Datacode.HIGH_52_WEEK.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_US_equity HIGH_52_WEEK {}'.format(s))
+        self.assertEqual(float, type(s), 'test_US_equity HIGH_52_WEEK {}'.format(s))
 
         s = financials.getRealtime('NYSE:IBM', Datacode.MARKET_CAP.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_US_equity MARKET_CAP {}'.format(s))
+        self.assertEqual(float, type(s), 'test_US_equity MARKET_CAP {}'.format(s))
 
         # s = financials.getRealtime('NYSE:IBM', Datacode.VOLUME.value, 'GOOGLE')
-        # self.assertEqual(type(s), float, 'test_US_equity VOLUME {}'.format(s))
+        # self.assertEqual(float, type(s), 'test_US_equity VOLUME {}'.format(s))
 
         s = financials.getRealtime('NYSE:IBM', Datacode.TIMESTAMP.value, 'GOOGLE')
         self.assertEqual(s, 'Data doesn\'t exist - 999', 'test_US_equity TIMESTAMP')
 
         s = financials.getRealtime('NYSE:IBM', Datacode.TIMEZONE.value, 'GOOGLE')
-        # self.assertEqual(s, 'America/New_York', 'test_US_equity TIMEZONE')
-        self.assertEqual(s, 'GMT-4', 'test_US_equity TIMEZONE')
-        # self.assertEqual(s, 'GMT-5', 'test_US_equity TIMEZONE')
+        # self.assertEqual('America/New_York', s, 'test_US_equity TIMEZONE')
+        self.assertEqual('GMT-4', s, 'test_US_equity TIMEZONE')
+        # self.assertEqual('GMT-5', s, 'test_US_equity TIMEZONE')
 
     def test_US_mutuals(self):
         s = financials.getRealtime('MUTF:VFIAX', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_US_mutuals LAST_PRICE - {}'.format(s))
+        self.assertEqual(float, type(s), 'test_US_mutuals LAST_PRICE - {}'.format(s))
 
         s = financials.getRealtime('MUTF:VFIAX', Datacode.CURRENCY.value, 'GOOGLE')
         self.assertEqual(s, 'USD', 'test_US_mutuals CURRENCY')
@@ -202,22 +202,22 @@ class Test(unittest.TestCase):
 
     def test_index(self):
         s = financials.getRealtime('INDEXDB:DAX', Datacode.LAST_PRICE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_index LAST_PRICE {}'.format(s))
+        self.assertEqual(float, type(s), 'test_index LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('INDEXDB:DAX', Datacode.CHANGE_IN_PERCENT.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_index CHANGE_IN_PERCENT')
+        self.assertEqual(float, type(s), 'test_index CHANGE_IN_PERCENT')
 
         s = financials.getRealtime('INDEXDB:DAX', Datacode.CHANGE.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_index CHANGE')
+        self.assertEqual(float, type(s), 'test_index CHANGE')
 
         s = financials.getRealtime('INDEXDB:DAX', Datacode.OPEN.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_index OPEN')
+        self.assertEqual(float, type(s), 'test_index OPEN')
 
         s = financials.getRealtime('INDEXDB:DAX', Datacode.LOW.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_index LOW')
+        self.assertEqual(float, type(s), 'test_index LOW')
 
         s = financials.getRealtime('INDEXDB:DAX', Datacode.HIGH.value, 'GOOGLE')
-        self.assertEqual(type(s), float, 'test_index HIGH')
+        self.assertEqual(float, type(s), 'test_index HIGH')
 
     def test_errors(self):
         s = financials.getRealtime(None, Datacode.LAST_PRICE.value, 'GOOGLE')
