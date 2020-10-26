@@ -117,7 +117,7 @@ class FT(BaseClient):
         tick[Datacode.PAYOUT_RATIO] = None
 
         try:
-            r = '<div class="mod-tearsheet-overview__header"><h1 [^>]*>(.*?)</h1>'
+            r = '<h1 class="mod-tearsheet-overview__header__name mod-tearsheet-overview__header__name--large">(.*?)</h1>'
             match = re.compile(r, flags=re.DOTALL).search(text)
             if not match:
                 return None
