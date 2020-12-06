@@ -8,23 +8,44 @@
 #  version 3 of the License, or (at your option) any later version.
 
 import datetime
-import dateutil.parser
 import inspect
+import locale
+import logging
 import os
-import sys
-
 import pathlib
 import platform
+import sys
 import time
 from functools import wraps
+from importlib import util
 
+import dateutil.parser
 import unohelper
 from com.financials.getinfo import Financials
+
+basedir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
+os.makedirs(basedir, exist_ok=True)
+
+logging.basicConfig(
+    handlers=[logging.FileHandler(filename=os.path.join(basedir, 'extension.log'), encoding='utf-8', mode='a+')],
+    format="%(asctime)s %(name)s %(levelname)s %(message)s",
+    level=logging.WARN)
 
 # Add current directory to import path
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
+
+dateutil_missing = util.find_spec("dateutil") is None
+pyparsing_missing = util.find_spec("pyparsing") is None
+pytz_missing = util.find_spec("pytz") is None
+
+if dateutil_missing or pyparsing_missing or pytz_missing:
+    msg = ''
+    msg += ' dateutil' if dateutil_missing else ''
+    msg += ' pyparsing' if pyparsing_missing else ''
+    msg += ' pytz' if pytz_missing else ''
+    raise Exception("THIS EXTENSION NEEDS THE FOLLOWING PYTHON 3 LIBRARIES INSTALLED:" + msg)
 
 from datacode import Datacode
 import google
@@ -35,9 +56,6 @@ from version import version
 implementation_name = "com.financials.getinfo.python.FinancialsImpl"  # as defined in Financials.xcu
 implementation_services = ("com.sun.star.sheet.AddIn",)
 
-basedir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
-os.makedirs(basedir, exist_ok=True)
-
 
 def profile(fn):
     @wraps(fn)
@@ -46,7 +64,7 @@ def profile(fn):
         r = fn(*args, **kwargs)
         elapsed = time.perf_counter() - start
 
-        with open(os.path.join(basedir, 'trace.log'), "a+") as text_file:
+        with open(os.path.join(basedir, 'trace.log'), "a+", encoding="utf-8") as text_file:
             print(
                 f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')} {fn.__name__} *args={args[1:]} r='{r}' {(1000 * elapsed):.3f} ms",
                 file=text_file)
@@ -200,7 +218,7 @@ class FinancialsImpl(unohelper.Base, Financials):
     @profile
     def support(self, datacode):
 
-        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}'.format(
+        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}\nlocale={}'.format(
             self.ctx,
             id(self),
             version,
@@ -210,7 +228,8 @@ class FinancialsImpl(unohelper.Base, Financials):
             ' '.join(platform.uname()),
             os.getpid(),
             sys.executable,
-            sys.version.replace("\n", " "))
+            sys.version.replace("\n", " "),
+            locale.getlocale())
 
         if datacode:
             s = '{}\ntype(datacode)={}\nstr(datacode)={}'.format(

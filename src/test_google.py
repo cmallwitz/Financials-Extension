@@ -12,12 +12,12 @@ import logging
 import sys
 import unittest
 
+logging.basicConfig(level=logging.ERROR, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+
 import financials
 from datacode import Datacode
 
 financials = financials.createInstance(None)
-
-logging.basicConfig(level=logging.ERROR)
 
 
 class Test(unittest.TestCase):
@@ -187,8 +187,8 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('NYSE:IBM', Datacode.TIMEZONE.value, 'GOOGLE')
         # self.assertEqual('America/New_York', s, 'test_US_equity TIMEZONE')
-        self.assertEqual('GMT-4', s, 'test_US_equity TIMEZONE')
-        # self.assertEqual('GMT-5', s, 'test_US_equity TIMEZONE')
+        # self.assertEqual('GMT-4', s, 'test_US_equity TIMEZONE')
+        self.assertEqual('GMT-5', s, 'test_US_equity TIMEZONE')
 
     def test_US_mutuals(self):
         s = financials.getRealtime('MUTF:VFIAX', Datacode.LAST_PRICE.value, 'GOOGLE')

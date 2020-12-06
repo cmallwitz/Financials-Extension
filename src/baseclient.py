@@ -15,15 +15,15 @@ import os
 import pathlib
 import random
 import select
-
-from http.client import HTTPConnection, HTTPSConnection, HTTPException
-from http import cookiejar
-
 import urllib.request
+from http import cookiejar
+from http.client import HTTPConnection, HTTPSConnection, HTTPException
 
 from datacode import Datacode
 
 logger = logging.getLogger(__name__)
+
+
 # logger.setLevel(logging.DEBUG)
 
 
@@ -57,13 +57,17 @@ class BaseClient:
             'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0',
             'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:79.0) Gecko/20100101 Firefox/79.0',
             'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:81.0) Gecko/20100101 Firefox/81.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:83.0) Gecko/20100101 Firefox/83.0',
 
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36',
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36',
             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4104.0 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4149.0 Safari/537.36'
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4149.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
         ]
 
         self.default_headers = {
@@ -104,7 +108,7 @@ class BaseClient:
             connection = HTTPConnection(host, **kwargs) if scheme == 'http:' else HTTPSConnection(host, **kwargs)
 
         logger.debug('Creating request -----------------------------------------------------')
-        logger.info('url=%s', url)
+        logger.info("url='%s'", url)
 
         self.last_url = url
 
@@ -161,7 +165,8 @@ class BaseClient:
                             scheme, _, host, path = url.split('/', 3)
                             location = '{}//{}{}'.format(scheme, host, location)
 
-                        self.response = self.request('POST' if data else 'GET', location, data, headers, cookies, **kwargs)
+                        self.response = self.request('POST' if data else 'GET', location, data, headers, cookies,
+                                                     **kwargs)
                         text = self.response.read()
                     else:
                         raise RedirectException(location)

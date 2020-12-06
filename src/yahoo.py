@@ -10,24 +10,25 @@
 
 import csv
 import datetime
-import dateutil.parser
 import html
 import logging
 import os
 import pprint
-import pytz
 import re
 import time
-import traceback
 import urllib.parse
-
-from datacode import Datacode
-from baseclient import BaseClient, HttpException
 from http import cookiejar
-import jsonParser
 
+import dateutil.parser
+import pytz
+
+import jsonParser
+from baseclient import BaseClient, HttpException
+from datacode import Datacode
 
 logger = logging.getLogger(__name__)
+
+
 # logger.setLevel(logging.DEBUG)
 
 
@@ -65,7 +66,7 @@ class Yahoo(BaseClient):
         if not os.path.isfile(fn):
             return
 
-        with open(fn, newline='') as csvfile:
+        with open(fn, newline='', encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile)
 
             ticks = {}
@@ -113,7 +114,7 @@ class Yahoo(BaseClient):
         cookies = [cookiejar.Cookie(version=0,
                                     name="B",
                                     value="7pbfivtfkl00m&b=3&s=if",
-                                    port=None, port_specified=None,
+                                    port=None, port_specified=False,
                                     domain=".yahoo.com", domain_specified=True, domain_initial_dot=True,
                                     path="/", path_specified=True,
                                     secure=True,
@@ -121,16 +122,20 @@ class Yahoo(BaseClient):
                                     discard=False,
                                     comment=None,
                                     comment_url=None,
-                                    rest=None)
+                                    rest=dict())
                    ]
 
         try:
             text = self.urlopen(url, redirect=True, data=None, headers=None, cookies=cookies)
-            with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w") as text_file:
+        except BaseException as e:
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            return 'Yahoo.getRealtime({}, {}) - urlopen: {}'.format(ticker, datacode, e)
+
+        try:
+            with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w", encoding="utf-8") as text_file:
                 print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException as e:
-            logger.error(traceback.format_exc())
-            return 'Yahoo.getRealtime({}, {}) - urlopen: {}'.format(ticker, datacode, e)
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
 
         try:
             text = urllib.parse.unquote(text)
@@ -144,7 +149,7 @@ class Yahoo(BaseClient):
                 self.crumb = match.group(1)
 
         except BaseException as e:
-            logger.error(traceback.format_exc())
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             return 'Yahoo.getRealtime({}, {}) - crumb: {}'.format(ticker, datacode, e)
 
         try:
@@ -160,10 +165,10 @@ class Yahoo(BaseClient):
                 return None
 
         except BaseException as e:
-            logger.error(traceback.format_exc())
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             return 'Yahoo.getRealtime({}, {}) - parsing: {}'.format(ticker, datacode, e)
 
-        with open(os.path.join(self.basedir, 'yahoo-{}.js'.format(ticker)), "w") as text_file:
+        with open(os.path.join(self.basedir, 'yahoo-{}.js'.format(ticker)), "w", encoding="utf-8") as text_file:
             print(f"// '{url}' QuoteSummaryStore:\n", file=text_file)
             pprint.pprint(results.asList(), stream=text_file)
 
@@ -196,7 +201,8 @@ class Yahoo(BaseClient):
             tick[Datacode.PE_RATIO] = float(raw(summaryDetail, 'trailingPE'))
             tick[Datacode.DIV] = float(raw(summaryDetail, 'dividendRate'))
             tick[Datacode.DIV_YIELD] = float(raw(summaryDetail, 'dividendYield'))
-            tick[Datacode.EX_DIV_DATE] = self.save_wrapper(lambda: dateutil.parser.parse(str(fmt(summaryDetail, 'exDividendDate'))).date())
+            tick[Datacode.EX_DIV_DATE] = self.save_wrapper(
+                lambda: dateutil.parser.parse(str(fmt(summaryDetail, 'exDividendDate'))).date())
             tick[Datacode.PAYOUT_RATIO] = float(raw(summaryDetail, 'payoutRatio'))
             tick[Datacode.LOW_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekLow'))
             tick[Datacode.HIGH_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekHigh'))
@@ -227,7 +233,7 @@ class Yahoo(BaseClient):
                 tick[Datacode.NAME] = tick[Datacode.TICKER]
 
         except BaseException as e:
-            logger.error(traceback.format_exc())
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             return 'Yahoo.getRealtime({}, {}) - process: {}'.format(ticker, datacode, e)
 
         tick[Datacode.SECTOR] = self.save_wrapper(lambda: str(results['summaryProfile']['sector']))
@@ -297,7 +303,7 @@ class Yahoo(BaseClient):
             t1 = t1 - 2682000  # pad with extra month
 
         except BaseException as e:
-            logger.error(traceback.format_exc())
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             return 'Yahoo.getHistoric({}, {}, {}) - date: {}'.format(ticker, datacode, date, e)
 
         try:
@@ -308,18 +314,18 @@ class Yahoo(BaseClient):
 
             text = self.urlopen(url)
 
-            with open(os.path.join(self.basedir, 'yahoo-{}.csv'.format(ticker)), "w") as csv_file:
+            with open(os.path.join(self.basedir, 'yahoo-{}.csv'.format(ticker)), "w", encoding="utf-8") as csv_file:
                 print(text, file=csv_file)
 
             self._read_ticker_csv_file(ticker)
 
         except HttpException:
-            logger.error(traceback.format_exc())
+            logger.exception("HttpException ticker=%s datacode=%s date=%s", ticker, datacode, date)
             return None
 
         except BaseException as e:
-            logger.error(traceback.format_exc())
-            return 'Yahoo.getHistoric({}, {}, {}) - read: {}'.format(ticker, datacode, date, e)
+            logger.exception("BaseException ticker=%s datacode=%s date=%s", ticker, datacode, date)
+            return 'Yahoo.getHistoric({}, {}, {}) - urlopen: {}'.format(ticker, datacode, date, e)
 
         try:
             if ticker in self.historicdata:
@@ -336,7 +342,7 @@ class Yahoo(BaseClient):
                 return 'Not a trading day \'{}\''.format(date)
 
         except BaseException as e:
-            logger.error(traceback.format_exc())
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             return 'Yahoo.getHistoric({}, {}, {}) - process: {}'.format(ticker, datacode, date, e)
 
         return None

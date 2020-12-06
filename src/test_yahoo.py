@@ -14,13 +14,13 @@ import pathlib
 import sys
 import unittest
 
+logging.basicConfig(level=logging.ERROR, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+
 import financials
 from datacode import Datacode
 import testutils
 
 financials = financials.createInstance(None)
-
-logging.basicConfig(level=logging.ERROR)
 
 
 class Test(unittest.TestCase):
@@ -106,6 +106,9 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('IBM', Datacode.PAYOUT_RATIO.value, 'YAHOO')
         self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity PAYOUT_RATIO {}'.format(s))
 
+        s = financials.getRealtime('IBM', Datacode.EXCHANGE.value, 'YAHOO')
+        self.assertEqual(s, 'NYQ', 'test_realtime_US_equity EXCHANGE')
+
     def test_realtime_US_mutuals(self):
 
         s = financials.getRealtime('VGSLX', Datacode.LAST_PRICE.value, 'YAHOO')
@@ -133,9 +136,6 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'iShares VII Public Limited Company - iShares Core S&P 500 UCITS ETF',
                          'test_realtime_UK_ETF NAME {}'.format(s))
 
-        s = financials.getRealtime('C060.DE', Datacode.NAME.value, 'YAHOO')
-        self.assertEqual(str, type(s), 't_realtime_UK_ETF NAME {}'.format(s))
-
     def test_realtime_DE_equity(self):
 
         s = financials.getRealtime('SAP.DE', Datacode.LAST_PRICE.value, 'YAHOO')
@@ -152,7 +152,13 @@ class Test(unittest.TestCase):
         self.assertEqual(str, type(s), 'test_realtime_DE_equity INDUSTRY {}'.format(s))
         self.assertEqual(s, 'Software—Application', 'test_realtime_DE_equity INDUSTRY {}'.format(s))
 
-    def test_TY_equity(self):
+        s = financials.getRealtime('C060.DE', Datacode.NAME.value, 'YAHOO')
+        self.assertEqual(str, type(s), 'test_realtime_DE_equity NAME {}'.format(s))
+
+        s = financials.getRealtime('C060.DE', Datacode.EXCHANGE.value, 'YAHOO')
+        self.assertEqual(s, 'GER', 'test_realtime_DE_equity EXCHANGE')
+
+    def test_realtime_TY_equity(self):
         s = financials.getRealtime('6503.T', Datacode.OPEN.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_TY_equity OPEN {}'.format(s))
 
@@ -218,7 +224,7 @@ class Test(unittest.TestCase):
 
         # Note: quarterly dividend and splits will change past adjusted prices - will fail after the next dividend
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(141.637695, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(139.61322, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 
@@ -232,7 +238,7 @@ class Test(unittest.TestCase):
         financials.yahoo.historicdata = {}
 
         #  Inception Date 2014-09-30
-        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2018-04-02', 'YAHOO') # Easter Monday
+        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2018-04-02', 'YAHOO')  # Easter Monday
         self.assertEqual(s, 'Not a trading day \'2018-04-02\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         #  Inception Date 2014-09-30
@@ -305,7 +311,8 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'Date format not supported: \'abcdef\'', 'test_historic_errors CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, True, 'YAHOO')
-        self.assertEqual(s, 'Date type not supported: <class \'bool\'> \'True\'', 'test_historic_errors CLOSE {}'.format(s))
+        self.assertEqual(s, 'Date type not supported: <class \'bool\'> \'True\'',
+                         'test_historic_errors CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, -1000000, 'YAHOO')
         self.assertEqual(s, 'Date format not supported: -1000000', 'test_historic_errors CLOSE {}'.format(s))

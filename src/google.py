@@ -8,14 +8,14 @@
 #  version 3 of the License, or (at your option) any later version.
 
 
-import dateutil
 import html
 import logging
 import os
 import re
 import time
-import traceback
 import xml.etree.ElementTree as ET
+
+import dateutil
 
 from baseclient import BaseClient, RedirectException
 from datacode import Datacode
@@ -81,7 +81,7 @@ class Google(BaseClient):
             except RedirectException as e:
                 self.location = e.location.replace('&' + q_param, '')
             except BaseException as e:
-                logger.error(traceback.format_exc())
+                logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
                 return 'Google.getRealtime(\'{}\', {}) - location: {}'.format(ticker, datacode, e)
 
         if not self.location:
@@ -91,11 +91,15 @@ class Google(BaseClient):
 
         try:
             text = self.urlopen(url)
-            with open(os.path.join(self.basedir, 'google-{}.html'.format(ticker)), "w") as text_file:
+        except BaseException as e:
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            return 'Google.getRealtime(\'{}\', {}) - urlopen: {} {}'.format(ticker, datacode, e, url)
+
+        try:
+            with open(os.path.join(self.basedir, 'google-{}.html'.format(ticker)), "w", encoding="utf-8") as text_file:
                 print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException as e:
-            logger.error(traceback.format_exc())
-            return 'Google.getRealtime(\'{}\', {}) - urlopen: {} {}'.format(ticker, datacode, e, url)
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
 
         if ticker not in self.realtime:
             self.realtime[ticker] = {}
@@ -252,7 +256,7 @@ class Google(BaseClient):
             logger.info(tick)
 
         except BaseException as e:
-            logger.warning(traceback.format_exc())
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             return 'Google.getRealtime({}, {}) - process: {}'.format(ticker, datacode, e)
 
         return self._return_value(self.realtime[ticker], datacode)

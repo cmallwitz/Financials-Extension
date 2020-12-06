@@ -7,13 +7,13 @@
 #  License as published by the Free Software Foundation; either
 #  version 3 of the License, or (at your option) any later version.
 
-import dateutil.parser
 import html
 import logging
 import os
 import re
 import time
-import traceback
+
+import dateutil.parser
 
 import jsonParser
 from baseclient import BaseClient
@@ -21,6 +21,8 @@ from datacode import Datacode
 from tz import whois_timezone_info
 
 logger = logging.getLogger(__name__)
+
+
 # logger.setLevel(logging.DEBUG)
 
 
@@ -79,11 +81,15 @@ class FT(BaseClient):
 
         try:
             text = self.urlopen(url, redirect=True, data=None, headers=None)
-            with open(os.path.join(self.basedir, f'ft-{ticker}.html'), "w") as text_file:
+        except BaseException as e:
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            return f'FT.getRealtime({ticker}, {datacode}) - urlopen endpoint: {str(e)}'
+
+        try:
+            with open(os.path.join(self.basedir, f'ft-{ticker}.html'), "w", encoding="utf-8") as text_file:
                 print(f"<!-- '{self.last_url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException as e:
-            logger.error(traceback.format_exc())
-            return f'FT.getRealtime({ticker}, {datacode}) - urlopen endpoint: {str(e)}'
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
 
         tick[Datacode.TIMESTAMP] = time.time()
 
@@ -298,7 +304,7 @@ class FT(BaseClient):
                     pass
 
         except BaseException as e:
-            logger.error(traceback.format_exc())
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             return f'FT.getRealtime({ticker}, {datacode}) - process: {str(e)}'
 
         logger.info(tick)
