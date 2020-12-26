@@ -1,4 +1,4 @@
-#  google.py
+#  financials_google.py
 #
 #  license: GNU LGPL
 #

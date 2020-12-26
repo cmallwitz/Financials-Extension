@@ -48,9 +48,9 @@ if dateutil_missing or pyparsing_missing or pytz_missing:
     raise Exception("THIS EXTENSION NEEDS THE FOLLOWING PYTHON 3 LIBRARIES INSTALLED:" + msg)
 
 from datacode import Datacode
-import google
-import yahoo
-import ft
+import financials_google as google
+import financials_yahoo as yahoo
+import financials_ft as ft
 from version import version
 
 implementation_name = "com.financials.getinfo.python.FinancialsImpl"  # as defined in Financials.xcu

@@ -1,4 +1,4 @@
-#  ft.py
+#  financials_ft.py
 #
 #  license: GNU LGPL
 #

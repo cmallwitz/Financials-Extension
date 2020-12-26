@@ -1,4 +1,4 @@
-#  yahoo.py
+#  financials_yahoo.py
 #
 #  license: GNU LGPL
 #

@@ -4,6 +4,10 @@ This is a Python based extension for LibreOffice Calc to make stock market, inde
 spreadsheets - currently supporting Yahoo's, Financial Times' and Google's (without FX data) finance websites 
 using old-fashioned web scraping.
 
+### Feedback requested:
+
+Please provide about using the extension here: https://github.com/cmallwitz/Financials-Extension/issues/10
+
 ### System requirements:
 
 This extension requires the following Python 3 packages (on top of standard libs): dateutil, pytz, pyparsing. These are 
@@ -31,7 +35,7 @@ Getting data should be a simple as having this in a cell:
 - `=GETHISTORIC("IBM",90,"2020-12-01","YAHOO")`
 
 Codes 21 and 90 stand for "last price" and "close" (see below), respectively. 
-Only Yahoo ahs historic data available.
+Only Yahoo has historic data available.
 
 There is a file **examples.ods** there too with usage examples and possible arguments to functions.
 
