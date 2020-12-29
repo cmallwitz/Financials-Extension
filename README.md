@@ -6,7 +6,7 @@ using old-fashioned web scraping.
 
 ### Feedback requested:
 
-Please provide about using the extension here: https://github.com/cmallwitz/Financials-Extension/issues/10
+Please provide feedback about using the extension here: https://github.com/cmallwitz/Financials-Extension/issues/10
 
 ### System requirements:
 
