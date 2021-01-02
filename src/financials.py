@@ -19,7 +19,6 @@ import time
 from functools import wraps
 from importlib import util
 
-import dateutil.parser
 import unohelper
 from com.financials.getinfo import Financials
 
@@ -46,6 +45,8 @@ if dateutil_missing or pyparsing_missing or pytz_missing:
     msg += ' pyparsing' if pyparsing_missing else ''
     msg += ' pytz' if pytz_missing else ''
     raise Exception("THIS EXTENSION NEEDS THE FOLLOWING PYTHON 3 LIBRARIES INSTALLED:" + msg)
+
+import dateutil.parser
 
 from datacode import Datacode
 import financials_google as google
@@ -181,7 +182,7 @@ class FinancialsImpl(unohelper.Base, Financials):
 
                 try:
                     offset = int(date)  # offset for 1899-12-30
-                    d = dateutil.parser.parse('1899-12-30') + datetime.timedelta(days=offset)
+                    d = dateutil.parser.parse('1899-12-30', yearfirst=True, dayfirst=False) + datetime.timedelta(days=offset)
                     d = d.date().isoformat()
                 except:
                     return 'Date format not supported: {}'.format(date)
@@ -190,7 +191,7 @@ class FinancialsImpl(unohelper.Base, Financials):
             elif type(date) == str:
 
                 try:
-                    int(dateutil.parser.parse(date).strftime('%s'))
+                    int(dateutil.parser.parse(date, yearfirst=True, dayfirst=False).timestamp())
                 except:
                     return 'Date format not supported: \'{}\''.format(date)
 
@@ -218,7 +219,7 @@ class FinancialsImpl(unohelper.Base, Financials):
     @profile
     def support(self, datacode):
 
-        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}\nlocale={}'.format(
+        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}\nlocale={}\ndefaultlocale={}'.format(
             self.ctx,
             id(self),
             version,
@@ -229,7 +230,8 @@ class FinancialsImpl(unohelper.Base, Financials):
             os.getpid(),
             sys.executable,
             sys.version.replace("\n", " "),
-            locale.getlocale())
+            locale.getlocale(),
+            locale.getdefaultlocale())
 
         if datacode:
             s = '{}\ntype(datacode)={}\nstr(datacode)={}'.format(

@@ -202,7 +202,7 @@ class Yahoo(BaseClient):
             tick[Datacode.DIV] = float(raw(summaryDetail, 'dividendRate'))
             tick[Datacode.DIV_YIELD] = float(raw(summaryDetail, 'dividendYield'))
             tick[Datacode.EX_DIV_DATE] = self.save_wrapper(
-                lambda: dateutil.parser.parse(str(fmt(summaryDetail, 'exDividendDate'))).date())
+                lambda: dateutil.parser.parse(str(fmt(summaryDetail, 'exDividendDate')), yearfirst=True, dayfirst=False).date())
             tick[Datacode.PAYOUT_RATIO] = float(raw(summaryDetail, 'payoutRatio'))
             tick[Datacode.LOW_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekLow'))
             tick[Datacode.HIGH_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekHigh'))
@@ -262,6 +262,12 @@ class Yahoo(BaseClient):
         if Datacode.ADJ_CLOSE != datacode and ticker not in self.historicdata:
             self._read_ticker_csv_file(ticker)
 
+        try:
+            date_as_dt = dateutil.parser.parse(date, yearfirst=True, dayfirst=False)
+        except BaseException as e:
+            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            return 'Yahoo.getHistoric({}, {}, {}) - date_as_dt: {}'.format(ticker, datacode, date, e)
+
         if ticker in self.historicdata:
             ticks = self.historicdata[ticker]
 
@@ -274,12 +280,12 @@ class Yahoo(BaseClient):
 
             # (potentially) future date
             if date > max(ticks):
-                t1 = int(dateutil.parser.parse(date).strftime('%s'))
+                t1 = int(date_as_dt.timestamp())
                 t2 = int(time.time())
                 if t1 > t2:
                     return 'Future date \'{}\''.format(date)
 
-                min_tick_date = int(dateutil.parser.parse(min(ticks)).strftime('%s'))  # remember current earliest date
+                min_tick_date = int(dateutil.parser.parse(min(ticks), yearfirst=True, dayfirst=False).timestamp())  # remember current earliest date
 
         if not self.crumb:
             self.getRealtime(ticker, datacode)
@@ -288,7 +294,7 @@ class Yahoo(BaseClient):
             return 'Yahoo.getHistoric({}, {}, {}) - crumb'.format(ticker, datacode, date)
 
         try:
-            t1 = int(dateutil.parser.parse(date).strftime('%s'))
+            t1 = int(date_as_dt.timestamp())
             t2 = int(time.time())
 
             if min_tick_date:
@@ -297,7 +303,7 @@ class Yahoo(BaseClient):
             if t1 >= t2:
                 return 'Future date \'{}\''.format(date)
 
-            if t1 < int(dateutil.parser.parse('2000-01-01').strftime('%s')):
+            if t1 < int(dateutil.parser.parse('2000-01-01', yearfirst=True, dayfirst=False).timestamp()):
                 return 'Date before 2000 \'{}\''.format(date)
 
             t1 = t1 - 2682000  # pad with extra month

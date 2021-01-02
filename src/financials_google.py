@@ -200,7 +200,7 @@ class Google(BaseClient):
             try:
                 value = html.unescape(header.find('./div[1]/span[1]/span[2]').text).replace('·', '').strip()
                 logger.debug(value)
-                dt = dateutil.parser.parse(value, tzinfos=whois_timezone_info)
+                dt = dateutil.parser.parse(value, yearfirst=True, dayfirst=False, tzinfos=whois_timezone_info)
                 tick[Datacode.LAST_PRICE_DATE] = dt.date()
                 tick[Datacode.LAST_PRICE_TIME] = dt.time()
 

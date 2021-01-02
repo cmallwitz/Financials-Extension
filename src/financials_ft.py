@@ -197,7 +197,7 @@ class FT(BaseClient):
 
                 try:
                     value = html.unescape(match.group(1)).strip()
-                    dt = dateutil.parser.parse(value, tzinfos=whois_timezone_info)
+                    dt = dateutil.parser.parse(value, yearfirst=True, dayfirst=False, tzinfos=whois_timezone_info)
                     tick[Datacode.LAST_PRICE_DATE] = dt.date()
                     tick[Datacode.LAST_PRICE_TIME] = dt.time()
 
@@ -298,7 +298,7 @@ class FT(BaseClient):
             if match:
                 try:
                     value = html.unescape(match.group(1)).strip()
-                    dt = dateutil.parser.parse(value, tzinfos=whois_timezone_info)
+                    dt = dateutil.parser.parse(value, yearfirst=True, dayfirst=False, tzinfos=whois_timezone_info)
                     tick[Datacode.EX_DIV_DATE] = dt.date()
                 except BaseException as e:
                     pass

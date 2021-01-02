@@ -19,13 +19,23 @@ On Ubuntu 18 and 20, dateutil and pytz may already be installed, but you can get
 
 On Debian 10, the following steps have worked for me (as root)
 - apt install python3-pip
-- pip3 install python-dateutil
-- pip3 install pytz
-- pip3 install pyparsing
+- pip3 install python-dateutil pytz pyparsing
+
+Users on Windows 10 have reported this to work - as LibreOffice on Windows ships with its own, but minimal 
+Python runtime a few more steps are required
+- Download the script https://bootstrap.pypa.io/get-pip.py to your computer
+- Start a Command Propmpt (CMD) as Administrator
+- on this command prompt run (change path as required)
+  
+  "c:\Program Files\LibreOffice\program\python.exe" c:\temp\get-pip.py
+
+- and then
+
+   "c:\Program Files\LibreOffice\program\python.exe" -m pip install python-dateutil pytz pyparsing
 
 ### Usage:
 
-Have a look at the 'releases' tab on GitHub and download a prebuilt **Financials-Extension.oxt** file and load it into Calc 
+Under 'Releases' on GitHub there is downloadable **Financials-Extension.oxt** file - load it into Calc 
 under menu item: Tools, Extension Manager...
 
 Getting data should be a simple as having this in a cell: 
@@ -104,9 +114,7 @@ On my system (Ubuntu) I installed packages: libreoffice-dev libreoffice-java-com
 
 cd ~/tech/IdeaProjects/Financials-Extension/
 
-python3 src/test_yahoo.py
-
-python3 src/test_google.py
+python3 -m unittest discover src
 
 \# This builds file **Financials-Extension.oxt**
 
