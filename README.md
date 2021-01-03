@@ -24,7 +24,7 @@ On Debian 10, the following steps have worked for me (as root)
 Users on Windows 10 have reported this to work - as LibreOffice on Windows ships with its own, but minimal 
 Python runtime a few more steps are required
 - Download the script https://bootstrap.pypa.io/get-pip.py to your computer
-- Start a Command Propmpt (CMD) as Administrator
+- Start a Command Prompt (CMD) as Administrator
 - on this command prompt run (change path as required)
   
   "c:\Program Files\LibreOffice\program\python.exe" c:\temp\get-pip.py
