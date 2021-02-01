@@ -222,9 +222,16 @@ class Yahoo(BaseClient):
                 tick[Datacode.LAST_PRICE_DATE] = dt.date()
                 tick[Datacode.LAST_PRICE_TIME] = dt.time()
 
-            tick[Datacode.TICKER] = str(price['symbol'])
-            tick[Datacode.EXCHANGE] = str(price['exchange'])
-            tick[Datacode.CURRENCY] = str(price['currency'])
+            tick[Datacode.TICKER] = self.save_wrapper(lambda: str(price['symbol']))
+            tick[Datacode.EXCHANGE] = self.save_wrapper(lambda: str(price['exchange']))
+            tick[Datacode.CURRENCY] = self.save_wrapper(lambda: str(price['currency']))
+
+            # some Moscow symbols miss currency in data block but show it in text e.g. VTBBA.ME, TBIOA.ME
+            if not tick[Datacode.CURRENCY]:
+                r = r'Currency in ([A-Z]{3})\b'
+                match = re.compile(r, flags=re.DOTALL).search(text)
+                if match:
+                    tick[Datacode.CURRENCY] = match.group(1)
 
             name = price['longName'] or price['shortName']
             if name:

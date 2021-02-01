@@ -56,6 +56,14 @@ assets in other regions, drop me a line (best to include full URLs and possibly 
 site for comparison). While data for last price is most likely consistent across sites, they may differ for other data 
 points.     
 
+### LibreOffice: using , (comma) vs ; (semicolon) to separate arguments in formula
+
+There is a setting in "Tools" / "Options..." / "LibreOffice Calc" / "Formula" called "Functions". Here the user can specify the character used to separate arguments in formula.
+
+Mine is set to , (comma) - when I enter ; (semicolon) in a formula (Ubuntu / UK English), no error is reported but the semicolon is converted to , (comma)
+
+Depending on your system's language and default LibreOffice settings, you maybe better off using ; instead of , in your formulas.
+
 ### List of supported data points
 
 You can either specify numbers or names (lower or upper case) - not all bits are available from all sources and they are not necessarily consistent across sources either.
