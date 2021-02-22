@@ -24,6 +24,11 @@ class Datacode(Enum):
 
     LAST_PRICE = 21
 
+    BID = 22
+    ASK = 25
+    BIDSIZE = 30
+    ASKSIZE = 31
+
     HIGH_52_WEEK = 24
     LOW_52_WEEK = 26
     MARKET_CAP = 27
@@ -38,6 +43,7 @@ class Datacode(Enum):
     DIV_YIELD = 71
     EX_DIV_DATE = 72
     PAYOUT_RATIO = 73
+    EXPIRY_DATE = 74
 
     CLOSE = 90
     ADJ_CLOSE = 91

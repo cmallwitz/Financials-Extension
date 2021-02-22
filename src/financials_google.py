@@ -102,33 +102,11 @@ class Google(BaseClient):
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
 
         if ticker not in self.realtime:
-            self.realtime[ticker] = {}
+            self.realtime[ticker] =  self.get_ticker()
 
         tick = self.realtime[ticker]
 
         tick[Datacode.TIMESTAMP] = time.time()
-
-        tick[Datacode.NAME] = None
-        tick[Datacode.TICKER] = None
-        tick[Datacode.CURRENCY] = None
-        tick[Datacode.LAST_PRICE] = None
-        tick[Datacode.CHANGE] = None
-        tick[Datacode.CHANGE_IN_PERCENT] = None
-        tick[Datacode.VOLUME] = None
-        tick[Datacode.LOW_52_WEEK] = None
-        tick[Datacode.HIGH_52_WEEK] = None
-        tick[Datacode.LAST_PRICE_DATE] = None
-        tick[Datacode.LAST_PRICE_TIME] = None
-        tick[Datacode.TIMEZONE] = None
-
-        tick[Datacode.OPEN] = None
-        tick[Datacode.HIGH] = None
-        tick[Datacode.LOW] = None
-        tick[Datacode.PREV_CLOSE] = None
-        tick[Datacode.MARKET_CAP] = None
-
-        tick[Datacode.EXCHANGE] = None
-        tick[Datacode.AVG_DAILY_VOL_3MONTH] = None
 
         try:
             r = '<span[^>]+role="heading"[^>]+>(.*?)</span>'

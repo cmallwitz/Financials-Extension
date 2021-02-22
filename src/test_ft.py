@@ -134,13 +134,30 @@ class Test(unittest.TestCase):
         self.assertEqual('iShares Core S&P 500 UCITS ETF USD (Acc)', s, 'test_UK_ETF NAME {}'.format(s))
 
         s = financials.getRealtime('C060:GER:EUR', 'NAME', 'FT')
-        self.assertEqual(str, type(s), 't_UK_ETF NAME {}'.format(s))
+        self.assertEqual(str, type(s), 'test_UK_ETF NAME {}'.format(s))
 
         s = financials.getRealtime('VERX:LSE:GBP', 'LAST_PRICE', 'FT')
         self.assertEqual(float, type(s), 'test_UK_ETF LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('VERX:LSE:GBP', 'TIMEZONE', 'FT')
         self.assertEqual(str, type(s), 'test_UK_ETF TIMEZONE {}'.format(s))
+
+    def test_UK_equity(self):
+        s = financials.getRealtime('VOD:LSE', 'NAME', 'FT')
+        self.assertEqual(str, type(s), 'test_UK_equity NAME {}'.format(s))
+        self.assertEqual('Vodafone Group PLC', s, 'test_UK_ETF NAME {}'.format(s))
+
+        s = financials.getRealtime('VOD:LSE', 'BID', 'FT')
+        self.assertEqual(float, type(s), 'test_UK_equity BID {}'.format(s))
+
+        s = financials.getRealtime('VOD:LSE', 'ASK', 'FT')
+        self.assertEqual(float, type(s), 'test_UK_equity ASK {}'.format(s))
+
+        s = financials.getRealtime('VOD:LSE', 'LAST_PRICE', 'FT')
+        self.assertEqual(float, type(s), 'test_UK_equity LAST_PRICE {}'.format(s))
+
+        s = financials.getRealtime('VOD:LSE', 'TIMEZONE', 'FT')
+        self.assertEqual(str, type(s), 'test_UK_equity TIMEZONE {}'.format(s))
 
     def test_DE_equity(self):
         s = financials.getRealtime('SAPX:GER', 'NAME', 'FT')
@@ -269,6 +286,42 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('6503:TYO', 'INDUSTRY', 'FT')
         self.assertEqual(str, type(s), 'test_TY_equity INDUSTRY {}'.format(s))
         self.assertEqual('General Industrials', s, 'test_TY_equity INDUSTRY {}'.format(s))
+
+    def test_TLV_equity(self):
+        s = financials.getRealtime('DELT:TLV', 'LAST_PRICE', 'FT')
+        self.assertEqual(float, type(s), 'test_TlV_equity LAST_PRICE {}'.format(s))
+
+        s = financials.getRealtime('DELT:TLV', 'OPEN', 'FT')
+        self.assertEqual(float, type(s), 'test_TlV_equity OPEN {}'.format(s))
+
+        s = financials.getRealtime('DELT:TLV', 'LOW', 'FT')
+        self.assertEqual(float, type(s), 'test_TlV_equity LOW {}'.format(s))
+
+        s = financials.getRealtime('DELT:TLV', 'HIGH', 'FT')
+        self.assertEqual(float, type(s), 'test_TlV_equity HIGH {}'.format(s))
+
+        s = financials.getRealtime('DELT:TLV', 'LOW_52_WEEK', 'FT')
+        self.assertEqual(float, type(s), 'test_TlV_equity LOW_52_WEEK {}'.format(s))
+
+        s = financials.getRealtime('DELT:TLV', 'HIGH_52_WEEK', 'FT')
+        self.assertEqual(float, type(s), 'test_TlV_equity HIGH_52_WEEK {}'.format(s))
+
+        s = financials.getRealtime('DELT:TLV', 'MARKET_CAP', 'FT')
+        self.assertEqual(float, type(s), 'test_TlV_equity MARKET_CAP {}'.format(s))
+
+        s = financials.getRealtime('DELT:TLV', 'VOLUME', 'FT')
+        self.assertEqual(float, type(s), 'test_TlV_equity VOLUME {}'.format(s))
+
+        s = financials.getRealtime('DELT:TLV', 'CURRENCY', 'FT')
+        self.assertEqual('ILa', s, 'test_TlV_equity CURRENCY')
+
+        s = financials.getRealtime('DELT:TLV', 'SECTOR', 'FT')
+        self.assertEqual(str, type(s), 'test_TlV_equity SECTOR {}'.format(s))
+        self.assertEqual('Consumer Goods', s, 'test_TY_equity SECTOR {}'.format(s))
+
+        s = financials.getRealtime('DELT:TLV', 'INDUSTRY', 'FT')
+        self.assertEqual(str, type(s), 'test_TlV_equity INDUSTRY {}'.format(s))
+        self.assertEqual('Personal Goods', s, 'test_TY_equity INDUSTRY {}'.format(s))
 
     def test_index(self):
         s = financials.getRealtime('INX:IOM', 'ticker', 'FT')

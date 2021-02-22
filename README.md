@@ -68,38 +68,43 @@ Depending on your system's language and default LibreOffice settings, you maybe 
 
 You can either specify numbers or names (lower or upper case) - not all bits are available from all sources and they are not necessarily consistent across sources either.
 
-|Name|Code|YAHOO|FT|GOOGLE|YAHOO (historic)|
-| :--- | :--- | :---: | :---: | :---: | :---: |
-|PREV_CLOSE|5|Yes|Yes|Yes||
-|OPEN|6|Yes|Yes|Yes|Yes|
-|CHANGE|7|Yes|Yes|Yes||
-|LAST_PRICE_DATE|8|Yes|Yes|Yes||
-|LAST_PRICE_TIME|10|Yes|Yes|Yes||
-|CHANGE_IN_PERCENT|11|Yes|Yes|Yes||
-|LOW|14|Yes|Yes|Yes|Yes|
-|HIGH|16|Yes|Yes|Yes|Yes|
-|LAST_PRICE|21|Yes|Yes|Yes||
-|HIGH_52_WEEK|24|Yes|Yes|Yes||
-|LOW_52_WEEK|26|Yes|Yes|Yes||
-|MARKET_CAP|27|Yes|Yes|Yes||
-|VOLUME|35|Yes|Yes|No|Yes|
-|AVG_DAILY_VOL_3MONTH|39|Yes|Yes|No||
-|BETA|67|Yes|Yes|No||
-|EPS|68|Yes|Yes|No||
-|PE_RATIO|69|Yes|Yes|No||
-|DIV|70|Yes|Yes|No||
-|DIV_YIELD|71|Yes|Yes|No||
-|EX_DIV_DATE|72|Yes|Yes|No||
-|PAYOUT_RATIO|73|Yes|No|No||
-|CLOSE|90|No|No|No|Yes|
-|ADJ_CLOSE|91|No|No|No|Yes|
-|SECTOR|98|Yes|Yes|No||
-|INDUSTRY|99|Yes|Yes|No||
-|TICKER|101|Yes|Yes|Yes||
-|EXCHANGE|102|Yes|No|Yes||
-|CURRENCY|103|Yes|Yes|Yes||
-|NAME|104|Yes|Yes|Yes||
-|TIMEZONE|105|Yes|Yes|Yes||
+|Name|Code|YAHOO|FT|GOOGLE|YAHOO (historic)|Notes|
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+|PREV_CLOSE|5|Yes|Yes|Yes|||
+|OPEN|6|Yes|Yes|Yes|Yes||
+|CHANGE|7|Yes|Yes|Yes|||
+|LAST_PRICE_DATE|8|Yes|Yes|Yes| |yyyy-mm-dd|
+|LAST_PRICE_TIME|10|Yes|Yes|Yes|||
+|CHANGE_IN_PERCENT|11|Yes|Yes|Yes|||
+|LOW|14|Yes|Yes|Yes|Yes||
+|HIGH|16|Yes|Yes|Yes|Yes||
+|LAST_PRICE|21|Yes|Yes|Yes|||
+|BID|22|Yes|Yes|No|||
+|ASK|25|Yes|Yes|No|||
+|HIGH_52_WEEK|24|Yes|Yes|Yes|||
+|LOW_52_WEEK|26|Yes|Yes|Yes|||
+|MARKET_CAP|27|Yes|Yes|Yes|||
+|BIDSIZE|30|Yes|Yes|No|||
+|ASKSIZE|31|Yes|Yes|No|||
+|VOLUME|35|Yes|Yes|No|Yes||
+|AVG_DAILY_VOL_3MONTH|39|Yes|Yes|No|||
+|BETA|67|Yes|Yes|No|||
+|EPS|68|Yes|Yes|No|||
+|PE_RATIO|69|Yes|Yes|No|||
+|DIV|70|Yes|Yes|No|||
+|DIV_YIELD|71|Yes|Yes|No|||
+|EX_DIV_DATE|72|Yes|Yes|No| |yyyy-mm-dd|
+|PAYOUT_RATIO|73|Yes|No|No|||
+|EXPIRY_DATE|74|Yes (on options)|No|No| |yyyy-mm-dd|
+|CLOSE|90|No|No|No|Yes||
+|ADJ_CLOSE|91|No|No|No|Yes||
+|SECTOR|98|Yes|Yes|No|||
+|INDUSTRY|99|Yes|Yes|No|||
+|TICKER|101|Yes|Yes|Yes|||
+|EXCHANGE|102|Yes|No|Yes|||
+|CURRENCY|103|Yes|Yes|Yes|||
+|NAME|104|Yes|Yes|Yes|||
+|TIMEZONE|105|Yes|Yes|Yes|||
 
 ### Dealing with missing data:
 
@@ -111,6 +116,10 @@ the HTML for each stock symbol is saved in a separate file (depending on the sou
 your favorite web browser (or other tools) to check if the page actually contained the information you are looking for. 
 If it does, the file trace.log has a record of all calls to the extension with the value returned to LibreOffice. 
 Otherwise, the file extension.log in the same location might have more details about errors or exceptions.  
+
+In general, web scraping can't be compared to using a stable API - the websites might have issues - from a technical or
+data perspective. I have found especially on the weekend it can sometimes be "flaky" and closing/reopening LibreCalc can 
+refresh things. 
 
 ### Build:
 

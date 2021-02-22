@@ -142,9 +142,12 @@ class BaseClient:
         self.response = self.request('POST' if data else 'GET', url, data, headers, cookies, **kwargs)
         text = self.response.read()
 
-        # Allow two redirects: used by Yahoo for some cookie based consent
+        # Allow redirects - used by Yahoo for some cookie based consent
+        redirect_count = 3
 
-        if 300 <= self.response.status < 400:
+        while 300 <= self.response.status < 400 and redirect_count >= 0:
+
+            redirect_count -= 1
             location = self.response.getheader('Location')
 
             if location and redirect:
@@ -155,21 +158,6 @@ class BaseClient:
 
                 self.response = self.request('POST' if data else 'GET', location, data, headers, cookies, **kwargs)
                 text = self.response.read()
-
-                if 300 <= self.response.status < 400:
-                    location = self.response.getheader('Location')
-
-                    if location and redirect:
-
-                        if location.startswith('/'):
-                            scheme, _, host, path = url.split('/', 3)
-                            location = '{}//{}{}'.format(scheme, host, location)
-
-                        self.response = self.request('POST' if data else 'GET', location, data, headers, cookies,
-                                                     **kwargs)
-                        text = self.response.read()
-                    else:
-                        raise RedirectException(location)
 
             else:
                 raise RedirectException(location)
@@ -186,6 +174,47 @@ class BaseClient:
         text = codecs.decode(text, encoding=content_type, errors='ignore')
 
         return text
+
+    def get_ticker(self):
+
+        tick = {}
+
+        tick[Datacode.ADJ_CLOSE] = None
+        tick[Datacode.ASKSIZE] = None
+        tick[Datacode.ASK] = None
+        tick[Datacode.AVG_DAILY_VOL_3MONTH] = None
+        tick[Datacode.BETA] = None
+        tick[Datacode.BIDSIZE] = None
+        tick[Datacode.BID] = None
+        tick[Datacode.CHANGE] = None
+        tick[Datacode.CHANGE_IN_PERCENT] = None
+        tick[Datacode.CURRENCY] = None
+        tick[Datacode.DIV] = None
+        tick[Datacode.DIV_YIELD] = None
+        tick[Datacode.EPS] = None
+        tick[Datacode.EXCHANGE] = None
+        tick[Datacode.EXPIRY_DATE] = None
+        tick[Datacode.EX_DIV_DATE] = None
+        tick[Datacode.HIGH] = None
+        tick[Datacode.HIGH_52_WEEK] = None
+        tick[Datacode.INDUSTRY] = None
+        tick[Datacode.LAST_PRICE] = None
+        tick[Datacode.LAST_PRICE_DATE] = None
+        tick[Datacode.LAST_PRICE_TIME] = None
+        tick[Datacode.LOW] = None
+        tick[Datacode.LOW_52_WEEK] = None
+        tick[Datacode.MARKET_CAP] = None
+        tick[Datacode.NAME] = None
+        tick[Datacode.OPEN] = None
+        tick[Datacode.PAYOUT_RATIO] = None
+        tick[Datacode.PE_RATIO] = None
+        tick[Datacode.PREV_CLOSE] = None
+        tick[Datacode.SECTOR] = None
+        tick[Datacode.TICKER] = None
+        tick[Datacode.TIMEZONE] = None
+        tick[Datacode.VOLUME] = None
+
+        return tick
 
     def _return_value(self, data: dict, datacode: int):
 
@@ -234,6 +263,18 @@ class BaseClient:
             elif datacode == Datacode.LAST_PRICE.value and Datacode.LAST_PRICE in data:
                 return data[Datacode.LAST_PRICE]
 
+            elif datacode == Datacode.BID.value and Datacode.BID in data:
+                return data[Datacode.BID]
+
+            elif datacode == Datacode.ASK.value and Datacode.ASK in data:
+                return data[Datacode.ASK]
+
+            elif datacode == Datacode.BIDSIZE.value and Datacode.BIDSIZE in data:
+                return data[Datacode.BIDSIZE]
+
+            elif datacode == Datacode.ASKSIZE.value and Datacode.ASKSIZE in data:
+                return data[Datacode.ASKSIZE]
+
             elif datacode == Datacode.LOW_52_WEEK.value and Datacode.LOW_52_WEEK in data:
                 return data[Datacode.LOW_52_WEEK]
 
@@ -272,6 +313,12 @@ class BaseClient:
 
             elif datacode == Datacode.PAYOUT_RATIO.value and Datacode.PAYOUT_RATIO in data:
                 return data[Datacode.PAYOUT_RATIO]
+
+            elif datacode == Datacode.EXPIRY_DATE.value and Datacode.EXPIRY_DATE in data:
+                if data[Datacode.EXPIRY_DATE]:
+                    return data[Datacode.EXPIRY_DATE].isoformat()
+                else:
+                    return data[Datacode.EXPIRY_DATE]
 
             elif datacode == Datacode.CLOSE.value and Datacode.CLOSE in data:
                 return data[Datacode.CLOSE]

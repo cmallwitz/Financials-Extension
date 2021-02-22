@@ -123,6 +123,41 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('VFIAX', Datacode.LAST_PRICE_TIME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_mutuals LAST_PRICE_TIME {}'.format(s))
 
+    def test_realtime_US_options(self):
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.PREV_CLOSE.value, 'YAHOO')
+        self.assertEqual(float, type(s), 'test_realtime_US_options PREV_CLOSE {}'.format(s))
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.NAME.value, 'YAHOO')
+        self.assertEqual(str, type(s), 'test_realtime_US_options NAME {}'.format(s))
+        self.assertEqual('IBM Jun 2021 90.000 call', s, 'test_realtime_US_options NAME {}'.format(s))
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.EXPIRY_DATE.value, 'YAHOO')
+        self.assertEqual(str, type(s), 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
+        self.assertTrue(testutils.is_date(s), 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
+        self.assertEqual("2021-06-18", s, 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.LAST_PRICE.value, 'YAHOO')
+        self.assertEqual(float, type(s), 'test_realtime_US_options LAST_PRICE {}'.format(s))
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.OPEN.value, 'YAHOO')
+        self.assertEqual(float, type(s), 'test_realtime_US_options OPEN {}'.format(s))
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.VOLUME.value, 'YAHOO')
+        self.assertEqual(float, type(s), 'test_realtime_US_options VOLUME {}'.format(s))
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.BID.value, 'YAHOO')
+        self.assertEqual(float, type(s), 'test_realtime_US_options BID {}'.format(s))
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.ASK.value, 'YAHOO')
+        self.assertEqual(float, type(s), 'test_realtime_US_options ASK {}'.format(s))
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.BIDSIZE.value, 'YAHOO')
+        self.assertEqual(float, type(s), 'test_realtime_US_options BIDSIZE {}'.format(s))
+
+        s = financials.getRealtime('IBM210618C00090000', Datacode.ASKSIZE.value, 'YAHOO')
+        self.assertEqual(float, type(s), 'test_realtime_US_options ASKSIZE {}'.format(s))
+
     def test_realtime_UK_ETF(self):
 
         s = financials.getRealtime('VERX.L', Datacode.LAST_PRICE.value, 'YAHOO')
@@ -200,7 +235,7 @@ class Test(unittest.TestCase):
         self.assertEqual('Not a trading day \'2017-01-01\'', s, 'test_historic_US_equity CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.LAST_PRICE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual('Data doesn\'t exist - 21', s, 'test_historic_US_equity LAST_PRICE {}'.format(s))
+        self.assertIsNone(s, 'test_historic_US_equity LAST_PRICE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
         self.assertEqual(167.190002, s, 'test_historic_US_equity CLOSE {}'.format(s))
@@ -224,7 +259,7 @@ class Test(unittest.TestCase):
 
         # Note: quarterly dividend and splits will change past adjusted prices - will fail after the next dividend
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(139.61322, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(137.772202, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 
@@ -287,6 +322,9 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('NO_NAME', Datacode.LAST_PRICE.value, 'YAHOO')
         self.assertIsNone(s, 'test_realtime_errors LAST_PRICE {}'.format(s))
 
+        s = financials.getRealtime('C060.DE', -1, 'YAHOO')
+        self.assertEqual('Datacode -1 not supported', s, 'test_realtime_errors -1 {}'.format(s))
+
     def test_historic_errors(self):
 
         s = financials.getHistoric('NO_NAME', Datacode.LAST_PRICE.value, '2018-01-08', 'YAHOO')
@@ -299,7 +337,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'Datacode 9999 not supported', 'test_historic_errors 9999')
 
         s = financials.getRealtime('IBM', Datacode.ADJ_CLOSE.value, 'YAHOO')
-        self.assertEqual(s, 'Data doesn\'t exist - 91', 'test_historic_errors ADJ_CLOSE {}'.format(s))
+        self.assertIsNone(s, 'test_historic_errors ADJ_CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2030-01-01', 'YAHOO')
         self.assertEqual(s, 'Future date \'2030-01-01\'', 'test_historic_errors CLOSE {}'.format(s))

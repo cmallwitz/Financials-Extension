@@ -52,9 +52,9 @@ class FT(BaseClient):
     def getRealtime(self, ticker: str, datacode: int):
 
         """
-        Retrieve data for ticker from Alpha Vantage and cache it for further lookups
+        Retrieve data for ticker from Financial Times and cache it for further lookups
 
-        :param ticker: the ticker symbol e.g. VOD.LON
+        :param ticker: the ticker symbol e.g. VOD:LSE
         :param datacode: the requested datacode
         :return:
         """
@@ -71,7 +71,7 @@ class FT(BaseClient):
                 del self.realtime[ticker]
 
         if ticker not in self.realtime:
-            self.realtime[ticker] = {}
+            self.realtime[ticker] = self.get_ticker()
 
         tick = self.realtime[ticker]
 
@@ -88,39 +88,10 @@ class FT(BaseClient):
         try:
             with open(os.path.join(self.basedir, f'ft-{ticker}.html'), "w", encoding="utf-8") as text_file:
                 print(f"<!-- '{self.last_url}' -->\r\n\r\n{text}", file=text_file)
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+        except BaseException:
+            logger.exception("BaseException ticker=%s datacode=%s %s", ticker, datacode)
 
         tick[Datacode.TIMESTAMP] = time.time()
-
-        tick[Datacode.NAME] = None
-        tick[Datacode.TICKER] = None
-        tick[Datacode.CURRENCY] = None
-        tick[Datacode.LAST_PRICE] = None
-        tick[Datacode.CHANGE] = None
-        tick[Datacode.CHANGE_IN_PERCENT] = None
-        tick[Datacode.VOLUME] = None
-        tick[Datacode.LOW_52_WEEK] = None
-        tick[Datacode.HIGH_52_WEEK] = None
-        tick[Datacode.LAST_PRICE_DATE] = None
-        tick[Datacode.LAST_PRICE_TIME] = None
-        tick[Datacode.TIMEZONE] = None
-
-        tick[Datacode.OPEN] = None
-        tick[Datacode.HIGH] = None
-        tick[Datacode.LOW] = None
-        tick[Datacode.PREV_CLOSE] = None
-        tick[Datacode.MARKET_CAP] = None
-
-        tick[Datacode.EXCHANGE] = None
-        tick[Datacode.AVG_DAILY_VOL_3MONTH] = None
-        tick[Datacode.BETA] = None
-        tick[Datacode.EPS] = None
-        tick[Datacode.PE_RATIO] = None
-        tick[Datacode.DIV] = None
-        tick[Datacode.DIV_YIELD] = None
-        tick[Datacode.EX_DIV_DATE] = None
-        tick[Datacode.PAYOUT_RATIO] = None
 
         try:
             r = '<h1 class="mod-tearsheet-overview__header__name mod-tearsheet-overview__header__name--large">(.*?)</h1>'
@@ -148,7 +119,7 @@ class FT(BaseClient):
                 tick[Datacode.INDUSTRY] = self.save_wrapper(
                     lambda: html.unescape(match.group(2)).strip())
 
-            r = r'<span [^>]*>Price \(([A-Z]+|--)\)</span><span [^>]*>([0-9,\.]+)</span>'
+            r = r'<span [^>]*>Price \(([A-Za-z]{3}|--)\)</span><span [^>]*>([0-9,\.]+)</span>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 start = match.span(0)[1]
@@ -205,7 +176,7 @@ class FT(BaseClient):
                     if len(time_bits) >= 4:
                         tick[Datacode.TIMEZONE] = time_bits[-1]
 
-                except BaseException as e:
+                except BaseException:
                     pass
 
             # second attempt at 52 week range
@@ -245,6 +216,18 @@ class FT(BaseClient):
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.LOW] = self.save_wrapper(
+                    lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
+
+            r = r'<th>\s*Bid\s*</th><td>([0-9,\.]+)</td>'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                tick[Datacode.BID] = self.save_wrapper(
+                    lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
+
+            r = r'<th>\s*Offer\s*</th><td>([0-9,\.]+)</td>'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                tick[Datacode.ASK] = self.save_wrapper(
                     lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
 
             r = r'<th>\s*Previous close\s*</th><td>\s*([0-9,\.]+)\s*</td>'
@@ -300,7 +283,7 @@ class FT(BaseClient):
                     value = html.unescape(match.group(1)).strip()
                     dt = dateutil.parser.parse(value, yearfirst=True, dayfirst=False, tzinfos=whois_timezone_info)
                     tick[Datacode.EX_DIV_DATE] = dt.date()
-                except BaseException as e:
+                except BaseException:
                     pass
 
         except BaseException as e:
