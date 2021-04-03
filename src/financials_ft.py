@@ -86,7 +86,8 @@ class FT(BaseClient):
             return f'FT.getRealtime({ticker}, {datacode}) - urlopen endpoint: {str(e)}'
 
         try:
-            with open(os.path.join(self.basedir, f'ft-{ticker}.html'), "w", encoding="utf-8") as text_file:
+            temp = ticker.replace(':', '_') # Windows can't have ':' in file names
+            with open(os.path.join(self.basedir, f'ft-{temp}.html'), "w", encoding="utf-8") as text_file:
                 print(f"<!-- '{self.last_url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException:
             logger.exception("BaseException ticker=%s datacode=%s %s", ticker, datacode)

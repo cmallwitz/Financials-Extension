@@ -18,6 +18,7 @@ import sys
 import time
 from functools import wraps
 from importlib import util
+import xml.etree.ElementTree as ET
 
 import unohelper
 from com.financials.getinfo import Financials
@@ -47,12 +48,14 @@ if dateutil_missing or pyparsing_missing or pytz_missing:
     raise Exception("THIS EXTENSION NEEDS THE FOLLOWING PYTHON 3 LIBRARIES INSTALLED:" + msg)
 
 import dateutil.parser
+import pytz
+import pyparsing
+import six
 
 from datacode import Datacode
 import financials_google as google
 import financials_yahoo as yahoo
 import financials_ft as ft
-from version import version
 
 implementation_name = "com.financials.getinfo.python.FinancialsImpl"  # as defined in Financials.xcu
 implementation_services = ("com.sun.star.sheet.AddIn",)
@@ -120,9 +123,10 @@ class FinancialsImpl(unohelper.Base, Financials):
             ticker = str(ticker).strip()
             source = str(source).upper()
 
-            if source == 'GOOGLE':
-                s = self.google.getRealtime(ticker, datacode)
-            elif source == 'YAHOO':
+            # if source == 'GOOGLE':
+            #     s = self.google.getRealtime(ticker, datacode)
+            # el
+            if source == 'YAHOO':
                 s = self.yahoo.getRealtime(ticker, datacode)
             elif source == 'FT':
                 s = self.ft.getRealtime(ticker, datacode)
@@ -219,7 +223,14 @@ class FinancialsImpl(unohelper.Base, Financials):
     @profile
     def support(self, datacode):
 
-        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}\nlocale={}\ndefaultlocale={}'.format(
+        version = '0.0.0'
+
+        description_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'description.xml')
+        for e in ET.parse(description_file).getroot():
+            if e.tag.endswith('version'):
+                version = e.attrib['value']
+
+        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}\nlocale={}\ndefaultlocale={}\ndateutil={}\npytz={}\npyparsing={}\nsix={}'.format(
             self.ctx,
             id(self),
             version,
@@ -231,7 +242,12 @@ class FinancialsImpl(unohelper.Base, Financials):
             sys.executable,
             sys.version.replace("\n", " "),
             locale.getlocale(),
-            locale.getdefaultlocale())
+            locale.getdefaultlocale(),
+            dateutil.__version__,
+            pytz.__version__,
+            pyparsing.__version__,
+            six.__version__,
+        )
 
         if datacode:
             s = '{}\ntype(datacode)={}\nstr(datacode)={}'.format(
@@ -246,6 +262,6 @@ def createInstance(ctx):
     return FinancialsImpl(ctx)
 
 
-# pythonloader looks for a static g_ImplementationHelper variable
+# python loader looks for a static g_ImplementationHelper variable
 g_ImplementationHelper = unohelper.ImplementationHelper()
 g_ImplementationHelper.addImplementation(createInstance, implementation_name, implementation_services, )

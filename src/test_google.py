@@ -20,7 +20,8 @@ from datacode import Datacode
 financials = financials.createInstance(None)
 
 
-class Test(unittest.TestCase):
+# class Test(unittest.TestCase):
+class Test:
 
     def test_currency(self):
         s = financials.getRealtime('EURGBP', Datacode.LAST_PRICE.value, 'GOOGLE')
@@ -248,32 +249,6 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('NYS:IBM', Datacode.LAST_PRICE.value, cell_range)
         self.assertEqual(s, 'Cell range not allowed for source', 'test_errors')
-
-    def test_support(self):
-        cell_range = ((1, 2), ('3', '4'), (5.0, 6.0))
-
-        s = financials.getRealtime('SUPPORT')
-        self.assertTrue(s.startswith("ctx="), 'test_errors SUPPORT {}'.format(s))
-
-        s = financials.getRealtime('SUPPORT', 1)
-        self.assertTrue(s.startswith("ctx="), 'test_errors SUPPORT {}'.format(s))
-        self.assertTrue("type(datacode)=<class 'int'>" in s, 'test_errors SUPPORT {}'.format(s))
-        self.assertTrue("str(datacode)=1" in s, 'test_errors SUPPORT {}'.format(s))
-
-        s = financials.getRealtime('SUPPORT', 1.0)
-        self.assertTrue(s.startswith("ctx="), 'test_errors SUPPORT {}'.format(s))
-        self.assertTrue("type(datacode)=<class 'float'>" in s, 'test_errors SUPPORT {}'.format(s))
-        self.assertTrue("str(datacode)=1.0" in s, 'test_errors SUPPORT {}'.format(s))
-
-        s = financials.getRealtime('SUPPORT', '1')
-        self.assertTrue(s.startswith("ctx="), 'test_errors SUPPORT {}'.format(s))
-        self.assertTrue("type(datacode)=<class 'str'>" in s, 'test_errors SUPPORT {}'.format(s))
-        self.assertTrue("str(datacode)=1" in s, 'test_errors SUPPORT {}'.format(s))
-
-        s = financials.getRealtime('SUPPORT', cell_range)
-        self.assertTrue(s.startswith("ctx="), 'test_errors SUPPORT {}'.format(s))
-        self.assertTrue("type(datacode)=<class 'tuple'>" in s, 'test_errors SUPPORT {}'.format(s))
-        self.assertTrue("str(datacode)=((1, 2), ('3', '4'), (5.0, 6.0))" in s, 'test_errors SUPPORT {}'.format(s))
 
 
 if __name__ == '__main__':

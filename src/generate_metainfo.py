@@ -14,19 +14,13 @@ import os
 cur_dir = os.getcwd()
 
 addin_id = "com.financials.getinfo"
-addin_version = "2.6.0"
+addin_version = "3.0.0"
 addin_displayname = "Financial Market Extension"
 addin_publisher_link = "https://github.com/cmallwitz/Financials-Extension"
 addin_publisher_name = "The Publisher"
 
 print("Generating extension files for version", addin_version)
 
-################################################################################
-# version.py
-
-version_file = open(cur_dir + '/build/version.py', 'w')
-version_file.write(f"version = '{addin_version}'")
-version_file.close()
 
 ################################################################################
 # description.xml

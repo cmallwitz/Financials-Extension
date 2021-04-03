@@ -96,7 +96,8 @@ class Google(BaseClient):
             return 'Google.getRealtime(\'{}\', {}) - urlopen: {} {}'.format(ticker, datacode, e, url)
 
         try:
-            with open(os.path.join(self.basedir, 'google-{}.html'.format(ticker)), "w", encoding="utf-8") as text_file:
+            temp = ticker.replace(':', '_')  # Windows can't have ':' in file names
+            with open(os.path.join(self.basedir, 'google-{}.html'.format(temp)), "w", encoding="utf-8") as text_file:
                 print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)

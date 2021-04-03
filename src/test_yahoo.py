@@ -125,37 +125,39 @@ class Test(unittest.TestCase):
 
     def test_realtime_US_options(self):
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.PREV_CLOSE.value, 'YAHOO')
+        # symbol from https://finance.yahoo.com/quote/IBM/options?p=IBM
+        
+        s = financials.getRealtime('IBM230120C00130000', Datacode.PREV_CLOSE.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options PREV_CLOSE {}'.format(s))
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.NAME.value, 'YAHOO')
+        s = financials.getRealtime('IBM230120C00130000', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_options NAME {}'.format(s))
-        self.assertEqual('IBM Jun 2021 90.000 call', s, 'test_realtime_US_options NAME {}'.format(s))
+        self.assertEqual('IBM Jan 2023 130.000 call', s, 'test_realtime_US_options NAME {}'.format(s))
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.EXPIRY_DATE.value, 'YAHOO')
+        s = financials.getRealtime('IBM230120C00130000', Datacode.EXPIRY_DATE.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
         self.assertTrue(testutils.is_date(s), 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
-        self.assertEqual("2021-06-18", s, 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
+        self.assertEqual("2023-01-20", s, 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.LAST_PRICE.value, 'YAHOO')
+        s = financials.getRealtime('IBM230120C00130000', Datacode.LAST_PRICE.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options LAST_PRICE {}'.format(s))
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.OPEN.value, 'YAHOO')
+        s = financials.getRealtime('IBM230120C00130000', Datacode.OPEN.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options OPEN {}'.format(s))
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.VOLUME.value, 'YAHOO')
+        s = financials.getRealtime('IBM230120C00130000', Datacode.VOLUME.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options VOLUME {}'.format(s))
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.BID.value, 'YAHOO')
+        s = financials.getRealtime('IBM230120C00130000', Datacode.BID.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options BID {}'.format(s))
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.ASK.value, 'YAHOO')
+        s = financials.getRealtime('IBM230120C00130000', Datacode.ASK.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options ASK {}'.format(s))
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.BIDSIZE.value, 'YAHOO')
+        s = financials.getRealtime('IBM230120C00130000', Datacode.BIDSIZE.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options BIDSIZE {}'.format(s))
 
-        s = financials.getRealtime('IBM210618C00090000', Datacode.ASKSIZE.value, 'YAHOO')
+        s = financials.getRealtime('IBM230120C00130000', Datacode.ASKSIZE.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options ASKSIZE {}'.format(s))
 
     def test_realtime_UK_ETF(self):
@@ -271,14 +273,6 @@ class Test(unittest.TestCase):
             pass  # ignore if file doesn't exists
 
         financials.yahoo.historicdata = {}
-
-        #  Inception Date 2014-09-30
-        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2018-04-02', 'YAHOO')  # Easter Monday
-        self.assertEqual(s, 'Not a trading day \'2018-04-02\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
-
-        #  Inception Date 2014-09-30
-        s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2015-01-01', 'YAHOO')
-        self.assertEqual(s, 'Not a trading day \'2015-01-01\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         s = financials.getHistoric('VERX.L', Datacode.LAST_PRICE.value, '2017-01-01', 'YAHOO')
         self.assertEqual(s, 'Not a trading day \'2017-01-01\'', 'test_historic_UK_ETF LAST_PRICE {}'.format(s))

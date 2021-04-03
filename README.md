@@ -1,37 +1,18 @@
 # Financials-Extension
 
 This is a Python based extension for LibreOffice Calc to make stock market, index and FX data available in Calc 
-spreadsheets - currently supporting Yahoo's, Financial Times' and Google's (without FX data) finance websites 
-using old-fashioned web scraping.
+spreadsheets - currently supporting Yahoo's and Financial Times' finance websites using old-fashioned web scraping. 
+Starting with version 3 of the extension, Google was dropped as source as its finance website was changed dramatically
+requiring a complete re-work of the logic to pull data of it. No one seems to have complained, so I guess not a lot of 
+people rely on it. If there is popular demand, I can take a look at adding it back. Alternatively I'm open for 
+suggestions to add another provider with global exchange and asset class coverage.
+
+Additionally, starting with version 3 of the extension, it contains all non-standard Python packages it uses 
+(dateutil, pytz, pyparsing). Consequently, it is no longer necessary to install anything to your system.
 
 ### Feedback requested:
 
 Please provide feedback about using the extension here: https://github.com/cmallwitz/Financials-Extension/issues/10
-
-### System requirements:
-
-This extension requires the following Python 3 packages (on top of standard libs): dateutil, pytz, pyparsing. These are 
-from within LibreOffice, so if your LibreOffice comes with it's own Python runtime (e.g. Windows) they need to be
-installed there instead somewhere else in the system.  
-
-On Ubuntu 18 and 20, dateutil and pytz may already be installed, but you can get all you need by running
-- sudo apt-get install python3-dateutil python3-tz python3-pyparsing
-
-On Debian 10, the following steps have worked for me (as root)
-- apt install python3-pip
-- pip3 install python-dateutil pytz pyparsing
-
-Users on Windows 10 have reported this to work - as LibreOffice on Windows ships with its own, but minimal 
-Python runtime a few more steps are required
-- Download the script https://bootstrap.pypa.io/get-pip.py to your computer
-- Start a Command Prompt (CMD) as Administrator
-- on this command prompt run (change path as required)
-  
-  "c:\Program Files\LibreOffice\program\python.exe" c:\temp\get-pip.py
-
-- and then
-
-   "c:\Program Files\LibreOffice\program\python.exe" -m pip install python-dateutil pytz pyparsing
 
 ### Usage:
 
@@ -40,7 +21,6 @@ under menu item: Tools, Extension Manager...
 
 Getting data should be a simple as having this in a cell: 
 - `=GETREALTIME("IBM",21,"YAHOO")`
-- `=GETREALTIME("NYSE:IBM",21,"GOOGLE")`
 - `=GETREALTIME("IBM:NYQ",21,"FT")`
 - `=GETHISTORIC("IBM",90,"2020-12-01","YAHOO")`
 
@@ -68,43 +48,43 @@ Depending on your system's language and default LibreOffice settings, you maybe 
 
 You can either specify numbers or names (lower or upper case) - not all bits are available from all sources and they are not necessarily consistent across sources either.
 
-|Name|Code|YAHOO|FT|GOOGLE|YAHOO (historic)|Notes|
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-|PREV_CLOSE|5|Yes|Yes|Yes|||
-|OPEN|6|Yes|Yes|Yes|Yes||
-|CHANGE|7|Yes|Yes|Yes|||
-|LAST_PRICE_DATE|8|Yes|Yes|Yes| |yyyy-mm-dd|
-|LAST_PRICE_TIME|10|Yes|Yes|Yes|||
-|CHANGE_IN_PERCENT|11|Yes|Yes|Yes|||
-|LOW|14|Yes|Yes|Yes|Yes||
-|HIGH|16|Yes|Yes|Yes|Yes||
-|LAST_PRICE|21|Yes|Yes|Yes|||
-|BID|22|Yes|Yes|No|||
-|ASK|25|Yes|Yes|No|||
-|HIGH_52_WEEK|24|Yes|Yes|Yes|||
-|LOW_52_WEEK|26|Yes|Yes|Yes|||
-|MARKET_CAP|27|Yes|Yes|Yes|||
-|BIDSIZE|30|Yes|Yes|No|||
-|ASKSIZE|31|Yes|Yes|No|||
-|VOLUME|35|Yes|Yes|No|Yes||
-|AVG_DAILY_VOL_3MONTH|39|Yes|Yes|No|||
-|BETA|67|Yes|Yes|No|||
-|EPS|68|Yes|Yes|No|||
-|PE_RATIO|69|Yes|Yes|No|||
-|DIV|70|Yes|Yes|No|||
-|DIV_YIELD|71|Yes|Yes|No|||
-|EX_DIV_DATE|72|Yes|Yes|No| |yyyy-mm-dd|
-|PAYOUT_RATIO|73|Yes|No|No|||
-|EXPIRY_DATE|74|Yes (on options)|No|No| |yyyy-mm-dd|
-|CLOSE|90|No|No|No|Yes||
-|ADJ_CLOSE|91|No|No|No|Yes||
-|SECTOR|98|Yes|Yes|No|||
-|INDUSTRY|99|Yes|Yes|No|||
-|TICKER|101|Yes|Yes|Yes|||
-|EXCHANGE|102|Yes|No|Yes|||
-|CURRENCY|103|Yes|Yes|Yes|||
-|NAME|104|Yes|Yes|Yes|||
-|TIMEZONE|105|Yes|Yes|Yes|||
+|Name|Code|YAHOO|FT|YAHOO (historic)|Notes|
+| :--- | :--- | :---: | :---: | :---: | :---: |
+|PREV_CLOSE|5|Yes|Yes|||
+|OPEN|6|Yes|Yes|Yes||
+|CHANGE|7|Yes|Yes|||
+|LAST_PRICE_DATE|8|Yes|Yes| |yyyy-mm-dd|
+|LAST_PRICE_TIME|10|Yes|Yes|||
+|CHANGE_IN_PERCENT|11|Yes|Yes|||
+|LOW|14|Yes|Yes|Yes||
+|HIGH|16|Yes|Yes|Yes||
+|LAST_PRICE|21|Yes|Yes|||
+|BID|22|Yes|Yes|||
+|ASK|25|Yes|Yes|||
+|HIGH_52_WEEK|24|Yes|Yes|||
+|LOW_52_WEEK|26|Yes|Yes|||
+|MARKET_CAP|27|Yes|Yes|||
+|BIDSIZE|30|Yes|Yes|||
+|ASKSIZE|31|Yes|Yes|||
+|VOLUME|35|Yes|Yes|Yes||
+|AVG_DAILY_VOL_3MONTH|39|Yes|Yes|||
+|BETA|67|Yes|Yes|||
+|EPS|68|Yes|Yes|||
+|PE_RATIO|69|Yes|Yes|||
+|DIV|70|Yes|Yes|||
+|DIV_YIELD|71|Yes|Yes|||
+|EX_DIV_DATE|72|Yes|Yes| |yyyy-mm-dd|
+|PAYOUT_RATIO|73|Yes|No|||
+|EXPIRY_DATE|74|Yes (on options)|No| |yyyy-mm-dd|
+|CLOSE|90|No|No|Yes||
+|ADJ_CLOSE|91|No|No|Yes||
+|SECTOR|98|Yes|Yes|||
+|INDUSTRY|99|Yes|Yes|||
+|TICKER|101|Yes|Yes|||
+|EXCHANGE|102|Yes|No|||
+|CURRENCY|103|Yes|Yes|||
+|NAME|104|Yes|Yes|||
+|TIMEZONE|105|Yes|Yes|||
 
 ### Dealing with missing data:
 
@@ -138,11 +118,13 @@ python3 -m unittest discover src
 ./compile.sh
 
 ### Tested with:
+- Windows 10 / LibreOffice Calc 7.1.2.2 / Python 3.8.8
+- Ubuntu 20.04 / LibreOffice Calc 6.4.3.2 / Python 3.8.2
+
+(Previous versions)
 - Debian 10.3  / LibreOffice Calc 6.1.5.2 / Python 3.7.3
 - Ubuntu 20.10 / LibreOffice Calc 7.0.3.1 / Python 3.8.6
-- Ubuntu 20.04 / LibreOffice Calc 6.4.3.2 / Python 3.8.2
 - Ubuntu 19.10 / LibreOffice Calc 6.3.5.2 / Python 3.7.6
 - Ubuntu 19.04 / LibreOffice Calc 6.2 / Python 3.7.3
 - Ubuntu 18.04.5 / LibreOffice Calc 6 / Python 3.6.9
 - Ubuntu 18.04 / LibreOffice Calc 6 / Python 3.6.7
-- Ubuntu 16.04 / LibreOffice Calc 5 (previous versions)

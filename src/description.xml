@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<description xmlns="http://openoffice.org/extensions/description/2006" 
+xmlns:d="http://openoffice.org/extensions/description/2006" 
+xmlns:l="http://libreoffice.org/extensions/description/2011" 
+xmlns:xlink="http://www.w3.org/1999/xlink"> 
+
+<!-- only used for testing -->
+
+<dependencies> 
+    <l:LibreOffice-minimal-version value="5.0" d:name="LibreOffice 5.0" /> 
+</dependencies> 
+
+<identifier value="com.financials.getinfo" /> 
+<version value="3.0.0" />
+<display-name><name lang="en">Financial Market Extension</name></display-name>
+<publisher><name xlink:href="https://github.com/cmallwitz/Financials-Extension" lang="en">The Publisher</name></publisher>
+<extension-description><src xlink:href="description-en-US.txt" lang="en" /></extension-description>
+ 
+</description> 
