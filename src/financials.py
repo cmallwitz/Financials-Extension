@@ -90,7 +90,7 @@ class FinancialsImpl(unohelper.Base, Financials):
     @profile
     def getRealtime(self, ticker, datacode=None, source=None):
 
-        if ticker == 'SUPPORT':
+        if ticker == 'SUPPORT' or ticker == 'support':
             return self.support(datacode)
 
         try:

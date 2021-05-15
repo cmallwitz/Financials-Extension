@@ -195,6 +195,17 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('C060.DE', Datacode.EXCHANGE.value, 'YAHOO')
         self.assertEqual(s, 'GER', 'test_realtime_DE_equity EXCHANGE')
 
+    def test_DK_equity(self):
+        s = financials.getRealtime('NOVO-B.CO', 'name', 'YAHOO')
+        self.assertEqual('Novo Nordisk A/S', s, 'test_DK_equity NAME {}'.format(s))
+
+        s = financials.getRealtime('NOVO-B.CO', 'currency', 'YAHOO')
+        self.assertEqual('DKK', s, 'test_DK_equity CURRENCY {}'.format(s))
+
+        s = financials.getRealtime('NOVO-B.CO', 'industry', 'YAHOO')
+        self.assertEqual(str, type(s), 'test_DK_equity INDUSTRY {}'.format(s))
+        self.assertEqual('Biotechnology', s, 'test_DK_equity INDUSTRY {}'.format(s))
+
     def test_realtime_TY_equity(self):
         s = financials.getRealtime('6503.T', Datacode.OPEN.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_TY_equity OPEN {}'.format(s))
@@ -261,7 +272,7 @@ class Test(unittest.TestCase):
 
         # Note: quarterly dividend and splits will change past adjusted prices - will fail after the next dividend
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(137.772202, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(136.249847, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 

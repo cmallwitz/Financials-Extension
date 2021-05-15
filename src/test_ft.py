@@ -254,6 +254,17 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('ISHAX:GER', 'EX_DIV_DATE', 'FT')
         self.assertIsNone(s, 'test_DE_equity EX_DIV_DATE {}'.format(s))
 
+    def test_DK_equity(self):
+        s = financials.getRealtime('NOVO B:CPH', 'name', 'FT')
+        self.assertEqual('Novo Nordisk A/S', s, 'test_DK_equity NAME {}'.format(s))
+
+        s = financials.getRealtime('NOVO B:CPH', 'currency', 'FT')
+        self.assertEqual('DKK', s, 'test_DK_equity CURRENCY {}'.format(s))
+
+        s = financials.getRealtime('NOVO B:CPH', 'industry', 'FT')
+        self.assertEqual(str, type(s), 'test_DK_equity INDUSTRY {}'.format(s))
+        self.assertEqual('Pharmaceuticals & Biotechnology', s, 'test_DK_equity INDUSTRY {}'.format(s))
+
     def test_TY_equity(self):
         s = financials.getRealtime('6503:TYO', 'OPEN', 'FT')
         self.assertEqual(float, type(s), 'test_TY_equity OPEN {}'.format(s))

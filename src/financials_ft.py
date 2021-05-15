@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import time
+import urllib.parse
 
 import dateutil.parser
 
@@ -59,9 +60,6 @@ class FT(BaseClient):
         :return:
         """
 
-        # remove white space
-        ticker = "".join(ticker.split())
-
         # use cached value for up to 60 seconds
         if ticker in self.realtime:
             tick = self.realtime[ticker]
@@ -77,7 +75,7 @@ class FT(BaseClient):
 
         asset_class = self.guess_asset_class(ticker)
 
-        url = f'https://markets.ft.com/data/{asset_class}/tearsheet/summary?s={ticker}'
+        url = f'https://markets.ft.com/data/{asset_class}/tearsheet/summary?s={urllib.parse.quote_plus(ticker)}'
 
         try:
             text = self.urlopen(url, redirect=True, data=None, headers=None)
