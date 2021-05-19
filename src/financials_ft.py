@@ -235,7 +235,7 @@ class FT(BaseClient):
                 tick[Datacode.PREV_CLOSE] = self.save_wrapper(
                     lambda: float(html.unescape(match.group(1)).replace(',', '').strip()))
 
-            r = r'<th>\s*Average volume\s*</th><td>\s*([0-9,\.btnm]+)\s*</td>'
+            r = r'<th>\s*Average volume\s*</th><td>\s*([0-9,\.btnmk]+)\s*</td>'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.AVG_DAILY_VOL_3MONTH] = self.save_wrapper(
@@ -251,7 +251,7 @@ class FT(BaseClient):
                     tick[Datacode.PE_RATIO] = self.save_wrapper(
                         lambda: float(value))
 
-            r = r'<th>\s*Market cap\s*</th><td>\s*([0-9,\.btnm]+)\s*<'
+            r = r'<th>\s*Market cap\s*</th><td>\s*([0-9,\.btnmk]+)\s*<'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:
                 tick[Datacode.MARKET_CAP] = self.save_wrapper(
