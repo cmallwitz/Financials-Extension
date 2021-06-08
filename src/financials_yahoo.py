@@ -238,6 +238,10 @@ class Yahoo(BaseClient):
                 if match:
                     tick[Datacode.CURRENCY] = match.group(1)
 
+            # fallback for yield on US mutual funds and ETFs, which is in different field
+            if not tick[Datacode.DIV_YIELD]:
+                tick[Datacode.DIV_YIELD] = float(raw(summaryDetail, 'yield'))
+
             name = price['longName'] or price['shortName']
             if name:
                 tick[Datacode.NAME] = html.unescape(str(name))

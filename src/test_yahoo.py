@@ -123,6 +123,9 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('VFIAX', Datacode.LAST_PRICE_TIME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_mutuals LAST_PRICE_TIME {}'.format(s))
 
+        s = financials.getRealtime('VFIAX', Datacode.DIV_YIELD.value, 'YAHOO')
+        self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_mutuals DIV_YIELD {}'.format(s))
+
     def test_realtime_US_options(self):
 
         # symbol from https://finance.yahoo.com/quote/IBM/options?p=IBM
