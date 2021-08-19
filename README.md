@@ -12,16 +12,19 @@ Additionally, starting with version 3 of the extension, it contains all non-stan
 
 ### Feedback requested:
 
-Please provide feedback about using the extension here: https://github.com/cmallwitz/Financials-Extension/issues/10
+Please provide feedback about using the extension [here](https://github.com/cmallwitz/Financials-Extension/issues/10)
 
 ### Usage:
 
-Under 'Releases' on GitHub there is downloadable **Financials-Extension.oxt** file - load it into Calc 
+Under 'Releases' on GitHub [there](https://github.com/cmallwitz/Financials-Extension/releases) is a downloadable **Financials-Extension.oxt** file - load it into Calc 
 under menu item: Tools, Extension Manager...
+
+Please make sure, not to rename the OXT file when downloading and before installing: LO will mess up the installation otherwise and the extension won't work.
 
 Getting data should be a simple as having this in a cell: 
 - `=GETREALTIME("IBM",21,"YAHOO")`
 - `=GETREALTIME("IBM:NYQ",21,"FT")`
+- `=GETREALTIME("EURUSD","LAST_PRICE","FT")`
 - `=GETHISTORIC("IBM",90,"2020-12-01","YAHOO")`
 
 Codes 21 and 90 stand for "last price" and "close" (see below), respectively. 
@@ -35,6 +38,15 @@ equities, ETFs and mutual funds and major FX rates - if you have issues with the
 assets in other regions, drop me a line (best to include full URLs and possibly the same asset listed on more than one 
 site for comparison). While data for last price is most likely consistent across sites, they may differ for other data 
 points.     
+
+List of example URLs for checking symbols. You can start from these and search for other symbols. If you think some data
+is available on the website but not from the extension, a good place to start when raising an issue is to include a similar 
+URL to compare results.
+
+|Website|Symbol|Example URL for Vodafone Group Plc UK |
+| :--- | :--- | :--- |
+|YAHOO|VOD.L|https://finance.yahoo.com/quote/VOD.L|
+|FT|VOD:LSE|https://markets.ft.com/data/equities/tearsheet/summary?s=VOD:LSE|
 
 ### LibreOffice: using , (comma) vs ; (semicolon) to separate arguments in formula
 
