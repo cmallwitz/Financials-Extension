@@ -14,6 +14,7 @@ import logging
 import os
 import pathlib
 import platform
+import ssl
 import sys
 import time
 from functools import wraps
@@ -59,6 +60,16 @@ import financials_ft as ft
 
 implementation_name = "com.financials.getinfo.python.FinancialsImpl"  # as defined in Financials.xcu
 implementation_services = ("com.sun.star.sheet.AddIn",)
+
+# Disabling SSL certificate validation as Python setup on MacOS seems to be broken
+# Only reading public data so this should be safe
+
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
 
 
 def profile(fn):
@@ -230,7 +241,7 @@ class FinancialsImpl(unohelper.Base, Financials):
             if e.tag.endswith('version'):
                 version = e.attrib['value']
 
-        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}\nlocale={}\ndefaultlocale={}\ndateutil={}\npytz={}\npyparsing={}\nsix={}'.format(
+        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}\nsys.path={}\nlocale={}\ndefaultlocale={}\ndateutil={}\npytz={}\npyparsing={}\nsix={}'.format(
             self.ctx,
             id(self),
             version,
@@ -241,6 +252,7 @@ class FinancialsImpl(unohelper.Base, Financials):
             os.getpid(),
             sys.executable,
             sys.version.replace("\n", " "),
+            sys.path,
             locale.getlocale(),
             locale.getdefaultlocale(),
             dateutil.__version__,

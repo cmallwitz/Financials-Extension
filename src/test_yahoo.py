@@ -275,7 +275,7 @@ class Test(unittest.TestCase):
 
         # Note: quarterly dividend and splits will change past adjusted prices - will fail after the next dividend
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(136.249847, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(134.699081, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 

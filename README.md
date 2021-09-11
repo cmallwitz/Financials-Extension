@@ -132,6 +132,7 @@ python3 -m unittest discover src
 ### Tested with:
 - Windows 10 / LibreOffice Calc 7.1.2.2 / Python 3.8.8
 - Ubuntu 20.04 / LibreOffice Calc 6.4.3.2 / Python 3.8.2
+- MacOS 10.15.7 / LibeOffice Calc 7.2.0.4 / Python 3.8.10
 
 (Previous versions)
 - Debian 10.3  / LibreOffice Calc 6.1.5.2 / Python 3.7.3
