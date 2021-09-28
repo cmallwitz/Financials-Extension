@@ -88,6 +88,8 @@ You can either specify numbers or names (lower or upper case) - not all bits are
 |EX_DIV_DATE|72|Yes|Yes| |yyyy-mm-dd|
 |PAYOUT_RATIO|73|Yes|No|||
 |EXPIRY_DATE|74|Yes (on options)|No| |yyyy-mm-dd|
+|SHARES_OUT|75|Yes|Yes| ||
+|FREE_FLOAT|76|Yes|Yes| ||
 |CLOSE|90|No|No|Yes||
 |ADJ_CLOSE|91|No|No|Yes||
 |SECTOR|98|Yes|Yes|||

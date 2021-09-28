@@ -106,6 +106,12 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('IBM', Datacode.PAYOUT_RATIO.value, 'YAHOO')
         self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity PAYOUT_RATIO {}'.format(s))
 
+        s = financials.getRealtime('IBM', Datacode.SHARES_OUT.value, 'YAHOO')
+        self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity SHARES_OUT {}'.format(s))
+
+        s = financials.getRealtime('IBM', Datacode.FREE_FLOAT.value, 'YAHOO')
+        self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity FREE_FLOAT {}'.format(s))
+
         s = financials.getRealtime('IBM', Datacode.EXCHANGE.value, 'YAHOO')
         self.assertEqual(s, 'NYQ', 'test_realtime_US_equity EXCHANGE')
 

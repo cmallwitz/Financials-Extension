@@ -70,6 +70,12 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('IBM:NYQ', 'EPS', 'FT')
         self.assertEqual(float, type(s), 'test_US_equity EPS {}'.format(s))
 
+        s = financials.getRealtime('IBM:NYQ', 'SHARES_OUT', 'FT')
+        self.assertEqual(float, type(s), 'test_US_equity SHARES_OUT {}'.format(s))
+
+        s = financials.getRealtime('IBM:NYQ', 'FREE_FLOAT', 'FT')
+        self.assertEqual(float, type(s), 'test_US_equity FREE_FLOAT {}'.format(s))
+
         s = financials.getRealtime('IBM:NYQ', 'PE_RATIO', 'FT')
         self.assertEqual(float, type(s), 'test_US_equity PE_RATIO {}'.format(s))
 
@@ -216,6 +222,12 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('SAPX:GER', 'EPS', 'FT')
         self.assertEqual(float, type(s), 'test_DE_equity EPS {}'.format(s))
+
+        s = financials.getRealtime('SAPX:GER', 'SHARES_OUT', 'FT')
+        self.assertEqual(float, type(s), 'test_DE_equity SHARES_OUT {}'.format(s))
+
+        s = financials.getRealtime('SAPX:GER', 'FREE_FLOAT', 'FT')
+        self.assertEqual(float, type(s), 'test_DE_equity FREE_FLOAT {}'.format(s))
 
         s = financials.getRealtime('SAPX:GER', 'PE_RATIO', 'FT')
         self.assertEqual(float, type(s), 'test_DE_equity PE_RATIO {}'.format(s))

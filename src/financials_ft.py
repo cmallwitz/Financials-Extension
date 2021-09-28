@@ -241,6 +241,18 @@ class FT(BaseClient):
                 tick[Datacode.AVG_DAILY_VOL_3MONTH] = self.save_wrapper(
                     lambda: handle_abbreviations(html.unescape(match.group(1))))
 
+            r = r'<th>\s*Shares outstanding\s*</th><td>\s*([0-9,\.btnmk]+)\s*</td>'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                tick[Datacode.SHARES_OUT] = self.save_wrapper(
+                    lambda: handle_abbreviations(html.unescape(match.group(1))))
+
+            r = r'<th>\s*Free float\s*</th><td>\s*([0-9,\.btnmk]+)\s*</td>'
+            match = re.compile(r, flags=re.DOTALL).search(text, start)
+            if match:
+                tick[Datacode.FREE_FLOAT] = self.save_wrapper(
+                    lambda: handle_abbreviations(html.unescape(match.group(1))))
+
             r = r'<th>\s*P/E.*?</th><td>\s*([0-9,\.\-]+)\s*<'
             match = re.compile(r, flags=re.DOTALL).search(text, start)
             if match:

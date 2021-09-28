@@ -195,6 +195,7 @@ class BaseClient:
         tick[Datacode.EXCHANGE] = None
         tick[Datacode.EXPIRY_DATE] = None
         tick[Datacode.EX_DIV_DATE] = None
+        tick[Datacode.FREE_FLOAT] = None
         tick[Datacode.HIGH] = None
         tick[Datacode.HIGH_52_WEEK] = None
         tick[Datacode.INDUSTRY] = None
@@ -210,6 +211,7 @@ class BaseClient:
         tick[Datacode.PE_RATIO] = None
         tick[Datacode.PREV_CLOSE] = None
         tick[Datacode.SECTOR] = None
+        tick[Datacode.SHARES_OUT] = None
         tick[Datacode.TICKER] = None
         tick[Datacode.TIMEZONE] = None
         tick[Datacode.VOLUME] = None
@@ -319,6 +321,12 @@ class BaseClient:
                     return data[Datacode.EXPIRY_DATE].isoformat()
                 else:
                     return data[Datacode.EXPIRY_DATE]
+
+            elif datacode == Datacode.FREE_FLOAT.value and Datacode.FREE_FLOAT in data:
+                return data[Datacode.FREE_FLOAT]
+
+            elif datacode == Datacode.SHARES_OUT.value and Datacode.SHARES_OUT in data:
+                return data[Datacode.SHARES_OUT]
 
             elif datacode == Datacode.CLOSE.value and Datacode.CLOSE in data:
                 return data[Datacode.CLOSE]

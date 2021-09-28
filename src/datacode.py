@@ -44,6 +44,8 @@ class Datacode(Enum):
     EX_DIV_DATE = 72
     PAYOUT_RATIO = 73
     EXPIRY_DATE = 74
+    SHARES_OUT = 75
+    FREE_FLOAT = 76
 
     CLOSE = 90
     ADJ_CLOSE = 91

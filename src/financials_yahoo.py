@@ -176,6 +176,7 @@ class Yahoo(BaseClient):
             price = results['price']
             quoteType = results['quoteType']
             summaryDetail = results['summaryDetail']
+            defaultKeyStatistics = results['defaultKeyStatistics'] if 'defaultKeyStatistics' in results else dict()
 
             if not price:
                 return 'Could not find price for \'{}\''.format(ticker)
@@ -203,6 +204,8 @@ class Yahoo(BaseClient):
             tick[Datacode.DIV_YIELD] = float(raw(summaryDetail, 'dividendYield'))
             tick[Datacode.EX_DIV_DATE] = self.save_wrapper(
                 lambda: dateutil.parser.parse(str(fmt(summaryDetail, 'exDividendDate')), yearfirst=True, dayfirst=False).date())
+            tick[Datacode.SHARES_OUT] = float(raw(defaultKeyStatistics, 'sharesOutstanding'))
+            tick[Datacode.FREE_FLOAT] = float(raw(defaultKeyStatistics, 'floatShares'))
 
             tick[Datacode.PAYOUT_RATIO] = float(raw(summaryDetail, 'payoutRatio'))
             tick[Datacode.LOW_52_WEEK] = float(raw(summaryDetail, 'fiftyTwoWeekLow'))
