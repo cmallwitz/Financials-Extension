@@ -17,6 +17,7 @@ import pprint
 import re
 import time
 import urllib.parse
+import subprocess
 from http import cookiejar
 
 import dateutil.parser
@@ -126,7 +127,12 @@ class Yahoo(BaseClient):
                    ]
 
         try:
-            text = self.urlopen(url, redirect=True, data=None, headers=None, cookies=cookies)
+            #text = self.urlopen(url, redirect=True, data=None, headers=None, cookies=cookies)
+
+            # Somehow cURL manages to bypass the cookie consent page from Yahoo
+            # with its user agent. How could we call urlopen() in the same way
+            # so that it behaves like cURL?
+            text = subprocess.check_output("curl " + url, stderr=subprocess.DEVNULL, shell=True)
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             return 'Yahoo.getRealtime({}, {}) - urlopen: {}'.format(ticker, datacode, e)
