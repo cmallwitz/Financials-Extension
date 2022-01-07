@@ -102,7 +102,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('IBM:NYQ', 'INDUSTRY', 'FT')
         self.assertEqual(str, type(s), 'test_US_equity INDUSTRY {}'.format(s))
-        self.assertEqual(s, 'Software & Computer Services', 'test_US_equity INDUSTRY {}'.format(s))
+        self.assertEqual(s, 'Software and Computer Services', 'test_US_equity INDUSTRY {}'.format(s))
 
         # may fail (s is None) on weekends when date/time displayed doesn't have time component with TZ
         s = financials.getRealtime('IBM:NYQ', 'TIMEZONE', 'FT')
@@ -208,7 +208,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('SAPX:GER', 'INDUSTRY', 'FT')
         self.assertEqual(str, type(s), 'test_DE_equity INDUSTRY {}'.format(s))
-        self.assertEqual('Software & Computer Services', s, 'test_DE_equity INDUSTRY {}'.format(s))
+        self.assertEqual('Software and Computer Services', s, 'test_DE_equity INDUSTRY {}'.format(s))
 
         s = financials.getRealtime('SAPX:GER', 'LAST_PRICE_DATE', 'FT')
         self.assertEqual(str, type(s), 'test_DE_equity LAST_PRICE_DATE {}'.format(s))
@@ -243,7 +243,7 @@ class Test(unittest.TestCase):
         self.assertTrue(testutils.is_date(s), 'test_DE_equity EX_DIV_DATE {}'.format(s))
 
         s = financials.getRealtime('ISHAX:GER', 'NAME', 'FT')
-        self.assertEqual('Intershop Communications AG', s, 'test_DE_equity NAME {}'.format(s))
+        self.assertEqual('INTERSHOP Communications AG', s, 'test_DE_equity NAME {}'.format(s))
 
         s = financials.getRealtime('ISHAX:GER', 'BETA', 'FT')
         self.assertTrue(testutils.is_positive_float(s), 'test_DE_equity BETA {}'.format(s))
@@ -275,7 +275,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('NOVO B:CPH', 'industry', 'FT')
         self.assertEqual(str, type(s), 'test_DK_equity INDUSTRY {}'.format(s))
-        self.assertEqual('Pharmaceuticals & Biotechnology', s, 'test_DK_equity INDUSTRY {}'.format(s))
+        self.assertEqual('Pharmaceuticals and Biotechnology', s, 'test_DK_equity INDUSTRY {}'.format(s))
 
     def test_TY_equity(self):
         s = financials.getRealtime('6503:TYO', 'OPEN', 'FT')
@@ -340,7 +340,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('DELT:TLV', 'SECTOR', 'FT')
         self.assertEqual(str, type(s), 'test_TlV_equity SECTOR {}'.format(s))
-        self.assertEqual('Consumer Goods', s, 'test_TY_equity SECTOR {}'.format(s))
+        self.assertEqual('Consumer Discretionary', s, 'test_TY_equity SECTOR {}'.format(s))
 
         s = financials.getRealtime('DELT:TLV', 'INDUSTRY', 'FT')
         self.assertEqual(str, type(s), 'test_TlV_equity INDUSTRY {}'.format(s))

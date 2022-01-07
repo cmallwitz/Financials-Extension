@@ -50,6 +50,13 @@ def fmt(m, key, default=0.0):
     return default
 
 
+def cookie(name, value):
+    return cookiejar.Cookie(version=0, name=name, value=value,
+                            port=None, port_specified=False, domain=".yahoo.com", domain_specified=True,
+                            domain_initial_dot=True, path="/", path_specified=True, secure=True, expires=None,
+                            discard=False, comment=None, comment_url=None, rest=dict())
+
+
 class Yahoo(BaseClient):
     def __init__(self, ctx):
         super().__init__()
@@ -111,18 +118,13 @@ class Yahoo(BaseClient):
 
         url = 'https://finance.yahoo.com/quote/{}?p={}'.format(ticker, ticker)
 
-        cookies = [cookiejar.Cookie(version=0,
-                                    name="B",
-                                    value="er7g22lg35od5&b=3&s=8p",
-                                    port=None, port_specified=False,
-                                    domain=".yahoo.com", domain_specified=True, domain_initial_dot=True,
-                                    path="/", path_specified=True,
-                                    secure=True,
-                                    expires=None,
-                                    discard=False,
-                                    comment=None,
-                                    comment_url=None,
-                                    rest=dict())
+        cookies = [cookie("B", "7ndehflgtham3&b=3&s=mj"),
+                   # cookie("EuConsent", "CPSdqzyPSdqzyAOACCENBtCgAAAAAAAAACiQAAAAAABhoAMAAQQSEQAYAAggkKgAwABBBIA"),
+                   # cookie("GUCS", "AXdLQ12J"),
+                   # cookie("GUC", "AQABBgFh2flitkIiiATt"),
+                   cookie("A1", "d=AQABBOWq2GECEEvniMgJGWLsxf5dOz0WanAFEgABBgH52WG2YuA9b2UBgiAAAAcIw6rYYX3RtXs&S=AQAAAlFbjg2RcxWpwb48DGGofUE"),
+                   cookie("A1S", "d=AQABBOWq2GECEEvniMgJGWLsxf5dOz0WanAFEgABBgH52WG2YuA9b2UBgiAAAAcIw6rYYX3RtXs&S=AQAAAlFbjg2RcxWpwb48DGGofUE&j=GDPR"),
+                   cookie("A3", "d=AQABBOWq2GECEEvniMgJGWLsxf5dOz0WanAFEgABBgH52WG2YuA9b2UBgiAAAAcIw6rYYX3RtXs&S=AQAAAlFbjg2RcxWpwb48DGGofUE")
                    ]
 
         try:

@@ -205,6 +205,9 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'GER', 'test_realtime_DE_equity EXCHANGE')
 
     def test_DK_equity(self):
+        s = financials.getRealtime('NOVO-B.CO', 'last_price', 'YAHOO')
+        self.assertEqual(float, type(s), 'test_DK_equity LAST_PRICE {}'.format(s))
+
         s = financials.getRealtime('NOVO-B.CO', 'name', 'YAHOO')
         self.assertEqual('Novo Nordisk A/S', s, 'test_DK_equity NAME {}'.format(s))
 
@@ -260,12 +263,12 @@ class Test(unittest.TestCase):
         self.assertIsNone(s, 'test_historic_US_equity LAST_PRICE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(167.190002, s, 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertEqual(159.837479, s, 'test_historic_US_equity CLOSE {}'.format(s))
 
         financials.yahoo.historicdata = {}
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(167.190002, s, 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertEqual(159.837479, s, 'test_historic_US_equity CLOSE {}'.format(s))
 
         directory = os.path.join(str(pathlib.Path.home()), '.financials-extension')
         ibm = os.path.join(directory, 'yahoo-IBM.csv')
@@ -277,11 +280,10 @@ class Test(unittest.TestCase):
         financials.yahoo.historicdata = {}
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(167.190002, s, 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertEqual(159.837479, s, 'test_historic_US_equity CLOSE {}'.format(s))
 
-        # Note: quarterly dividend and splits will change past adjusted prices - will fail after the next dividend
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(134.699081, s, 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
+        self.assertEqual(float, type(s), 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
 
     def test_historic_UK_ETF(self):
 
