@@ -175,12 +175,11 @@ class Test(unittest.TestCase):
         self.assertEqual(float, type(s), 'test_realtime_UK_ETF LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('VERX.L', Datacode.TIMEZONE.value, 'YAHOO')
-        self.assertEqual(s, 'Europe/London', 'test_realtime_UK_ETF TIMEZONE {}'.format(s))
+        self.assertEqual('Europe/London', s, 'test_realtime_UK_ETF TIMEZONE {}'.format(s))
 
         s = financials.getRealtime('CSP1.L', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_UK_ETF NAME {}'.format(s))
-        self.assertEqual(s, 'iShares VII Public Limited Company - iShares Core S&P 500 UCITS ETF',
-                         'test_realtime_UK_ETF NAME {}'.format(s))
+        self.assertEqual('iShares Core S&P 500 UCITS ETF USD (Acc)', s, 'test_realtime_UK_ETF NAME {}'.format(s))
 
     def test_realtime_DE_equity(self):
 
@@ -188,11 +187,11 @@ class Test(unittest.TestCase):
         self.assertEqual(float, type(s), 'test_realtime_DE_equity LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('SAP.DE', Datacode.TIMEZONE.value, 'YAHOO')
-        self.assertEqual(s, 'Europe/Berlin', 'test_realtime_DE_equity TIMEZONE {}'.format(s))
+        self.assertEqual('Europe/Berlin', s, 'test_realtime_DE_equity TIMEZONE {}'.format(s))
 
         s = financials.getRealtime('SAP.DE', Datacode.SECTOR.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_DE_equity SECTOR {}'.format(s))
-        self.assertEqual(s, 'Technology', 'test_realtime_DE_equity SECTOR {}'.format(s))
+        self.assertEqual('Technology', s, 'test_realtime_DE_equity SECTOR {}'.format(s))
 
         s = financials.getRealtime('SAP.DE', Datacode.INDUSTRY.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_DE_equity INDUSTRY {}'.format(s))
@@ -331,7 +330,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 82.889999, 'test_historic_DE_equity CLOSE {}'.format(s))
 
         s = financials.getHistoric('C060.DE', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 68.209999, 'test_historic_DE_equity CLOSE {}'.format(s))
+        self.assertEqual(s, 72.870003, 'test_historic_DE_equity CLOSE {}'.format(s))
 
     def test_realtime_errors(self):
 

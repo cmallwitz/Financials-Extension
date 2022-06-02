@@ -118,13 +118,15 @@ class Yahoo(BaseClient):
 
         url = 'https://finance.yahoo.com/quote/{}?p={}'.format(ticker, ticker)
 
-        cookies = [cookie("B", "7ndehflgtham3&b=3&s=mj"),
-                   # cookie("EuConsent", "CPSdqzyPSdqzyAOACCENBtCgAAAAAAAAACiQAAAAAABhoAMAAQQSEQAYAAggkKgAwABBBIA"),
-                   # cookie("GUCS", "AXdLQ12J"),
-                   # cookie("GUC", "AQABBgFh2flitkIiiATt"),
-                   cookie("A1", "d=AQABBOWq2GECEEvniMgJGWLsxf5dOz0WanAFEgABBgH52WG2YuA9b2UBgiAAAAcIw6rYYX3RtXs&S=AQAAAlFbjg2RcxWpwb48DGGofUE"),
-                   cookie("A1S", "d=AQABBOWq2GECEEvniMgJGWLsxf5dOz0WanAFEgABBgH52WG2YuA9b2UBgiAAAAcIw6rYYX3RtXs&S=AQAAAlFbjg2RcxWpwb48DGGofUE&j=GDPR"),
-                   cookie("A3", "d=AQABBOWq2GECEEvniMgJGWLsxf5dOz0WanAFEgABBgH52WG2YuA9b2UBgiAAAAcIw6rYYX3RtXs&S=AQAAAlFbjg2RcxWpwb48DGGofUE")
+        cookies = [cookie("maex","%7B%22v2%22%3A%7B%7D%7D"),
+                   cookie("EuConsent", "CPZ7-cAPZ7-cAAOACBENCRCoAP_AAH_AACiQIlNd_X__bX9n-_7_7ft0cY1f9_r3r-QzjgfNs-8F3L_W_L0X32E7NF36pq4KuR4ku3bBIQFtHMnUTUmxaolVrzHsak2cpyNKI7LkknsZe2dYGH9Pn9lD-YKZ7_5___f53T___9_-39z3_9f___d9_-__-vjfV599n_v9fV_7_9nf_____-_-___4IQQ_AJMNS8gC7EscGTSMIoQQIwrCQqAUAFFAMLRFYAODgp2VgEuoIWACAVARgRAgxBRgwCAAACAJCIgJACwQCIAiAQAAgARAIQAETAILACwMAgAFANCxACgAECQgyICI5TAgIkSiglsrEEoK9jTCAOssAKBRGRUACJAAASAgJCwcxwBICXCyQJMULwAw0AGAAIIlCIAMAAQRKFQAYAAgiUA"),
+                   cookie("GUCS", "AR0nzQVM"),
+                   cookie("GUC", "AQABBwFimlxjZUIcxQRM"),
+                   cookie("PRF","t%3DVFIAX"),
+                   cookie("thamba","1"),
+                   cookie("A1", "d=AQABBNAVmWICEEFBM1xh-RmAmPpJJIsAz3YFEgABBwFcmmJlY_bPb2UB9iMAAAcIzhWZYm7SAIg&S=AQAAAucqV1HMdCsRf6key1gdaFs"),
+                   cookie("A1S", "d=AQABBNAVmWICEEFBM1xh-RmAmPpJJIsAz3YFEgABBwFcmmJlY_bPb2UB9iMAAAcIzhWZYm7SAIg&S=AQAAAucqV1HMdCsRf6key1gdaFs&j=GDPR"),
+                   cookie("A3", "d=AQABBNAVmWICEEFBM1xh-RmAmPpJJIsAz3YFEgABBwFcmmJlY_bPb2UB9iMAAAcIzhWZYm7SAIg&S=AQAAAucqV1HMdCsRf6key1gdaFs")
                    ]
 
         try:
