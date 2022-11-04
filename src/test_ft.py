@@ -102,7 +102,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('IBM:NYQ', 'INDUSTRY', 'FT')
         self.assertEqual(str, type(s), 'test_US_equity INDUSTRY {}'.format(s))
-        self.assertEqual(s, 'Software and Computer Services', 'test_US_equity INDUSTRY {}'.format(s))
+        self.assertEqual(s, 'Technology', 'test_US_equity INDUSTRY {}'.format(s))
 
         # may fail (s is None) on weekends when date/time displayed doesn't have time component with TZ
         s = financials.getRealtime('IBM:NYQ', 'TIMEZONE', 'FT')
@@ -208,7 +208,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('SAPX:GER', 'INDUSTRY', 'FT')
         self.assertEqual(str, type(s), 'test_DE_equity INDUSTRY {}'.format(s))
-        self.assertEqual('Software and Computer Services', s, 'test_DE_equity INDUSTRY {}'.format(s))
+        self.assertEqual('Technology', s, 'test_DE_equity INDUSTRY {}'.format(s))
 
         s = financials.getRealtime('SAPX:GER', 'LAST_PRICE_DATE', 'FT')
         self.assertEqual(str, type(s), 'test_DE_equity LAST_PRICE_DATE {}'.format(s))
