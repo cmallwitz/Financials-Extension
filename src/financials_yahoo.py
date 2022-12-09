@@ -118,17 +118,16 @@ class Yahoo(BaseClient):
 
         url = 'https://finance.yahoo.com/quote/{}?p={}'.format(ticker, ticker)
 
-        cookies = [cookie("maex","%7B%22v2%22%3A%7B%7D%7D"),
-                   # cookie("EuConsent", "CPZ7-cAPZ7-cAAOACBENCRCoAP_AAH_AACiQIlNd_X__bX9n-_7_7ft0cY1f9_r3r-QzjgfNs-8F3L_W_L0X32E7NF36pq4KuR4ku3bBIQFtHMnUTUmxaolVrzHsak2cpyNKI7LkknsZe2dYGH9Pn9lD-YKZ7_5___f53T___9_-39z3_9f___d9_-__-vjfV599n_v9fV_7_9nf_____-_-___4IQQ_AJMNS8gC7EscGTSMIoQQIwrCQqAUAFFAMLRFYAODgp2VgEuoIWACAVARgRAgxBRgwCAAACAJCIgJACwQCIAiAQAAgARAIQAETAILACwMAgAFANCxACgAECQgyICI5TAgIkSiglsrEEoK9jTCAOssAKBRGRUACJAAASAgJCwcxwBICXCyQJMULwAw0AGAAIIlCIAMAAQRKFQAYAAgiUA"),
-                   cookie("EuConsent", "CPh61wAPh61wAAOACBDECoCoAP_AAEfAACiQJBNd_H__bX9n-f7_6ft0eY1f9_r37uQzDhfNk-8F3L_W_LwX_2E7NF36tq4KmR4ku1LBIUNtHMnUDUmxaokVrzHsak2cpzNKJ_BkknsZe2dYGF9vm5tj-QKZ7_5_d3f52T_9_9v-39z33913v3d93-_13LjdV5_9H_v9fR_bc_Kf9_5-_8v8_____3_e______8EggCTDVuIAuxLHAm0DCKBECMKwkKoFABBQDC0QGADg4KdlYBPrCBAAgFAEYEQIcAUYEAgAAAgCQiACQIsEAAAIgEAAIAEQiEABAwCCgAsDAIAAQDQMUQoABAkIMiAiKUwICIEggJbKhBKC6Q0wgDrLACgkRsVAAiAAAUgACAsHAMESAlYsECTFG-QAjBCgFEqFaAGGgAwABBIIRABgACCQQqADAAEEgg"),
-                   cookie("GUCS", "AR0nzQVM"),
-                   cookie("GUC", "AQABBwFimlxjZUIcxQRM"),
-                   cookie("PRF","t%3DVFIAX"),
-                   cookie("thamba","1"),
-                   cookie("A1", "d=AQABBDcIZWMCEHYhFYqQ7qyTvvD2eAT87mcFEgABCAFUZmOTY-A9b2UB9qMAAAcILwhlY6iIogg&S=AQAAAqPLfcDzo6UMiZj4J_gTshI"),
-                   cookie("A1S", "d=AQABBDcIZWMCEHYhFYqQ7qyTvvD2eAT87mcFEgABCAFUZmOTY-A9b2UB9qMAAAcILwhlY6iIogg&S=AQAAAqPLfcDzo6UMiZj4J_gTshI&j=GDPR"),
-                   cookie("A3", "d=AQABBDcIZWMCEHYhFYqQ7qyTvvD2eAT87mcFEgABCAFUZmOTY-A9b2UB9qMAAAcILwhlY6iIogg&S=AQAAAqPLfcDzo6UMiZj4J_gTshI")
-                   ]
+        cookies = [
+            cookie("A1", "d=AQABBDcIZWMCEHYhFYqQ7qyTvvD2eAT87mcFEgABCAGDlGPBY_bPb2UB9qMAAAcILwhlY6iIogg&S=AQAAAjZvTuAn1nH4h71eKJtCEHk"),
+            cookie("A1S", "d=AQABBDcIZWMCEHYhFYqQ7qyTvvD2eAT87mcFEgABCAGDlGPBY_bPb2UB9qMAAAcILwhlY6iIogg&S=AQAAAjZvTuAn1nH4h71eKJtCEHk&j=GDPR"),
+            cookie("A3", "d=AQABBDcIZWMCEHYhFYqQ7qyTvvD2eAT87mcFEgABCAGDlGPBY_bPb2UB9qMAAAcILwhlY6iIogg&S=AQAAAjZvTuAn1nH4h71eKJtCEHk"),
+            cookie("GUC", "AQABCAFjlINjwUIcFQQQ&s=AQAAAFOQKXn7&g=Y5M5Jg"),
+            cookie("GUCS", "ASHFadZS"),
+            cookie("maex", "{\"v2\":{}}"),
+            cookie("PRF", "t=TQQQ%2BASTO.L%2BCHMI%2BVFIAX%2BIBM%2BXMR-USD%2BMVV%2BSECU-B.ST%2BMSFT"),
+            cookie("thamba", "1")
+        ]
 
         try:
             text = self.urlopen(url, redirect=True, data=None, headers=None, cookies=cookies)
@@ -315,7 +314,7 @@ class Yahoo(BaseClient):
             self.getRealtime(ticker, datacode)
 
         if not self.crumb:
-            return 'Yahoo.getHistoric({}, {}, {}) - crumb'.format(ticker, datacode, date)
+            return 'Yahoo.getHistoric({}, {}, {}) - crumb missing'.format(ticker, datacode, date)
 
         try:
             t1 = int(date_as_dt.timestamp())
