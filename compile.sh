@@ -5,8 +5,19 @@ set -o nounset
 set -o pipefail
 set -o noclobber
 
-export PATH=$PATH:/usr/lib/libreoffice/sdk/bin
-export PATH=$PATH:/usr/lib/libreoffice/program
+if [[ "$OSTYPE" == "darwin*" ]]; then
+  # Assuming both are installed in the applications folder
+  # Required some steps to make it work for MacOS M1, mind the `find` call which could return more than one (shouldn't)
+  # install_name_tool -change @__VIA_LIBRARY_PATH__/libreglo.dylib $(find /Applications -name "libreglo.dylib") /Applications/LibreOffice7.4_SDK/bin/idlc
+  # install_name_tool -change @__VIA_LIBRARY_PATH__/libuno_sal.dylib.3 $(find /Applications -name "libuno_sal.dylib.3") /Applications/LibreOffice7.4_SDK/bin/idlc
+  # install_name_tool -change @__VIA_LIBRARY_PATH__/libuno_salhelpergcc3.dylib.3 $(find /Applications -name "libuno_salhelpergcc3.dylib.3") /Applications/LibreOffice7.4_SDK/bin/idlc
+  # codesign --force -s - $(find /Applications -name "idlc")
+  export PATH=$PATH:/Applications/LibreOffice7.4_SDK/bin
+  export PATH=$PATH:/Applications/LibreOffice.app/Contents/MacOS
+else
+  export PATH=$PATH:/usr/lib/libreoffice/sdk/bin
+  export PATH=$PATH:/usr/lib/libreoffice/program
+fi
 
 # Setup build directories
 
@@ -37,6 +48,7 @@ cp -f "${PWD}"/src/tz.py "${PWD}"/build/
 cp -f "${PWD}"/src/financials_ft.py "${PWD}"/build/
 cp -f "${PWD}"/src/financials_google.py "${PWD}"/build/
 cp -f "${PWD}"/src/financials_yahoo.py "${PWD}"/build/
+cp -f "${PWD}"/src/financials_coinbase.py "${PWD}"/build/
 
 # this copies python modules dateutil, pytz, pyparsing to extension so it doesn't have to be installed by user
 
