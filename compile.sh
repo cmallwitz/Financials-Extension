@@ -5,7 +5,8 @@ set -o nounset
 set -o pipefail
 set -o noclobber
 
-if [[ "$OSTYPE" == "darwin*" ]]; then
+if [[ $OSTYPE == "darwin"* ]]; then
+  echo MacOS
   # Assuming both are installed in the applications folder
   # Required some steps to make it work for MacOS M1, mind the `find` call which could return more than one (shouldn't)
   # install_name_tool -change @__VIA_LIBRARY_PATH__/libreglo.dylib $(find /Applications -name "libreglo.dylib") /Applications/LibreOffice7.4_SDK/bin/idlc
