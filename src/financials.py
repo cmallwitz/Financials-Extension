@@ -56,6 +56,7 @@ import six
 from datacode import Datacode
 import financials_google as google
 import financials_yahoo as yahoo
+import financials_coinbase as coinbase
 import financials_ft as ft
 
 implementation_name = "com.financials.getinfo.python.FinancialsImpl"  # as defined in Financials.xcu
@@ -96,6 +97,7 @@ class FinancialsImpl(unohelper.Base, Financials):
         self.ctx = ctx
         self.google = google.createInstance(ctx)
         self.yahoo = yahoo.createInstance(ctx)
+        self.coinbase = coinbase.createInstance(ctx)
         self.ft = ft.createInstance(ctx)
 
     @profile
@@ -140,7 +142,9 @@ class FinancialsImpl(unohelper.Base, Financials):
             if source == 'YAHOO':
                 s = self.yahoo.getRealtime(ticker, datacode)
             elif source == 'FT':
-                s = self.ft.getRealtime(ticker, datacode)
+                s = self.yahoo.getRealtime(ticker, datacode)
+            elif source == 'COINBASE':
+                s = self.coinbase.getRealtime(ticker, datacode)
             else:
                 s = 'Source \'{}\' not supported'.format(source)
 
