@@ -311,40 +311,40 @@ class Test(unittest.TestCase):
         self.assertEqual('General Industrials', s, 'test_TY_equity INDUSTRY {}'.format(s))
 
     def test_TLV_equity(self):
-        s = financials.getRealtime('DELT:TLV', 'LAST_PRICE', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'LAST_PRICE', 'FT')
         self.assertEqual(float, type(s), 'test_TLV_equity LAST_PRICE {}'.format(s))
 
-        s = financials.getRealtime('DELT:TLV', 'OPEN', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'OPEN', 'FT')
         self.assertEqual(float, type(s), 'test_TLV_equity OPEN {}'.format(s))
 
-        s = financials.getRealtime('DELT:TLV', 'LOW', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'LOW', 'FT')
         self.assertEqual(float, type(s), 'test_TLV_equity LOW {}'.format(s))
 
-        s = financials.getRealtime('DELT:TLV', 'HIGH', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'HIGH', 'FT')
         self.assertEqual(float, type(s), 'test_TLV_equity HIGH {}'.format(s))
 
-        s = financials.getRealtime('DELT:TLV', 'LOW_52_WEEK', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'LOW_52_WEEK', 'FT')
         self.assertEqual(float, type(s), 'test_TLV_equity LOW_52_WEEK {}'.format(s))
 
-        s = financials.getRealtime('DELT:TLV', 'HIGH_52_WEEK', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'HIGH_52_WEEK', 'FT')
         self.assertEqual(float, type(s), 'test_TLV_equity HIGH_52_WEEK {}'.format(s))
 
-        s = financials.getRealtime('DELT:TLV', 'MARKET_CAP', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'MARKET_CAP', 'FT')
         self.assertEqual(float, type(s), 'test_TLV_equity MARKET_CAP {}'.format(s))
 
-        s = financials.getRealtime('DELT:TLV', 'VOLUME', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'VOLUME', 'FT')
         self.assertEqual(float, type(s), 'test_TLV_equity VOLUME {}'.format(s))
 
-        s = financials.getRealtime('DELT:TLV', 'CURRENCY', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'CURRENCY', 'FT')
         self.assertEqual('ILa', s, 'test_TLV_equity CURRENCY')
 
-        s = financials.getRealtime('DELT:TLV', 'SECTOR', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'SECTOR', 'FT')
         self.assertEqual(str, type(s), 'test_TLV_equity SECTOR {}'.format(s))
-        self.assertEqual('Consumer Discretionary', s, 'test_TY_equity SECTOR {}'.format(s))
+        self.assertEqual('Financials', s, 'test_TY_equity SECTOR {}'.format(s))
 
-        s = financials.getRealtime('DELT:TLV', 'INDUSTRY', 'FT')
+        s = financials.getRealtime('LUMI:TLV', 'INDUSTRY', 'FT')
         self.assertEqual(str, type(s), 'test_TLV_equity INDUSTRY {}'.format(s))
-        self.assertEqual('Personal Goods', s, 'test_TY_equity INDUSTRY {}'.format(s))
+        self.assertEqual('Banks', s, 'test_TY_equity INDUSTRY {}'.format(s))
 
     def test_index(self):
         s = financials.getRealtime('INX:IOM', 'ticker', 'FT')

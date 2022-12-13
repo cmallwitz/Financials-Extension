@@ -142,7 +142,7 @@ class FinancialsImpl(unohelper.Base, Financials):
             if source == 'YAHOO':
                 s = self.yahoo.getRealtime(ticker, datacode)
             elif source == 'FT':
-                s = self.yahoo.getRealtime(ticker, datacode)
+                s = self.ft.getRealtime(ticker, datacode)
             elif source == 'COINBASE':
                 s = self.coinbase.getRealtime(ticker, datacode)
             else:
