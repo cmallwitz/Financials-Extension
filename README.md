@@ -1,5 +1,7 @@
 # Financials-Extension
 
+### Update (18 Dec 2022) Yahoo deployed a major change to their website so extension is currently broken - I'm working on fix...
+
 This is a Python based extension for LibreOffice Calc to make stock market, index and FX data available in Calc 
 spreadsheets - currently supporting Yahoo's and Financial Times' finance websites using old-fashioned web scraping. 
 
