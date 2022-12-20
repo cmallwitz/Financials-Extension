@@ -195,6 +195,7 @@ class BaseClient:
         tick[Datacode.EXPIRY_DATE] = None
         tick[Datacode.EX_DIV_DATE] = None
         tick[Datacode.FREE_FLOAT] = None
+        tick[Datacode.SETTLEMENT_DATE] = None
         tick[Datacode.HIGH] = None
         tick[Datacode.HIGH_52_WEEK] = None
         tick[Datacode.INDUSTRY] = None
@@ -214,6 +215,11 @@ class BaseClient:
         tick[Datacode.TICKER] = None
         tick[Datacode.TIMEZONE] = None
         tick[Datacode.VOLUME] = None
+
+        tick[Datacode.YAHOO_SUMMARY_RECEIVED] = False
+        tick[Datacode.YAHOO_STATISTIC_RECEIVED] = False
+        tick[Datacode.YAHOO_PROFILE_RECEIVED] = False
+        tick[Datacode.TIMESTAMP] = None
 
         return tick
 
@@ -323,6 +329,12 @@ class BaseClient:
 
             elif datacode == Datacode.FREE_FLOAT.value and Datacode.FREE_FLOAT in data:
                 return data[Datacode.FREE_FLOAT]
+
+            elif datacode == Datacode.SETTLEMENT_DATE.value and Datacode.SETTLEMENT_DATE in data:
+                if data[Datacode.SETTLEMENT_DATE]:
+                    return data[Datacode.SETTLEMENT_DATE].isoformat()
+                else:
+                    return data[Datacode.SETTLEMENT_DATE]
 
             elif datacode == Datacode.SHARES_OUT.value and Datacode.SHARES_OUT in data:
                 return data[Datacode.SHARES_OUT]

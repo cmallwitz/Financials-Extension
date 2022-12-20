@@ -1,6 +1,10 @@
 # Financials-Extension
 
-### Update (18 Dec 2022) Yahoo deployed a major change to their website breaking the extension. Latest version 3.2.0 restores fields from Summary tab (values from Statistics and Profile tabe will be fixed later) 
+## Update (20 Dec 2022) Yahoo deployed a major website change 
+
+The latest version 3.2.1 restores almost all extension functionality. The only fields missing is LAST_PRICE_DATE and LAST_PRICE_TIME - somehow this is handled now using JavaScript making it a pain to extract.  
+
+## Overview
 
 This is a Python based extension for LibreOffice Calc to make stock market, index and FX data available in Calc 
 spreadsheets - currently supporting Yahoo's and Financial Times' finance websites using old-fashioned web scraping. 
@@ -64,8 +68,8 @@ You can either specify numbers or names (lower or upper case) - not all bits are
 | PREV_CLOSE           | 5    |       Yes        | Yes |||
 | OPEN                 | 6    |       Yes        | Yes |       Yes        | Yes      ||
 | CHANGE               | 7    |       Yes        | Yes |||
-| LAST_PRICE_DATE      | 8    |       Yes        | Yes |                  |          | yyyy-mm-dd |
-| LAST_PRICE_TIME      | 10   |       Yes        | Yes |||
+| LAST_PRICE_DATE      | 8    |                  | Yes |                  |          | yyyy-mm-dd |
+| LAST_PRICE_TIME      | 10   |                  | Yes |||
 | CHANGE_IN_PERCENT    | 11   |       Yes        | Yes |||
 | LOW                  | 14   |       Yes        | Yes |       Yes        | Yes      ||
 | HIGH                 | 16   |       Yes        | Yes |       Yes        | Yes      ||
@@ -89,6 +93,7 @@ You can either specify numbers or names (lower or upper case) - not all bits are
 | EXPIRY_DATE          | 74   | Yes (on options) | No  |                  |          | yyyy-mm-dd |
 | SHARES_OUT           | 75   |       Yes        | Yes |                  |          ||
 | FREE_FLOAT           | 76   |       Yes        | Yes |                  |          ||
+| SETTLEMENT_DATE      | 77   |       Yes        |     |                  |          ||
 | CLOSE                | 90   |        No        | No  |       Yes        |          ||
 | ADJ_CLOSE            | 91   |        No        | No  |       Yes        |          ||
 | SECTOR               | 98   |       Yes        | Yes |||

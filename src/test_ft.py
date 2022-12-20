@@ -15,6 +15,7 @@ import unittest
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
 import financials
+from datacode import Datacode
 import testutils
 
 financials = financials.createInstance(None)
@@ -133,6 +134,33 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('VFIAX', 'LAST_PRICE_TIME', 'FT')
         self.assertEqual(str, type(s), 'test_US_mutuals LAST_PRICE_TIME {}'.format(s))
+
+    def test_US_futures(self):
+
+        s = financials.getRealtime('ESH3:IOM', Datacode.NAME.value, 'FT')
+        self.assertEqual(str, type(s), 'test_realtime_US_futures NAME {}'.format(s))
+        self.assertEqual('EMINI S&P MAR3', s, 'test_US_futures NAME {}'.format(s))
+
+        s = financials.getRealtime('ESH3:IOM', Datacode.LAST_PRICE.value, 'FT')
+        self.assertEqual(float, type(s), 'test_US_futures LAST_PRICE {}'.format(s))
+
+        # s = financials.getRealtime('ESH3:IOM', Datacode.OPEN.value, 'FT')
+        # self.assertEqual(float, type(s), 'test_US_futures OPEN {}'.format(s))
+
+        s = financials.getRealtime('ESH3:IOM', Datacode.VOLUME.value, 'FT')
+        self.assertEqual(float, type(s), 'test_US_futures VOLUME {}'.format(s))
+
+        s = financials.getRealtime('ESH3:IOM', Datacode.LOW_52_WEEK.value, 'FT')
+        self.assertEqual(float, type(s), 'test_US_futures LOW_52_WEEK {}'.format(s))
+
+        s = financials.getRealtime('ESH3:IOM', Datacode.HIGH_52_WEEK.value, 'FT')
+        self.assertEqual(float, type(s), 'test_US_futures HIGH_52_WEEK {}'.format(s))
+
+        s = financials.getRealtime('ESH3:IOM', Datacode.CHANGE.value, 'FT')
+        self.assertEqual(float, type(s), 'test_US_futures CHANGE {}'.format(s))
+
+        s = financials.getRealtime('ESH3:IOM', Datacode.CHANGE_IN_PERCENT.value, 'FT')
+        self.assertEqual(float, type(s), 'test_US_futures CHANGE_IN_PERCENT {}'.format(s))
 
     def test_UK_ETF(self):
         s = financials.getRealtime('CSP1:LSE:GBX', 'NAME', 'FT')

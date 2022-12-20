@@ -46,6 +46,7 @@ class Datacode(Enum):
     EXPIRY_DATE = 74
     SHARES_OUT = 75
     FREE_FLOAT = 76
+    SETTLEMENT_DATE = 77
 
     CLOSE = 90
     ADJ_CLOSE = 91
@@ -59,6 +60,9 @@ class Datacode(Enum):
     NAME = 104
     TIMEZONE = 105
 
+    YAHOO_SUMMARY_RECEIVED = 996
+    YAHOO_STATISTIC_RECEIVED = 997
+    YAHOO_PROFILE_RECEIVED = 998
     TIMESTAMP = 999
 
     @classmethod
