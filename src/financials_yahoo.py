@@ -192,7 +192,7 @@ class Yahoo(BaseClient):
             for d in found:
                 if d:
                     span = d.find('./span')
-                    if hasattr(span, 'text'):
+                    if hasattr(span, 'text') and span.text is not None:
                         parsed[d.attrib['data-test']] = span.text.replace('−', '-').replace(',', '').strip()
                 else:
                     if hasattr(d, 'attrib') and hasattr(d, 'text'):
