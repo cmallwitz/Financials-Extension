@@ -66,7 +66,7 @@ class Google(BaseClient):
         # use cached value for up to 60 seconds
         if ticker in self.realtime:
             tick = self.realtime[ticker]
-            if time.time() - 60 < tick[Datacode.TIMESTAMP]:
+            if Datacode.TIMESTAMP in tick and type(tick[Datacode.TIMESTAMP]) == float and time.time() - 60 < tick[Datacode.TIMESTAMP]:
                 return self._return_value(tick, datacode)
             else:
                 del self.realtime[ticker]

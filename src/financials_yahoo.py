@@ -64,6 +64,17 @@ def cookie(name, value):
                             discard=False, comment=None, comment_url=None, rest=dict())
 
 
+def get_cookies():
+    return [
+        cookie("A1", "d=AQABBNAVmWICEEFBM1xh-RmAmPpJJIsAz3YFEgABBwFcmmJlY_bPb2UB9iMAAAcIzhWZYm7SAIg&S=AQAAAucqV1HMdCsRf6key1gdaFs"),
+        cookie("A1S", "d=AQABBNAVmWICEEFBM1xh-RmAmPpJJIsAz3YFEgABBwFcmmJlY_bPb2UB9iMAAAcIzhWZYm7SAIg&S=AQAAAucqV1HMdCsRf6key1gdaFs&j=GDPR"),
+        cookie("A3", "d=AQABBNAVmWICEEFBM1xh-RmAmPpJJIsAz3YFEgABBwFcmmJlY_bPb2UB9iMAAAcIzhWZYm7SAIg&S=AQAAAucqV1HMdCsRf6key1gdaFs"),
+        cookie("GUC", "AQABBwFimlxjZUIcxQRM"),
+        cookie("maex", "{\"v2\":{}}"),
+        cookie("thamba", "1")
+    ]
+
+
 class Yahoo(BaseClient):
     def __init__(self, ctx):
         super().__init__()
@@ -72,6 +83,61 @@ class Yahoo(BaseClient):
         self.realtime = {}
         self.historicdata = {}
         self.js = jsonParser.jsonObject
+
+        self.create_cookies()
+
+    def create_cookies(self):
+
+        cookiejar_path = os.path.join(self.basedir, 'yahoo.cookiejar')
+        cookiejar_exists = os.path.isfile(cookiejar_path) and os.stat(cookiejar_path).st_size >= 0
+
+        if cookiejar_exists:
+            try:
+                self.cookies = cookiejar.LWPCookieJar()
+                self.cookies.load(cookiejar_path, ignore_discard=True)
+
+                required_cookie_names = ["A1", "A1S", "A3", "GUC", "maex", "thamba"]
+                for c in self.cookies:
+                    if c.name in required_cookie_names:
+                        required_cookie_names.remove(c.name)
+
+                if len(required_cookie_names) > 0:
+                    cookiejar_exists = False
+                    logger.info("Overriding cookiejar '%s'", cookiejar_path)
+
+            except BaseException:
+                cookiejar_exists = False
+                logger.exception("BaseException initial loading cookiejar_path=%s", cookiejar_path)
+
+        if not cookiejar_exists:
+            try:
+                lwp_cookiejar = cookiejar.LWPCookieJar()
+                for c in get_cookies():
+                    lwp_cookiejar.set_cookie(c)
+                lwp_cookiejar.save(cookiejar_path, ignore_discard=True)
+                logger.info("Created cookiejar '%s'", cookiejar_path)
+            except BaseException:
+                logger.exception("BaseException creating cookiejar_path=%s", cookiejar_path)
+
+        try:
+            self.cookies = cookiejar.LWPCookieJar()
+            self.cookies.load(cookiejar_path, ignore_discard=True)
+
+            logger.info("Loaded cookiejar '%s'", cookiejar_path)
+
+            for c in self.cookies:
+                logger.info("Cookie name'%s' value='%s' path='%s'", c.name, c.value, c.path)
+
+        except BaseException:
+            logger.exception("BaseException loading cookiejar_path=%s", cookiejar_path)
+
+    def save_cookies(self):
+        cookiejar_path = os.path.join(self.basedir, 'yahoo.cookiejar')
+        try:
+            self.cookies.save(cookiejar_path, ignore_discard=True)
+            logger.debug("Saved cookiejar '%s'", cookiejar_path)
+        except BaseException:
+            logger.exception("BaseException saving cookiejar_path=%s", cookiejar_path)
 
     def _read_ticker_csv_file(self, ticker):
 
@@ -102,18 +168,6 @@ class Yahoo(BaseClient):
 
             self.historicdata[ticker] = ticks
 
-    def get_cookies(self):
-        return [
-            cookie("A1", "d=AQABBDcIZWMCEHYhFYqQ7qyTvvD2eAT87mcFEgABCAGDlGPBY_bPb2UB9qMAAAcILwhlY6iIogg&S=AQAAAjZvTuAn1nH4h71eKJtCEHk"),
-            cookie("A1S", "d=AQABBDcIZWMCEHYhFYqQ7qyTvvD2eAT87mcFEgABCAGDlGPBY_bPb2UB9qMAAAcILwhlY6iIogg&S=AQAAAjZvTuAn1nH4h71eKJtCEHk&j=GDPR"),
-            cookie("A3", "d=AQABBDcIZWMCEHYhFYqQ7qyTvvD2eAT87mcFEgABCAGDlGPBY_bPb2UB9qMAAAcILwhlY6iIogg&S=AQAAAjZvTuAn1nH4h71eKJtCEHk"),
-            cookie("GUC", "AQABCAFjlINjwUIcFQQQ&s=AQAAAFOQKXn7&g=Y5M5Jg"),
-            cookie("GUCS", "ASHFadZS"),
-            cookie("maex", "{\"v2\":{}}"),
-            cookie("PRF", "t=TQQQ%2BASTO.L%2BCHMI%2BVFIAX%2BIBM%2BXMR-USD%2BMVV%2BSECU-B.ST%2BMSFT"),
-            cookie("thamba", "1")
-        ]
-
     def getRealtime(self, ticker, datacode):
 
         """
@@ -133,7 +187,7 @@ class Yahoo(BaseClient):
         # use cached value for up to 60 seconds
         if ticker in self.realtime:
             tick = self.realtime[ticker]
-            if time.time() - 60 < tick[Datacode.TIMESTAMP]:
+            if Datacode.TIMESTAMP in tick and type(tick[Datacode.TIMESTAMP]) == float and time.time() - 60 < tick[Datacode.TIMESTAMP]:
                 if (tick[Datacode.YAHOO_STATISTIC_RECEIVED] or not needStatistics) and (
                         tick[Datacode.YAHOO_PROFILE_RECEIVED] or not needProfile) and (
                         tick[Datacode.YAHOO_SUMMARY_RECEIVED]):
@@ -163,14 +217,16 @@ class Yahoo(BaseClient):
         url = 'https://finance.yahoo.com/quote/{}?p={}'.format(ticker, ticker)
 
         try:
-            text = self.urlopen(url, redirect=True, data=None, headers=None, cookies=self.get_cookies())
+            text = self.urlopen(url, redirect=True)
+            self.save_cookies()
         except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            logger.exception("BaseException ticker=%s datacode=%s last_url=%s redirect_count=%s", ticker, datacode, self.last_url, self.redirect_count)
+            del self.realtime[ticker]
             return 'Yahoo.getRealtimeSummary({}, {}) - urlopen: {}'.format(ticker, datacode, e)
 
         try:
             with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w", encoding="utf-8") as text_file:
-                print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
+                print(f"<!-- '{self.last_url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
 
@@ -182,10 +238,8 @@ class Yahoo(BaseClient):
                 self.crumb = match.group(1)
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
             return 'Yahoo.getRealtimeSummary({}, {}) - crumb: {}'.format(ticker, datacode, e)
-
-        tick[Datacode.TIMESTAMP] = time.time()
-        tick[Datacode.YAHOO_SUMMARY_RECEIVED] = True
 
         try:
             parser = NaiveHTMLParser()
@@ -196,12 +250,24 @@ class Yahoo(BaseClient):
             return 'Yahoo.getRealtimeSummary({}, {}) - HTML parsing: {}'.format(ticker, datacode, e)
 
         try:
+            tick[Datacode.TICKER] = ticker
+            tick[Datacode.TIMESTAMP] = time.time()
+            tick[Datacode.YAHOO_SUMMARY_RECEIVED] = True
+
             parsed = {}
 
             found = root.findall(f".//fin-streamer[@data-symbol='{ticker}']")
             for d in found:
                 if hasattr(d, 'attrib') and 'data-field' in d.attrib:
                     parsed[d.attrib['data-field']] = default(d.attrib, 'value').replace('−', '-').replace(',', '').strip()
+
+            # for futures "regularMarketVolume" is from actual future ticker (potentially different to requested one)
+            if 'regularMarketVolume' not in parsed:
+                found = root.findall(f".//fin-streamer[@data-field='regularMarketVolume']")
+                for d in found:
+                    if hasattr(d, 'attrib') and 'data-field' in d.attrib and 'data-symbol' in d.attrib:
+                        parsed[d.attrib['data-field']] = default(d.attrib, 'value').replace('−', '-').replace(',', '').strip()
+                        tick[Datacode.TICKER] = default(d.attrib, 'data-symbol').strip()
 
             found = root.findall(f".//td[@data-test]")
             for d in found:
@@ -275,8 +341,6 @@ class Yahoo(BaseClient):
             #     tick[Datacode.LAST_PRICE_DATE] = dt.date()
             #     tick[Datacode.LAST_PRICE_TIME] = dt.time()
 
-            tick[Datacode.TICKER] = ticker
-
             r = '<span>([ \\w]+?) - [^>]*Currency in ([\\w]+)[^>]*</span>'
             match = re.compile(r, flags=re.DOTALL).search(text)
             if match:
@@ -297,6 +361,7 @@ class Yahoo(BaseClient):
 
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
             return 'Yahoo.getRealtimeSummary({}, {}) - process: {}'.format(ticker, datacode, e)
 
         return self._return_value(self.realtime[ticker], datacode)
@@ -312,16 +377,18 @@ class Yahoo(BaseClient):
         url = 'https://finance.yahoo.com/quote/{}/key-statistics?p={}'.format(ticker, ticker)
 
         try:
-            text = self.urlopen(url, redirect=True, data=None, headers=None, cookies=self.get_cookies())
+            text = self.urlopen(url, redirect=True)
+            self.save_cookies()
         except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            logger.exception("BaseException ticker=%s datacode=%s last_url=%s redirect_count=%s", ticker, datacode, self.last_url, self.redirect_count)
+            del self.realtime[ticker]
             return 'Yahoo.getRealtimeStatistics({}, {}) - urlopen: {}'.format(ticker, datacode, e)
 
         try:
             with open(os.path.join(self.basedir, 'yahoo-{}-statistics.html'.format(ticker)), "w", encoding="utf-8") as text_file:
                 print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            logger.exception("BaseException open/write ticker=%s datacode=%s", ticker, datacode)
 
         try:
             parser = NaiveHTMLParser()
@@ -329,10 +396,8 @@ class Yahoo(BaseClient):
             parser.close()
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
             return 'Yahoo.getRealtimeStatistics({}, {}) - HTML parsing: {}'.format(ticker, datacode, e)
-
-        tick[Datacode.TIMESTAMP] = time.time()
-        tick[Datacode.YAHOO_STATISTIC_RECEIVED] = True
 
         try:
 
@@ -343,33 +408,41 @@ class Yahoo(BaseClient):
             if statistics is None:
                 return None
 
+            tick[Datacode.TICKER] = ticker
+            tick[Datacode.TIMESTAMP] = time.time()
+            tick[Datacode.YAHOO_STATISTIC_RECEIVED] = True
+
             # Valuation Measures
-            found = statistics.find('./div[2]/div[1]//table').findall('.//tr')
-            for d in found:
-                key = d.find('./td[1]/span').text
-                if key is not None:
-                    parsed[key] = d.find('./td[2]').text
+            found = statistics.find('./div[2]/div[1]//table')
+            if found:
+                for d in found.findall('.//tr'):
+                    key = d.find('./td[1]/span').text
+                    if key is not None:
+                        parsed[key] = d.find('./td[2]').text
 
             # Stock Price History
-            found = statistics.find('./div[2]/div[2]/div[1]/div[1]//table').findall('.//tr')
-            for d in found:
-                key = d.find('./td[1]/span').text
-                if key is not None:
-                    parsed[key] = d.find('./td[2]').text
+            found = statistics.find('./div[2]/div[2]/div[1]/div[1]//table')
+            if found:
+                for d in found.findall('.//tr'):
+                    key = d.find('./td[1]/span').text
+                    if key is not None:
+                        parsed[key] = d.find('./td[2]').text
 
             # Share Statistics
-            found = statistics.find('./div[2]/div[2]/div[1]/div[2]//table').findall('.//tr')
-            for d in found:
-                key = d.find('./td[1]/span').text
-                if key is not None:
-                    parsed[key] = d.find('./td[2]').text
+            found = statistics.find('./div[2]/div[2]/div[1]/div[2]//table')
+            if found:
+                for d in found.findall('.//tr'):
+                    key = d.find('./td[1]/span').text
+                    if key is not None:
+                        parsed[key] = d.find('./td[2]').text
 
             # Dividends & Splits
-            found = statistics.find('./div[2]/div[2]/div[1]/div[3]//table').findall('.//tr')
-            for d in found:
-                key = d.find('./td[1]/span').text
-                if key is not None:
-                    parsed[key] = d.find('./td[2]').text
+            found = statistics.find('./div[2]/div[2]/div[1]/div[3]//table')
+            if found:
+                for d in found.findall('.//tr'):
+                    key = d.find('./td[1]/span').text
+                    if key is not None:
+                        parsed[key] = d.find('./td[2]').text
 
             tick[Datacode.SHARES_OUT] = self.save_wrapper(
                 lambda: float(handle_abbreviations(parsed['Shares Outstanding'])))
@@ -380,6 +453,7 @@ class Yahoo(BaseClient):
 
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
             return 'Yahoo.getRealtimeStatistics({}, {}) - process: {}'.format(ticker, datacode, e)
 
         return self._return_value(self.realtime[ticker], datacode)
@@ -395,16 +469,18 @@ class Yahoo(BaseClient):
         url = 'https://finance.yahoo.com/quote/{}/profile?p={}'.format(ticker, ticker)
 
         try:
-            text = self.urlopen(url, redirect=True, data=None, headers=None, cookies=self.get_cookies())
+            text = self.urlopen(url, redirect=True)
+            self.save_cookies()
         except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            logger.exception("BaseException ticker=%s datacode=%s last_url=%s redirect_count=%s", ticker, datacode, self.last_url, self.redirect_count)
+            del self.realtime[ticker]
             return 'Yahoo.getRealtimeProfile({}, {}) - urlopen: {}'.format(ticker, datacode, e)
 
         try:
             with open(os.path.join(self.basedir, 'yahoo-{}-profile.html'.format(ticker)), "w", encoding="utf-8") as text_file:
                 print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            logger.exception("BaseException open/write ticker=%s datacode=%s", ticker, datacode)
 
         try:
             parser = NaiveHTMLParser()
@@ -412,10 +488,8 @@ class Yahoo(BaseClient):
             parser.close()
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
             return 'Yahoo.getRealtimeProfile({}, {}) - HTML parsing: {}'.format(ticker, datacode, e)
-
-        tick[Datacode.TIMESTAMP] = time.time()
-        tick[Datacode.YAHOO_PROFILE_RECEIVED] = True
 
         try:
 
@@ -424,11 +498,16 @@ class Yahoo(BaseClient):
             if p is None:
                 return None
 
+            tick[Datacode.TICKER] = ticker
+            tick[Datacode.TIMESTAMP] = time.time()
+            tick[Datacode.YAHOO_PROFILE_RECEIVED] = True
+
             tick[Datacode.SECTOR] = self.save_wrapper(lambda: p.find("./span[2]").text)
             tick[Datacode.INDUSTRY] = self.save_wrapper(lambda: p.find("./span[4]").text)
 
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
             return 'Yahoo.getRealtimeProfile({}, {}) - process: {}'.format(ticker, datacode, e)
 
         return self._return_value(self.realtime[ticker], datacode)
@@ -457,7 +536,7 @@ class Yahoo(BaseClient):
         try:
             date_as_dt = dateutil.parser.parse(date, yearfirst=True, dayfirst=False)
         except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            logger.exception("BaseException ticker=%s datacode=%s last_url=%s redirect_count=%s", ticker, datacode, self.last_url, self.redirect_count)
             return 'Yahoo.getHistoric({}, {}, {}) - date_as_dt: {}'.format(ticker, datacode, date, e)
 
         if ticker in self.historicdata:

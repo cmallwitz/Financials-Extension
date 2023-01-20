@@ -1,8 +1,6 @@
 # Financials-Extension
 
-## Update (20 Dec 2022) Yahoo deployed a major website change 
-
-The latest version 3.2.1 restores almost all extension functionality. The only fields missing is LAST_PRICE_DATE and LAST_PRICE_TIME - somehow this is handled now using JavaScript making it a pain to extract.  
+Version 3.3.0 includes improved cookie handling and somewhat improved logic to deal with network issues.   
 
 ## Overview
 
@@ -93,7 +91,7 @@ You can either specify numbers or names (lower or upper case) - not all bits are
 | EXPIRY_DATE          | 74   | Yes (on options) | No  |                  |          | yyyy-mm-dd |
 | SHARES_OUT           | 75   |       Yes        | Yes |                  |          ||
 | FREE_FLOAT           | 76   |       Yes        | Yes |                  |          ||
-| SETTLEMENT_DATE      | 77   |       Yes        |     |                  |          ||
+| SETTLEMENT_DATE      | 77   | Yes (on futures) |     |                  |          | yyyy-mm-dd |
 | CLOSE                | 90   |        No        | No  |       Yes        |          ||
 | ADJ_CLOSE            | 91   |        No        | No  |       Yes        |          ||
 | SECTOR               | 98   |       Yes        | Yes |||

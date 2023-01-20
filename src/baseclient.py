@@ -43,30 +43,21 @@ class BaseClient:
         self.connections = {}
         self.cookies = cookiejar.CookieJar()
         self.last_url = None
+        self.redirect_count = 0  # will be set later
 
         self.basedir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
         os.makedirs(self.basedir, exist_ok=True)
 
         user_agents = [
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:97.0) Gecko/20100101 Firefox/97.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:98.0) Gecko/20100101 Firefox/96.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/97.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/97.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:101.0) Gecko/20100101 Firefox/97.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/97.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:103.0) Gecko/20100101 Firefox/97.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:104.0) Gecko/20100101 Firefox/97.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/97.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/97.0',
-
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4104.0 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4149.0 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:101.0) Gecko/20100101 Firefox/101.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:103.0) Gecko/20100101 Firefox/103.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:104.0) Gecko/20100101 Firefox/104.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:108.0) Gecko/20100101 Firefox/108.0'
         ]
 
         self.default_headers = {
@@ -107,7 +98,7 @@ class BaseClient:
             connection = HTTPConnection(host, **kwargs) if scheme == 'http:' else HTTPSConnection(host, **kwargs)
 
         logger.debug('Creating request -----------------------------------------------------')
-        logger.info("url='%s'", url)
+        logger.debug("url='%s'", url)
 
         self.last_url = url
 
@@ -127,7 +118,7 @@ class BaseClient:
 
         logger.debug('Processing response --------------------------------------------------')
 
-        # logger.debug('response.status={}'.format(response.status))
+        logger.debug('response.status=%s', response.status)
         for key, value in response.getheaders():
             logger.debug('Header: %s=%s', key, value)
 
@@ -138,15 +129,24 @@ class BaseClient:
 
     def urlopen(self, url, redirect=True, data=None, headers={}, cookies=[], **kwargs):
 
+        self.last_url = None
+
         self.response = self.request('POST' if data else 'GET', url, data, headers, cookies, **kwargs)
         text = self.response.read()
 
         # Allow redirects - used by Yahoo for some cookie based consent
-        redirect_count = 3
+        self.redirect_count = 5
 
-        while 300 <= self.response.status < 400 and redirect_count >= 0:
+        # (for Yahoo) AWS CloudFront occasionally returns an incorrect, cached error responses
+        # try mitigating by re-requesting straight away
+        if 400 <= self.response.status < 500:
+            if self.response.getheader('X-Cache') == 'Error from cloudfront':
+                self.response = self.request('POST' if data else 'GET', url, data, headers, cookies, **kwargs)
+                text = self.response.read()
 
-            redirect_count -= 1
+        while 300 <= self.response.status < 400 and self.redirect_count >= 0:
+
+            self.redirect_count -= 1
             location = self.response.getheader('Location')
 
             if location and redirect:
@@ -162,6 +162,8 @@ class BaseClient:
                 raise RedirectException(location)
 
         if self.response.status >= 400:
+            logger.warning("last_url='%s' status=%s headers=%s", self.last_url, self.response.status,
+                           '\n'.join(sorted(self.response.headers.__str__().splitlines(), key=lambda l: l.lower())))
             raise HttpException(url, self.response.status)
 
         if self.response.getheader('Content-Encoding') == 'gzip':

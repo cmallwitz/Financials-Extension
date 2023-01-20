@@ -30,7 +30,7 @@ os.makedirs(basedir, exist_ok=True)
 logging.basicConfig(
     handlers=[logging.FileHandler(filename=os.path.join(basedir, 'extension.log'), encoding='utf-8', mode='a+')],
     format="%(asctime)s %(name)s %(levelname)s %(message)s",
-    level=logging.WARN)
+    level=logging.INFO)
 
 # Add current directory to import path
 current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

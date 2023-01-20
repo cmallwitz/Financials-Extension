@@ -63,7 +63,7 @@ class FT(BaseClient):
         # use cached value for up to 60 seconds
         if ticker in self.realtime:
             tick = self.realtime[ticker]
-            if time.time() - 60 < tick[Datacode.TIMESTAMP]:
+            if Datacode.TIMESTAMP in tick and type(tick[Datacode.TIMESTAMP]) == float and time.time() - 60 < tick[Datacode.TIMESTAMP]:
                 return self._return_value(tick, datacode)
             else:
                 del self.realtime[ticker]
@@ -80,7 +80,8 @@ class FT(BaseClient):
         try:
             text = self.urlopen(url, redirect=True, data=None, headers=None)
         except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            logger.exception("BaseException ticker=%s datacode=%s last_url=%s redirect_count=%s", ticker, datacode, self.last_url, self.redirect_count)
+            del self.realtime[ticker]
             return f'FT.getRealtime({ticker}, {datacode}) - urlopen endpoint: {str(e)}'
 
         try:
@@ -88,7 +89,7 @@ class FT(BaseClient):
             with open(os.path.join(self.basedir, f'ft-{temp}.html'), "w", encoding="utf-8") as text_file:
                 print(f"<!-- '{self.last_url}' -->\r\n\r\n{text}", file=text_file)
         except BaseException:
-            logger.exception("BaseException ticker=%s datacode=%s %s", ticker, datacode)
+            logger.exception("BaseException open/write ticker=%s datacode=%s %s", ticker, datacode)
 
         tick[Datacode.TIMESTAMP] = time.time()
 
@@ -299,9 +300,10 @@ class FT(BaseClient):
 
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
             return f'FT.getRealtime({ticker}, {datacode}) - process: {str(e)}'
 
-        logger.info(tick)
+        logger.debug(tick)
 
         return self._return_value(self.realtime[ticker], datacode)
 
