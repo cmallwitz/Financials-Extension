@@ -4,8 +4,9 @@ Version 3.3.0 includes improved cookie handling and somewhat improved logic to d
 
 ## Overview
 
-This is a Python based extension for LibreOffice Calc to make stock market, index and FX data available in Calc 
-spreadsheets - currently supporting Yahoo's and Financial Times' finance websites using old-fashioned web scraping. 
+This is a Python based extension for LibreOffice Calc to make market data available in Calc 
+spreadsheets - currently supporting Yahoo's (FX, crypto, equities, indices, futures, options) and Financial Times' 
+(FX, equities, indices, futures) websites using old-fashioned web scraping. 
 
 Starting with version 3.1.0, we received a contribution to get crypto data directly from Coinbase
 
@@ -32,7 +33,8 @@ Only Yahoo has historic data available.
 
 There is a file **examples.ods** there too with usage examples and possible arguments to functions.
 
-You have to check the respective websites to work out what symbol is the right one for you. If a website doesn't have 
+You have to check the respective websites to work out what symbol is the right one for you. Make sure today or the date 
+requested is a trading day (exchange is not closed). If a website doesn't have 
 the symbol/asset you want, this extension can't help you either. Having said that, I mostly look at US and West European 
 equities, ETFs and mutual funds and major FX rates - if you have issues with the data available for other assets or 
 assets in other regions, drop me a line (best to include full URLs and possibly the same asset listed on more than one 
@@ -135,13 +137,10 @@ python3 -m unittest discover src
 
 ### Tested with:
 - Windows 10 / LibreOffice Calc 7.1.2.2 / Python 3.8.8
-- Ubuntu 20.04.5 / LibreOffice Calc 6.4.7.2 / Python 3.8.10
+- Ubuntu 22.04.1 / LibreOffice Calc 7.3.7.2 / Python 3.10.6
 - MacOS 10.15.7 / LibreOffice Calc 7.2.0.4 / Python 3.8.10
 
 (Previous versions)
 - Debian 10.3  / LibreOffice Calc 6.1.5.2 / Python 3.7.3
-- Ubuntu 20.10 / LibreOffice Calc 7.0.3.1 / Python 3.8.6
-- Ubuntu 19.10 / LibreOffice Calc 6.3.5.2 / Python 3.7.6
-- Ubuntu 19.04 / LibreOffice Calc 6.2 / Python 3.7.3
+- Ubuntu 20.04.5 / LibreOffice Calc 6.4.7.2 / Python 3.8.10
 - Ubuntu 18.04.5 / LibreOffice Calc 6 / Python 3.6.9
-- Ubuntu 18.04 / LibreOffice Calc 6 / Python 3.6.7

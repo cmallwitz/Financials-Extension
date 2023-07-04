@@ -66,10 +66,11 @@ def cookie(name, value):
 
 def get_cookies():
     return [
-        cookie("A1", "d=AQABBNAVmWICEEFBM1xh-RmAmPpJJIsAz3YFEgABBwFcmmJlY_bPb2UB9iMAAAcIzhWZYm7SAIg&S=AQAAAucqV1HMdCsRf6key1gdaFs"),
-        cookie("A1S", "d=AQABBNAVmWICEEFBM1xh-RmAmPpJJIsAz3YFEgABBwFcmmJlY_bPb2UB9iMAAAcIzhWZYm7SAIg&S=AQAAAucqV1HMdCsRf6key1gdaFs&j=GDPR"),
-        cookie("A3", "d=AQABBNAVmWICEEFBM1xh-RmAmPpJJIsAz3YFEgABBwFcmmJlY_bPb2UB9iMAAAcIzhWZYm7SAIg&S=AQAAAucqV1HMdCsRf6key1gdaFs"),
-        cookie("GUC", "AQABBwFimlxjZUIcxQRM"),
+        cookie("A1", "d=AQABBE6aomQCEJUamSIzqCl9UJ-spkNvMfkFEgABCAHqo2TKZPbPb2UBAiAAAAcIS5qiZF3wy-8&S=AQAAAnSEZV80kjd9J2RUh8TD5cY"),
+        cookie("A1S", "d=AQABBE6aomQCEJUamSIzqCl9UJ-spkNvMfkFEgABCAHqo2TKZPbPb2UBAiAAAAcIS5qiZF3wy-8&S=AQAAAnSEZV80kjd9J2RUh8TD5cY&j=GDPR"),
+        cookie("A3", "d=AQABBE6aomQCEJUamSIzqCl9UJ-spkNvMfkFEgABCAHqo2TKZPbPb2UBAiAAAAcIS5qiZF3wy-8&S=AQAAAnSEZV80kjd9J2RUh8TD5cY"),
+        cookie("EuConsent", "CPuVJsAPuVJsAAOACKENDICgAAAAAAAAACiQAAAAAABhoAMAAQSrEQAYAAglWKgAwABBKsA"),
+        cookie("GUC", "AQ81G6Da"),
         cookie("maex", "{\"v2\":{}}"),
         cookie("thamba", "1")
     ]
@@ -250,6 +251,10 @@ class Yahoo(BaseClient):
             return 'Yahoo.getRealtimeSummary({}, {}) - HTML parsing: {}'.format(ticker, datacode, e)
 
         try:
+            if not root:
+                logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+                return 'Yahoo.getRealtimeSummary({}, {}) - root missing'.format(ticker, datacode)
+
             tick[Datacode.TICKER] = ticker
             tick[Datacode.TIMESTAMP] = time.time()
             tick[Datacode.YAHOO_SUMMARY_RECEIVED] = True

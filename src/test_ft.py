@@ -137,38 +137,35 @@ class Test(unittest.TestCase):
 
     def test_US_futures(self):
 
-        s = financials.getRealtime('ESH3:IOM', Datacode.NAME.value, 'FT')
+        s = financials.getRealtime('ESU3:IOM', Datacode.NAME.value, 'FT')
         self.assertEqual(str, type(s), 'test_realtime_US_futures NAME {}'.format(s))
-        self.assertEqual('EMINI S&P MAR3', s, 'test_US_futures NAME {}'.format(s))
+        self.assertEqual('EMINI S&P SEP3', s, 'test_US_futures NAME {}'.format(s))
 
-        s = financials.getRealtime('ESH3:IOM', Datacode.LAST_PRICE.value, 'FT')
+        s = financials.getRealtime('ESU3:IOM', Datacode.LAST_PRICE.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures LAST_PRICE {}'.format(s))
 
         # s = financials.getRealtime('ESH3:IOM', Datacode.OPEN.value, 'FT')
         # self.assertEqual(float, type(s), 'test_US_futures OPEN {}'.format(s))
 
-        s = financials.getRealtime('ESH3:IOM', Datacode.VOLUME.value, 'FT')
+        s = financials.getRealtime('ESU3:IOM', Datacode.VOLUME.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures VOLUME {}'.format(s))
 
-        s = financials.getRealtime('ESH3:IOM', Datacode.LOW_52_WEEK.value, 'FT')
+        s = financials.getRealtime('ESU3:IOM', Datacode.LOW_52_WEEK.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures LOW_52_WEEK {}'.format(s))
 
-        s = financials.getRealtime('ESH3:IOM', Datacode.HIGH_52_WEEK.value, 'FT')
+        s = financials.getRealtime('ESU3:IOM', Datacode.HIGH_52_WEEK.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures HIGH_52_WEEK {}'.format(s))
 
-        s = financials.getRealtime('ESH3:IOM', Datacode.CHANGE.value, 'FT')
+        s = financials.getRealtime('ESU3:IOM', Datacode.CHANGE.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures CHANGE {}'.format(s))
 
-        s = financials.getRealtime('ESH3:IOM', Datacode.CHANGE_IN_PERCENT.value, 'FT')
+        s = financials.getRealtime('ESU3:IOM', Datacode.CHANGE_IN_PERCENT.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures CHANGE_IN_PERCENT {}'.format(s))
 
     def test_UK_ETF(self):
         s = financials.getRealtime('CSP1:LSE:GBX', 'NAME', 'FT')
         self.assertEqual(str, type(s), 'test_UK_ETF NAME {}'.format(s))
         self.assertEqual('iShares Core S&P 500 UCITS ETF USD (Acc)', s, 'test_UK_ETF NAME {}'.format(s))
-
-        s = financials.getRealtime('C060:GER:EUR', 'NAME', 'FT')
-        self.assertEqual(str, type(s), 'test_UK_ETF NAME {}'.format(s))
 
         s = financials.getRealtime('VERX:LSE:GBP', 'LAST_PRICE', 'FT')
         self.assertEqual(float, type(s), 'test_UK_ETF LAST_PRICE {}'.format(s))
