@@ -55,11 +55,11 @@ cp -f "${PWD}"/src/financials_coinbase.py "${PWD}"/build/
 
 TMPFILE=`mktemp`
 
-wget "https://files.pythonhosted.org/packages/d4/70/d60450c3dd48ef87586924207ae8907090de0b306af2bce5d134d78615cb/python_dateutil-2.8.1-py2.py3-none-any.whl" -O $TMPFILE
+wget "https://files.pythonhosted.org/packages/36/7a/87837f39d0296e723bb9b62bbb257d0355c7f6128853c78955f57342a56d/python_dateutil-2.8.2-py2.py3-none-any.whl" -O $TMPFILE
 unzip $TMPFILE dateutil/\* -d "${PWD}"/build/
 rm $TMPFILE
 
-wget "https://files.pythonhosted.org/packages/70/94/784178ca5dd892a98f113cdd923372024dc04b8d40abe77ca76b5fb90ca6/pytz-2021.1-py2.py3-none-any.whl" -O $TMPFILE
+wget "https://files.pythonhosted.org/packages/7f/99/ad6bd37e748257dd70d6f85d916cafe79c0b0f5e2e95b11f7fbc82bf3110/pytz-2023.3-py2.py3-none-any.whl" -O $TMPFILE
 unzip $TMPFILE pytz/\* -d "${PWD}"/build/
 rm $TMPFILE
 
@@ -68,7 +68,7 @@ unzip $TMPFILE pyparsing.py -d "${PWD}"/build/
 rm $TMPFILE
 
 # Windows LibreOffice 7.1 Python is missing this...
-wget "https://files.pythonhosted.org/packages/ee/ff/48bde5c0f013094d729fe4b0316ba2a24774b3ff1c52d924a8a4cb04078a/six-1.15.0-py2.py3-none-any.whl" -O $TMPFILE
+wget "https://files.pythonhosted.org/packages/d9/5a/e7c31adbe875f2abbb91bd84cf2dc52d792b5a01506781dbcf25c91daf11/six-1.16.0-py2.py3-none-any.whl" -O $TMPFILE
 unzip $TMPFILE six.py -d "${PWD}"/build/
 rm $TMPFILE
 
