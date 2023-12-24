@@ -29,13 +29,23 @@ mkdir "${PWD}"/build/META-INF/
 
 # Compile the binaries
 
-echo "Calling idlc..."
-idlc -w -verbose "${PWD}"/idl/XFinancials.idl
+if command -v idlc &> /dev/null
+then
+  echo "Calling idlc..."
+  idlc -w -verbose "${PWD}"/idl/XFinancials.idl
 
-echo "Calling regmerge..."
-regmerge -v "${PWD}"/build/XFinancials.rdb UCR "${PWD}"/idl/XFinancials.urd
+  echo "Calling regmerge..."
+  regmerge -v "${PWD}"/build/XFinancials.rdb UCR "${PWD}"/idl/XFinancials.urd
 
-rm "${PWD}"/idl/XFinancials.urd
+  rm "${PWD}"/idl/XFinancials.urd
+else
+  # LibreOffice 7.4+
+  export unoTypes=/usr/lib/libreoffice/program/types.rdb
+  export offTypes=/usr/lib/libreoffice/program/types/offapi.rdb
+
+  echo "Calling unoidl-write..."
+  unoidl-write $unoTypes $offTypes "${PWD}"/idl/XFinancials.idl "${PWD}"/build/XFinancials.rdb
+fi
 
 echo "Generating meta files..."
 python3 "${PWD}"/src/generate_metainfo.py
