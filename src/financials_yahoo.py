@@ -15,7 +15,6 @@ import os
 import re
 import time
 import urllib.parse
-from http import cookiejar
 
 import dateutil.parser
 
@@ -57,25 +56,6 @@ def handle_abbreviations(s):
     return float(s)
 
 
-def cookie(name, value):
-    return cookiejar.Cookie(version=0, name=name, value=value,
-                            port=None, port_specified=False, domain=".yahoo.com", domain_specified=True,
-                            domain_initial_dot=True, path="/", path_specified=True, secure=True, expires=None,
-                            discard=False, comment=None, comment_url=None, rest=dict())
-
-
-def get_cookies():
-    return [
-        cookie("A1", "d=AQABBE6aomQCEJUamSIzqCl9UJ-spkNvMfkFEgABCAHqo2TKZPbPb2UBAiAAAAcIS5qiZF3wy-8&S=AQAAAnSEZV80kjd9J2RUh8TD5cY"),
-        cookie("A1S", "d=AQABBE6aomQCEJUamSIzqCl9UJ-spkNvMfkFEgABCAHqo2TKZPbPb2UBAiAAAAcIS5qiZF3wy-8&S=AQAAAnSEZV80kjd9J2RUh8TD5cY&j=GDPR"),
-        cookie("A3", "d=AQABBE6aomQCEJUamSIzqCl9UJ-spkNvMfkFEgABCAHqo2TKZPbPb2UBAiAAAAcIS5qiZF3wy-8&S=AQAAAnSEZV80kjd9J2RUh8TD5cY"),
-        cookie("EuConsent", "CPuVJsAPuVJsAAOACKENDICgAAAAAAAAACiQAAAAAABhoAMAAQSrEQAYAAglWKgAwABBKsA"),
-        cookie("GUC", "AQ81G6Da"),
-        cookie("maex", "{\"v2\":{}}"),
-        cookie("thamba", "1")
-    ]
-
-
 class Yahoo(BaseClient):
     def __init__(self, ctx):
         super().__init__()
@@ -84,61 +64,6 @@ class Yahoo(BaseClient):
         self.realtime = {}
         self.historicdata = {}
         self.js = jsonParser.jsonObject
-
-        self.create_cookies()
-
-    def create_cookies(self):
-
-        cookiejar_path = os.path.join(self.basedir, 'yahoo.cookiejar')
-        cookiejar_exists = os.path.isfile(cookiejar_path) and os.stat(cookiejar_path).st_size >= 0
-
-        if cookiejar_exists:
-            try:
-                self.cookies = cookiejar.LWPCookieJar()
-                self.cookies.load(cookiejar_path, ignore_discard=True)
-
-                required_cookie_names = ["A1", "A1S", "A3", "GUC", "maex", "thamba"]
-                for c in self.cookies:
-                    if c.name in required_cookie_names:
-                        required_cookie_names.remove(c.name)
-
-                if len(required_cookie_names) > 0:
-                    cookiejar_exists = False
-                    logger.info("Overriding cookiejar '%s'", cookiejar_path)
-
-            except BaseException:
-                cookiejar_exists = False
-                logger.exception("BaseException initial loading cookiejar_path=%s", cookiejar_path)
-
-        if not cookiejar_exists:
-            try:
-                lwp_cookiejar = cookiejar.LWPCookieJar()
-                for c in get_cookies():
-                    lwp_cookiejar.set_cookie(c)
-                lwp_cookiejar.save(cookiejar_path, ignore_discard=True)
-                logger.info("Created cookiejar '%s'", cookiejar_path)
-            except BaseException:
-                logger.exception("BaseException creating cookiejar_path=%s", cookiejar_path)
-
-        try:
-            self.cookies = cookiejar.LWPCookieJar()
-            self.cookies.load(cookiejar_path, ignore_discard=True)
-
-            logger.info("Loaded cookiejar '%s'", cookiejar_path)
-
-            for c in self.cookies:
-                logger.info("Cookie name'%s' value='%s' path='%s'", c.name, c.value, c.path)
-
-        except BaseException:
-            logger.exception("BaseException loading cookiejar_path=%s", cookiejar_path)
-
-    def save_cookies(self):
-        cookiejar_path = os.path.join(self.basedir, 'yahoo.cookiejar')
-        try:
-            self.cookies.save(cookiejar_path, ignore_discard=True)
-            logger.debug("Saved cookiejar '%s'", cookiejar_path)
-        except BaseException:
-            logger.exception("BaseException saving cookiejar_path=%s", cookiejar_path)
 
     def _read_ticker_csv_file(self, ticker):
 
@@ -207,6 +132,51 @@ class Yahoo(BaseClient):
 
         return self.getRealtimeSummary(ticker, datacode)
 
+    def getData(self, url, ticker, datacode, html_file):
+
+        try:
+            text = self.urlopen(url, redirect=True)
+        except BaseException as e:
+            logger.exception("BaseException (1) ticker=%s datacode=%s last_url=%s redirect_count=%s %s",
+                             ticker, datacode, self.last_url, self.redirect_count, e)
+            return None
+
+        try:
+            with open(os.path.join(self.basedir, html_file), "w", encoding="utf-8") as text_file:
+                print(f"<!-- '{self.last_url}' -->\r\n\r\n{text}", file=text_file)
+        except BaseException as e:
+            logger.exception("BaseException (2) ticker=%s datacode=%s %s", ticker, datacode, e)
+
+        if not text:
+            return None
+
+        try:
+            parser = NaiveHTMLParser()
+            root = parser.feed(text)
+            parser.close()
+        except BaseException as e:
+            logger.exception("BaseException (3) ticker=%s datacode=%s - HTML parsing - %s", ticker, datacode, e)
+            return None
+
+        form = root.find(f".//form[@class='consent-form']")
+
+        if form:
+            inputs = form.findall(f".//input")
+
+            if inputs:
+
+                data = {'reject': 'reject'}
+                for d in inputs:
+                    data[d.attrib['name']] = d.attrib['value']
+
+                try:
+                    text = self.urlopen(self.last_url, redirect=True, data=urllib.parse.urlencode(data))
+                except BaseException as e:
+                    logger.exception("BaseException (4) ticker=%s datacode=%s last_url=%s redirect_count=%s %s",
+                                     ticker, datacode, self.last_url, self.redirect_count, e)
+
+        return text
+
     def getRealtimeSummary(self, ticker, datacode):
 
         """
@@ -216,20 +186,11 @@ class Yahoo(BaseClient):
         tick = self.realtime[ticker]
 
         url = 'https://finance.yahoo.com/quote/{}?p={}'.format(ticker, ticker)
+        text = self.getData(url, ticker, datacode, f'yahoo-{ticker}.html')
 
-        try:
-            text = self.urlopen(url, redirect=True)
-            self.save_cookies()
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s last_url=%s redirect_count=%s", ticker, datacode, self.last_url, self.redirect_count)
+        if text is None:
             del self.realtime[ticker]
-            return 'Yahoo.getRealtimeSummary({}, {}) - urlopen: {}'.format(ticker, datacode, e)
-
-        try:
-            with open(os.path.join(self.basedir, 'yahoo-{}.html'.format(ticker)), "w", encoding="utf-8") as text_file:
-                print(f"<!-- '{self.last_url}' -->\r\n\r\n{text}", file=text_file)
-        except BaseException:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
+            return 'Yahoo.getRealtimeSummary({}, {}) - getData'.format(ticker, datacode)
 
         try:
             r = '"crumb":"([^"]{11})"'
@@ -380,20 +341,11 @@ class Yahoo(BaseClient):
         tick = self.realtime[ticker]
 
         url = 'https://finance.yahoo.com/quote/{}/key-statistics?p={}'.format(ticker, ticker)
+        text = self.getData(url, ticker, datacode, f'yahoo-{ticker}-statistics.html')
 
-        try:
-            text = self.urlopen(url, redirect=True)
-            self.save_cookies()
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s last_url=%s redirect_count=%s", ticker, datacode, self.last_url, self.redirect_count)
+        if text is None:
             del self.realtime[ticker]
-            return 'Yahoo.getRealtimeStatistics({}, {}) - urlopen: {}'.format(ticker, datacode, e)
-
-        try:
-            with open(os.path.join(self.basedir, 'yahoo-{}-statistics.html'.format(ticker)), "w", encoding="utf-8") as text_file:
-                print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
-        except BaseException:
-            logger.exception("BaseException open/write ticker=%s datacode=%s", ticker, datacode)
+            return 'Yahoo.getRealtimeStatistics({}, {}) - getData'.format(ticker, datacode)
 
         try:
             parser = NaiveHTMLParser()
@@ -472,20 +424,11 @@ class Yahoo(BaseClient):
         tick = self.realtime[ticker]
 
         url = 'https://finance.yahoo.com/quote/{}/profile?p={}'.format(ticker, ticker)
+        text = self.getData(url, ticker, datacode, f'yahoo-{ticker}-profile.html')
 
-        try:
-            text = self.urlopen(url, redirect=True)
-            self.save_cookies()
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s last_url=%s redirect_count=%s", ticker, datacode, self.last_url, self.redirect_count)
+        if text is None:
             del self.realtime[ticker]
-            return 'Yahoo.getRealtimeProfile({}, {}) - urlopen: {}'.format(ticker, datacode, e)
-
-        try:
-            with open(os.path.join(self.basedir, 'yahoo-{}-profile.html'.format(ticker)), "w", encoding="utf-8") as text_file:
-                print(f"<!-- '{url}' -->\r\n\r\n{text}", file=text_file)
-        except BaseException:
-            logger.exception("BaseException open/write ticker=%s datacode=%s", ticker, datacode)
+            return 'Yahoo.getRealtimeProfile({}, {}) - getData'.format(ticker, datacode)
 
         try:
             parser = NaiveHTMLParser()

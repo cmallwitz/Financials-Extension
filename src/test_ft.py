@@ -23,6 +23,11 @@ financials = financials.createInstance(None)
 
 class Test(unittest.TestCase):
 
+    @classmethod
+    def tearDownClass(cls):
+        # this avoids "ResourceWarning: unclosed..." on cached socket connections
+        financials.close()
+
     def test_currency(self):
         s = financials.getRealtime('EURGBP', 'LAST_PRICE', 'FT')
         self.assertEqual(float, type(s), 'test_currency LAST_PRICE')
@@ -137,29 +142,31 @@ class Test(unittest.TestCase):
 
     def test_US_futures(self):
 
-        s = financials.getRealtime('ESU3:IOM', Datacode.NAME.value, 'FT')
-        self.assertEqual(str, type(s), 'test_realtime_US_futures NAME {}'.format(s))
-        self.assertEqual('EMINI S&P SEP3', s, 'test_US_futures NAME {}'.format(s))
+        # https://markets.ft.com/data/commodities/tearsheet/summary?s=775326843 ESH25:IOM
 
-        s = financials.getRealtime('ESU3:IOM', Datacode.LAST_PRICE.value, 'FT')
+        s = financials.getRealtime('775326843', Datacode.NAME.value, 'FT')
+        self.assertEqual(str, type(s), 'test_realtime_US_futures NAME {}'.format(s))
+        self.assertEqual('EMINI S&P MAR5', s, 'test_US_futures NAME {}'.format(s))
+
+        s = financials.getRealtime('775326843', Datacode.LAST_PRICE.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures LAST_PRICE {}'.format(s))
 
-        # s = financials.getRealtime('ESH3:IOM', Datacode.OPEN.value, 'FT')
+        # s = financials.getRealtime('775326843', Datacode.OPEN.value, 'FT')
         # self.assertEqual(float, type(s), 'test_US_futures OPEN {}'.format(s))
 
-        s = financials.getRealtime('ESU3:IOM', Datacode.VOLUME.value, 'FT')
+        s = financials.getRealtime('775326843', Datacode.VOLUME.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures VOLUME {}'.format(s))
 
-        s = financials.getRealtime('ESU3:IOM', Datacode.LOW_52_WEEK.value, 'FT')
+        s = financials.getRealtime('775326843', Datacode.LOW_52_WEEK.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures LOW_52_WEEK {}'.format(s))
 
-        s = financials.getRealtime('ESU3:IOM', Datacode.HIGH_52_WEEK.value, 'FT')
+        s = financials.getRealtime('775326843', Datacode.HIGH_52_WEEK.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures HIGH_52_WEEK {}'.format(s))
 
-        s = financials.getRealtime('ESU3:IOM', Datacode.CHANGE.value, 'FT')
+        s = financials.getRealtime('775326843', Datacode.CHANGE.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures CHANGE {}'.format(s))
 
-        s = financials.getRealtime('ESU3:IOM', Datacode.CHANGE_IN_PERCENT.value, 'FT')
+        s = financials.getRealtime('775326843', Datacode.CHANGE_IN_PERCENT.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures CHANGE_IN_PERCENT {}'.format(s))
 
     def test_UK_ETF(self):

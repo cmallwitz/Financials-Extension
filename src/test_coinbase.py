@@ -25,6 +25,11 @@ financials = financials.createInstance(None)
 
 class Test(unittest.TestCase):
 
+    @classmethod
+    def tearDownClass(cls):
+        # this avoids "ResourceWarning: unclosed..." on cached socket connections
+        financials.close()
+
     def test_currency(self):
         s = financials.getRealtime('ETH-EUR', Datacode.LAST_PRICE.value, 'COINBASE')
         self.assertEqual(float, type(s), 'test_currency LAST_PRICE')

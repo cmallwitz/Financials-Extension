@@ -95,7 +95,6 @@ class FinancialsImpl(unohelper.Base, Financials):
 
     def __init__(self, ctx):
         self.ctx = ctx
-        self.google = google.createInstance(ctx)
         self.yahoo = yahoo.createInstance(ctx)
         self.coinbase = coinbase.createInstance(ctx)
         self.ft = ft.createInstance(ctx)
@@ -136,9 +135,6 @@ class FinancialsImpl(unohelper.Base, Financials):
             ticker = str(ticker).strip()
             source = str(source).upper()
 
-            # if source == 'GOOGLE':
-            #     s = self.google.getRealtime(ticker, datacode)
-            # el
             if source == 'YAHOO':
                 s = self.yahoo.getRealtime(ticker, datacode)
             elif source == 'FT':
@@ -272,6 +268,11 @@ class FinancialsImpl(unohelper.Base, Financials):
                 str(datacode))
 
         return s
+
+    def close(self):
+        if self.yahoo: self.yahoo.close()
+        if self.coinbase: self.coinbase.close()
+        if self.ft: self.ft.close()
 
 
 def createInstance(ctx):

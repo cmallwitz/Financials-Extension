@@ -49,15 +49,18 @@ class BaseClient:
         os.makedirs(self.basedir, exist_ok=True)
 
         user_agents = [
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:101.0) Gecko/20100101 Firefox/101.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:103.0) Gecko/20100101 Firefox/103.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:104.0) Gecko/20100101 Firefox/104.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:108.0) Gecko/20100101 Firefox/108.0'
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/110.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/111.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/116.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/120.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/121.0'
         ]
 
         self.default_headers = {
@@ -71,16 +74,15 @@ class BaseClient:
 
         self.response = None
 
-    def request(self, method: str, url: str, data=None, headers={}, cookies=[], **kwargs):
+    def request(self, method: str, url: str, data=None, headers={}, **kwargs):
 
         _headers = self.default_headers.copy()
         if headers:
             for key, value in headers.items():
                 _headers[key] = value
 
-        if cookies:
-            for c in cookies:
-                self.cookies.set_cookie(c)
+        if method == 'POST' and 'Content-Type' not in _headers:
+            _headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
         connection = None
 
@@ -98,7 +100,7 @@ class BaseClient:
             connection = HTTPConnection(host, **kwargs) if scheme == 'http:' else HTTPSConnection(host, **kwargs)
 
         logger.debug('Creating request -----------------------------------------------------')
-        logger.debug("url='%s'", url)
+        logger.debug("%s %s", method, url)
 
         self.last_url = url
 
@@ -129,9 +131,13 @@ class BaseClient:
 
     def urlopen(self, url, redirect=True, data=None, headers={}, cookies=[], **kwargs):
 
+        if cookies:
+            for c in cookies:
+                self.cookies.set_cookie(c)
+
         self.last_url = None
 
-        self.response = self.request('POST' if data else 'GET', url, data, headers, cookies, **kwargs)
+        self.response = self.request('POST' if data else 'GET', url, data, headers, **kwargs)
         text = self.response.read()
 
         # Allow redirects - used by Yahoo for some cookie based consent
@@ -141,7 +147,7 @@ class BaseClient:
         # try mitigating by re-requesting straight away
         if 400 <= self.response.status < 500:
             if self.response.getheader('X-Cache') == 'Error from cloudfront':
-                self.response = self.request('POST' if data else 'GET', url, data, headers, cookies, **kwargs)
+                self.response = self.request('POST' if data else 'GET', url, data, headers, **kwargs)
                 text = self.response.read()
 
         while 300 <= self.response.status < 400 and self.redirect_count >= 0:
@@ -155,7 +161,7 @@ class BaseClient:
                     scheme, _, host, path = url.split('/', 3)
                     location = '{}//{}{}'.format(scheme, host, location)
 
-                self.response = self.request('POST' if data else 'GET', location, data, headers, cookies, **kwargs)
+                self.response = self.request('GET', location, None, headers, **kwargs)
                 text = self.response.read()
 
             else:
@@ -385,3 +391,11 @@ class BaseClient:
             pass
 
         return None
+
+    def close(self):
+        for connection in self.connections.values():
+            try:
+                connection.close()
+            except BaseException:
+                pass
+        self.connections = {}
