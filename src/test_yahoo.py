@@ -108,11 +108,11 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'International Business Machines Corporation (IBM)',
                          'test_realtime_US_equity NAME {}'.format(s))
 
-        s = financials.getRealtime('IBM', Datacode.SECTOR.value, 'YAHOO')
+        s = financials.getRealtime('IBM', 'SECTOR', 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_equity SECTOR {}'.format(s))
         self.assertEqual(s, 'Technology', 'test_realtime_US_equity SECTOR {}'.format(s))
 
-        s = financials.getRealtime('IBM', Datacode.INDUSTRY.value, 'YAHOO')
+        s = financials.getRealtime('IBM', 'INDUSTRY', 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_equity INDUSTRY {}'.format(s))
         self.assertEqual(s, 'Information Technology Services', 'test_realtime_US_equity INDUSTRY {}'.format(s))
 
@@ -138,13 +138,13 @@ class Test(unittest.TestCase):
         self.assertEqual(str, type(s), 'test_realtime_US_equity EX_DIV_DATE {}'.format(s))
         self.assertTrue(testutils.is_date(s), 'test_realtime_US_equity EX_DIV_DATE {}'.format(s))
 
-        s = financials.getRealtime('IBM', Datacode.PAYOUT_RATIO.value, 'YAHOO')
+        s = financials.getRealtime('IBM', 'PAYOUT_RATIO', 'YAHOO')
         self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity PAYOUT_RATIO {}'.format(s))
 
-        s = financials.getRealtime('IBM', Datacode.SHARES_OUT.value, 'YAHOO')
+        s = financials.getRealtime('IBM', 'SHARES_OUT', 'YAHOO')
         self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity SHARES_OUT {}'.format(s))
 
-        s = financials.getRealtime('IBM', Datacode.FREE_FLOAT.value, 'YAHOO')
+        s = financials.getRealtime('IBM', 'FREE_FLOAT', 'YAHOO')
         self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity FREE_FLOAT {}'.format(s))
 
         s = financials.getRealtime('IBM', Datacode.EXCHANGE.value, 'YAHOO')
@@ -269,6 +269,18 @@ class Test(unittest.TestCase):
         s = financials.getRealtime('CSP1.L', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_UK_ETF NAME {}'.format(s))
         self.assertEqual('iShares VII PLC - iShares Core S&P 500 UCITS ETF (CSP1.L)', s, 'test_realtime_UK_ETF NAME {}'.format(s))
+
+        s = financials.getRealtime('VERX.L', 'SECTOR', 'YAHOO')
+        self.assertIsNone(s, 'test_realtime_UK_ETF SECTOR {}'.format(s))
+
+        s = financials.getRealtime('VERX.L', 'INDUSTRY', 'YAHOO')
+        self.assertIsNone(s, 'test_realtime_UK_ETF INDUSTRY {}'.format(s))
+
+        s = financials.getRealtime('VERX.L', 'PAYOUT_RATIO', 'YAHOO')
+        self.assertIsNone(s, 'test_realtime_UK_ETF PAYOUT_RATIO {}'.format(s))
+
+        s = financials.getRealtime('VERX.L', 'SHARES_OUT', 'YAHOO')
+        self.assertIsNone(s, 'test_realtime_UK_ETF SHARES_OUT {}'.format(s))
 
     def test_realtime_DE_equity(self):
 

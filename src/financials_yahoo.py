@@ -356,18 +356,22 @@ class Yahoo(BaseClient):
             del self.realtime[ticker]
             return 'Yahoo.getRealtimeStatistics({}, {}) - HTML parsing: {}'.format(ticker, datacode, e)
 
+        statistics = root.find(".//section[@data-test='qsp-statistics']")
+
+        tick[Datacode.TICKER] = ticker
+        tick[Datacode.TIMESTAMP] = time.time()
+        tick[Datacode.YAHOO_STATISTIC_RECEIVED] = True
+
+        tick[Datacode.SHARES_OUT] = None
+        tick[Datacode.FREE_FLOAT] = None
+        tick[Datacode.PAYOUT_RATIO] = None
+
+        if statistics is None:
+            return None
+
+        parsed = {}
+
         try:
-
-            parsed = {}
-
-            statistics = root.find(".//section[@data-test='qsp-statistics']")
-
-            if statistics is None:
-                return None
-
-            tick[Datacode.TICKER] = ticker
-            tick[Datacode.TIMESTAMP] = time.time()
-            tick[Datacode.YAHOO_STATISTIC_RECEIVED] = True
 
             # Valuation Measures
             found = statistics.find('./div[2]/div[1]//table')
@@ -401,17 +405,15 @@ class Yahoo(BaseClient):
                     if key is not None:
                         parsed[key] = d.find('./td[2]').text
 
-            tick[Datacode.SHARES_OUT] = self.save_wrapper(
-                lambda: float(handle_abbreviations(parsed['Shares Outstanding'])))
-            tick[Datacode.FREE_FLOAT] = self.save_wrapper(
-                lambda: float(handle_abbreviations(parsed['Float'])))
-            tick[Datacode.PAYOUT_RATIO] = self.save_wrapper(
-                lambda: float(handle_abbreviations(parsed['Payout Ratio'].replace('%', '').strip()))/100.0)
+        except KeyError:
+            pass
 
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
-            del self.realtime[ticker]
-            return 'Yahoo.getRealtimeStatistics({}, {}) - process: {}'.format(ticker, datacode, e)
+        tick[Datacode.SHARES_OUT] = self.save_wrapper(
+            lambda: float(handle_abbreviations(parsed['Shares Outstanding'])))
+        tick[Datacode.FREE_FLOAT] = self.save_wrapper(
+            lambda: float(handle_abbreviations(parsed['Float'])))
+        tick[Datacode.PAYOUT_RATIO] = self.save_wrapper(
+            lambda: float(handle_abbreviations(parsed['Payout Ratio'].replace('%', '').strip()))/100.0)
 
         return self._return_value(self.realtime[ticker], datacode)
 
@@ -439,24 +441,17 @@ class Yahoo(BaseClient):
             del self.realtime[ticker]
             return 'Yahoo.getRealtimeProfile({}, {}) - HTML parsing: {}'.format(ticker, datacode, e)
 
-        try:
+        tick[Datacode.TICKER] = ticker
+        tick[Datacode.TIMESTAMP] = time.time()
+        tick[Datacode.YAHOO_PROFILE_RECEIVED] = True
 
+        p = None
+
+        if root:
             p = root.find(".//*[span='Sector(s)']")
 
-            if p is None:
-                return None
-
-            tick[Datacode.TICKER] = ticker
-            tick[Datacode.TIMESTAMP] = time.time()
-            tick[Datacode.YAHOO_PROFILE_RECEIVED] = True
-
-            tick[Datacode.SECTOR] = self.save_wrapper(lambda: p.find("./span[2]").text)
-            tick[Datacode.INDUSTRY] = self.save_wrapper(lambda: p.find("./span[4]").text)
-
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
-            del self.realtime[ticker]
-            return 'Yahoo.getRealtimeProfile({}, {}) - process: {}'.format(ticker, datacode, e)
+        tick[Datacode.SECTOR] = self.save_wrapper(lambda: p.find("./span[2]").text)
+        tick[Datacode.INDUSTRY] = self.save_wrapper(lambda: p.find("./span[4]").text)
 
         return self._return_value(self.realtime[ticker], datacode)
 
