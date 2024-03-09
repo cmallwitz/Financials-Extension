@@ -225,14 +225,16 @@ class Yahoo(BaseClient):
             found = root.findall(f".//fin-streamer[@data-symbol='{ticker}']")
             for d in found:
                 if hasattr(d, 'attrib') and 'data-field' in d.attrib:
-                    parsed[d.attrib['data-field']] = default(d.attrib, 'value').replace('−', '-').replace(',', '').strip()
+                    value = default(d.attrib, 'value') or default(d.attrib, 'data-value')
+                    parsed[d.attrib['data-field']] = value.replace('−', '-').replace(',', '').strip()
 
             # for futures "regularMarketVolume" is from actual future ticker (potentially different to requested one)
             if 'regularMarketVolume' not in parsed:
                 found = root.findall(f".//fin-streamer[@data-field='regularMarketVolume']")
                 for d in found:
                     if hasattr(d, 'attrib') and 'data-field' in d.attrib and 'data-symbol' in d.attrib:
-                        parsed[d.attrib['data-field']] = default(d.attrib, 'value').replace('−', '-').replace(',', '').strip()
+                        value = default(d.attrib, 'value') or default(d.attrib, 'data-value')
+                        parsed[d.attrib['data-field']] = value.replace('−', '-').replace(',', '').strip()
                         tick[Datacode.TICKER] = default(d.attrib, 'data-symbol').strip()
 
             found = root.findall(f".//td[@data-test]")
