@@ -57,7 +57,6 @@ cp -f "${PWD}"/src/jsonParser.py "${PWD}"/build/
 cp -f "${PWD}"/src/naivehtmlparser.py "${PWD}"/build/
 cp -f "${PWD}"/src/tz.py "${PWD}"/build/
 cp -f "${PWD}"/src/financials_ft.py "${PWD}"/build/
-cp -f "${PWD}"/src/financials_google.py "${PWD}"/build/
 cp -f "${PWD}"/src/financials_yahoo.py "${PWD}"/build/
 cp -f "${PWD}"/src/financials_coinbase.py "${PWD}"/build/
 

@@ -54,7 +54,6 @@ import pyparsing
 import six
 
 from datacode import Datacode
-import financials_google as google
 import financials_yahoo as yahoo
 import financials_coinbase as coinbase
 import financials_ft as ft

@@ -140,12 +140,15 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('IBM', 'PAYOUT_RATIO', 'YAHOO')
         self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity PAYOUT_RATIO {}'.format(s))
+        # self.assertEqual(None, s, 'test_realtime_US_equity PAYOUT_RATIO {}'.format(s))
 
         s = financials.getRealtime('IBM', 'SHARES_OUT', 'YAHOO')
         self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity SHARES_OUT {}'.format(s))
+        # self.assertEqual(None, s, 'test_realtime_US_equity SHARES_OUT {}'.format(s))
 
         s = financials.getRealtime('IBM', 'FREE_FLOAT', 'YAHOO')
         self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity FREE_FLOAT {}'.format(s))
+        # self.assertEqual(None, s, 'test_realtime_US_equity FREE_FLOAT {}'.format(s))
 
         s = financials.getRealtime('IBM', Datacode.EXCHANGE.value, 'YAHOO')
         self.assertEqual(s, 'NYSE', 'test_realtime_US_equity EXCHANGE')
@@ -268,7 +271,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('CSP1.L', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_UK_ETF NAME {}'.format(s))
-        self.assertEqual('iShares VII PLC - iShares Core S&P 500 UCITS ETF (CSP1.L)', s, 'test_realtime_UK_ETF NAME {}'.format(s))
+        self.assertEqual('iShares Core S&P 500 UCITS ETF USD (Acc) (CSP1.L)', s, 'test_realtime_UK_ETF NAME {}'.format(s))
 
         s = financials.getRealtime('VERX.L', 'SECTOR', 'YAHOO')
         self.assertIsNone(s, 'test_realtime_UK_ETF SECTOR {}'.format(s))

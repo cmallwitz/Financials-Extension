@@ -1,4 +1,4 @@
-#  test_google.py
+#  test_support.py
 #
 #  license: GNU LGPL
 #
