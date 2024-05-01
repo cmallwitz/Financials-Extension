@@ -79,7 +79,7 @@ class Coinbase(BaseClient):
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             del self.realtime[ticker]
-            return 'Coinbase.getRealtime({}, {}) - crumb: {}'.format(ticker, datacode, e)
+            return 'Coinbase.getRealtime({}, {}) - exception: {}'.format(ticker, datacode, e)
 
         try:
             price = results['last']

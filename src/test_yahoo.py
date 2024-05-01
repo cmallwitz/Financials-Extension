@@ -105,7 +105,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('IBM', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_equity NAME {}'.format(s))
-        self.assertEqual(s, 'International Business Machines Corporation (IBM)',
+        self.assertEqual(s, 'International Business Machines Corporation',
                          'test_realtime_US_equity NAME {}'.format(s))
 
         s = financials.getRealtime('IBM', 'SECTOR', 'YAHOO')
@@ -117,7 +117,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'Information Technology Services', 'test_realtime_US_equity INDUSTRY {}'.format(s))
 
         s = financials.getRealtime('IBM', Datacode.TIMEZONE.value, 'YAHOO')
-        self.assertTrue(s == 'EST' or s == 'EDT', 'test_realtime_US_equity TIMEZONE: {}'.format(s))
+        self.assertTrue(s == 'America/New_York', 'test_realtime_US_equity TIMEZONE: {}'.format(s))
 
         s = financials.getRealtime('IBM', Datacode.BETA.value, 'YAHOO')
         self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_equity BETA {}'.format(s))
@@ -165,22 +165,19 @@ class Test(unittest.TestCase):
         self.assertEqual(float, type(s), 'test_realtime_US_mutuals DIV {}'.format(s))
 
         s = financials.getRealtime('VFIAX', Datacode.DIV_YIELD.value, 'YAHOO')
-        # self.assertIsNone(s, 'test_realtime_US_mutuals DIV_YIELD {}'.format(s)) # no yield
-        self.assertTrue(testutils.is_positive_float(s), 'test_realtime_US_mutuals DIV_YIELD {}'.format(s))
+        self.assertIsNone(s, 'test_realtime_US_mutuals DIV_YIELD {}'.format(s)) # no yield
 
         s = financials.getRealtime('SHRAX', Datacode.DIV.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_mutuals DIV {}'.format(s))
 
         s = financials.getRealtime('SHRAX', Datacode.DIV_YIELD.value, 'YAHOO')
-        # self.assertIsNone(s, 'test_realtime_US_mutuals DIV_YIELD {}'.format(s)) # no yield
-        self.assertEqual(float, type(s), 'test_realtime_US_mutuals DIV_YIELD {}'.format(s))
+        self.assertIsNone(s, 'test_realtime_US_mutuals DIV_YIELD {}'.format(s)) # no yield
 
-        # s = financials.getRealtime('VERX.L', Datacode.DIV.value, 'YAHOO')
-        # self.assertIsNone(s, 'test_realtime_US_mutuals DIV {}'.format(s)) # no dividend
+        s = financials.getRealtime('VERX.L', Datacode.DIV.value, 'YAHOO')
+        self.assertIsNone(s, 'test_realtime_US_mutuals DIV {}'.format(s)) # no dividend
 
         s = financials.getRealtime('VERX.L', Datacode.DIV_YIELD.value, 'YAHOO')
         self.assertIsNone(s, 'test_realtime_US_mutuals DIV_YIELD {}'.format(s)) # no yield
-        # self.assertEqual(float, type(s), 'test_realtime_US_mutuals DIV_YIELD {}'.format(s))
 
     def test_realtime_US_options(self):
 
@@ -223,16 +220,16 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('ES=F', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_futures NAME {}'.format(s))
-        self.assertEqual('E-Mini S&P 500 Mar 24 (ES=F)', s, 'test_realtime_US_futures NAME {}'.format(s))
+        self.assertEqual('E-Mini S&P 500 Jun 24', s, 'test_realtime_US_futures NAME {}'.format(s))
 
         s = financials.getRealtime('ES=F', Datacode.TICKER.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_futures TICKER {}'.format(s))
-        self.assertEqual('ESH24.CME', s, 'test_realtime_US_futures TICKER {}'.format(s))
+        self.assertEqual('ESM24.CME', s, 'test_realtime_US_futures TICKER {}'.format(s))
 
         s = financials.getRealtime('ES=F', Datacode.SETTLEMENT_DATE.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
         self.assertTrue(testutils.is_date(s), 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
-        self.assertEqual("2024-03-15", s, 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
+        self.assertEqual("2024-06-21", s, 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
 
         s = financials.getRealtime('ES=F', Datacode.LAST_PRICE.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_futures LAST_PRICE {}'.format(s))
@@ -267,11 +264,11 @@ class Test(unittest.TestCase):
         self.assertEqual(float, type(s), 'test_realtime_UK_ETF LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('VERX.L', Datacode.TIMEZONE.value, 'YAHOO')
-        self.assertTrue(s == 'GMT' or s == 'BST', 'test_realtime_UK_ETF TIMEZONE: {}'.format(s))
+        self.assertTrue(s == 'Europe/London', 'test_realtime_UK_ETF TIMEZONE: {}'.format(s))
 
         s = financials.getRealtime('CSP1.L', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_UK_ETF NAME {}'.format(s))
-        self.assertEqual('iShares Core S&P 500 UCITS ETF USD (Acc) (CSP1.L)', s, 'test_realtime_UK_ETF NAME {}'.format(s))
+        self.assertEqual('iShares Core S&P 500 UCITS ETF USD (Acc)', s, 'test_realtime_UK_ETF NAME {}'.format(s))
 
         s = financials.getRealtime('VERX.L', 'SECTOR', 'YAHOO')
         self.assertIsNone(s, 'test_realtime_UK_ETF SECTOR {}'.format(s))
@@ -291,7 +288,7 @@ class Test(unittest.TestCase):
         self.assertEqual(float, type(s), 'test_realtime_DE_equity LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('SAP.DE', Datacode.TIMEZONE.value, 'YAHOO')
-        self.assertTrue(s == 'CET' or s == 'CEST', 'test_realtime_DE_equity TIMEZONE: {}'.format(s))
+        self.assertTrue(s == 'Europe/Berlin', 'test_realtime_DE_equity TIMEZONE: {}'.format(s))
 
         s = financials.getRealtime('SAP.DE', Datacode.SECTOR.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_DE_equity SECTOR {}'.format(s))
@@ -349,7 +346,7 @@ class Test(unittest.TestCase):
         self.assertEqual(float, type(s), 'test_DK_equity LAST_PRICE {}'.format(s))
 
         s = financials.getRealtime('NOVO-B.CO', 'name', 'YAHOO')
-        self.assertEqual('Novo Nordisk A/S (NOVO-B.CO)', s, 'test_DK_equity NAME {}'.format(s))
+        self.assertEqual('Novo Nordisk A/S', s, 'test_DK_equity NAME {}'.format(s))
 
         s = financials.getRealtime('NOVO-B.CO', 'currency', 'YAHOO')
         self.assertEqual('DKK', s, 'test_DK_equity CURRENCY {}'.format(s))
@@ -395,7 +392,7 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'JPY', 'test_TY_equity CURRENCY')
 
         s = financials.getRealtime('6503.T', Datacode.TIMEZONE.value, 'YAHOO')
-        self.assertEqual(s, 'JST', 'test_TY_equity TIMEZONE')
+        self.assertEqual(s, 'Asia/Tokyo', 'test_TY_equity TIMEZONE')
 
     def test_historic_US_equity(self):
 

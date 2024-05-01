@@ -224,9 +224,6 @@ class BaseClient:
         tick[Datacode.TIMEZONE] = None
         tick[Datacode.VOLUME] = None
 
-        tick[Datacode.YAHOO_SUMMARY_RECEIVED] = False
-        tick[Datacode.YAHOO_STATISTIC_RECEIVED] = False
-        tick[Datacode.YAHOO_PROFILE_RECEIVED] = False
         tick[Datacode.TIMESTAMP] = None
 
         return tick

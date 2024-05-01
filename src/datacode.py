@@ -60,9 +60,6 @@ class Datacode(Enum):
     NAME = 104
     TIMEZONE = 105
 
-    YAHOO_SUMMARY_RECEIVED = 996
-    YAHOO_STATISTIC_RECEIVED = 997
-    YAHOO_PROFILE_RECEIVED = 998
     TIMESTAMP = 999
 
     @classmethod

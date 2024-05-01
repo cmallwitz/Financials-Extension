@@ -146,7 +146,7 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('775326843', Datacode.NAME.value, 'FT')
         self.assertEqual(str, type(s), 'test_realtime_US_futures NAME {}'.format(s))
-        self.assertEqual('EMINI S&P MAR5', s, 'test_US_futures NAME {}'.format(s))
+        self.assertEqual('EMINI S&P MAR25', s, 'test_US_futures NAME {}'.format(s))
 
         s = financials.getRealtime('775326843', Datacode.LAST_PRICE.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures LAST_PRICE {}'.format(s))

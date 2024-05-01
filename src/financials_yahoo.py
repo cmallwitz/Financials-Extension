@@ -9,9 +9,11 @@
 
 
 import csv
-import html
+import datetime
+import json
 import logging
 import os
+import pytz
 import re
 import time
 import urllib.parse
@@ -94,45 +96,8 @@ class Yahoo(BaseClient):
 
             self.historicdata[ticker] = ticks
 
-    def getRealtime(self, ticker, datacode):
 
-        """
-        Retrieve realtime data for ticker from Yahoo Finance and cache it for further lookups
-
-        :param ticker: the ticker symbol e.g. VOD.L
-        :param datacode: the requested datacode
-        :return:
-        """
-
-        # remove white space
-        ticker = "".join(ticker.split())
-
-        needStatistics = datacode in [Datacode.SHARES_OUT.value, Datacode.FREE_FLOAT.value, Datacode.PAYOUT_RATIO.value]
-        needProfile = datacode in [Datacode.SECTOR.value, Datacode.INDUSTRY.value]
-
-        # use cached value for up to 60 seconds
-        if ticker in self.realtime:
-            tick = self.realtime[ticker]
-            if Datacode.TIMESTAMP in tick and type(tick[Datacode.TIMESTAMP]) == float and time.time() - 60 < tick[Datacode.TIMESTAMP]:
-                if (tick[Datacode.YAHOO_STATISTIC_RECEIVED] or not needStatistics) and (
-                        tick[Datacode.YAHOO_PROFILE_RECEIVED] or not needProfile) and (
-                        tick[Datacode.YAHOO_SUMMARY_RECEIVED]):
-                    return self._return_value(tick, datacode)
-            else:
-                del self.realtime[ticker]
-
-        if ticker not in self.realtime:
-            self.realtime[ticker] = self.get_ticker()
-
-        if needStatistics:
-            return self.getRealtimeStatistics(ticker, datacode)
-
-        if needProfile:
-            return self.getRealtimeProfile(ticker, datacode)
-
-        return self.getRealtimeSummary(ticker, datacode)
-
-    def getData(self, url, ticker, datacode, html_file):
+    def handleCookiesAndConsent(self, url, ticker, datacode, html_file):
 
         try:
             text = self.urlopen(url, redirect=True)
@@ -175,285 +140,187 @@ class Yahoo(BaseClient):
                     logger.exception("BaseException (4) ticker=%s datacode=%s last_url=%s redirect_count=%s %s",
                                      ticker, datacode, self.last_url, self.redirect_count, e)
 
+                try:
+                    with open(os.path.join(self.basedir, html_file), "w", encoding="utf-8") as text_file:
+                        print(f"<!-- '{self.last_url}' (after consent handling) -->\r\n\r\n{text}", file=text_file)
+                except BaseException as e:
+                    logger.exception("BaseException (5) ticker=%s datacode=%s %s", ticker, datacode, e)
+
         return text
 
-    def getRealtimeSummary(self, ticker, datacode):
+    def getRealtime(self, ticker, datacode):
 
         """
-        Retrieve realtime data from Yahoo Finance - Summary tab
+        Retrieve realtime data for ticker from Yahoo Finance and cache it for further lookups
+
+        :param ticker: the ticker symbol e.g. VOD.L
+        :param datacode: the requested datacode
+        :return:
         """
+
+        # remove white space
+        ticker = "".join(ticker.split())
+
+        # use cached value for up to 60 seconds
+        if ticker in self.realtime:
+            tick = self.realtime[ticker]
+            if Datacode.TIMESTAMP in tick and type(tick[Datacode.TIMESTAMP]) == float and time.time() - 60 < tick[Datacode.TIMESTAMP]:
+                return self._return_value(tick, datacode)
+            else:
+                del self.realtime[ticker]
+
+        if ticker not in self.realtime:
+            self.realtime[ticker] = self.get_ticker()
 
         tick = self.realtime[ticker]
 
-        url = 'https://finance.yahoo.com/quote/{}?p={}'.format(ticker, ticker)
-        text = self.getData(url, ticker, datacode, f'yahoo-{ticker}.html')
+        if not self.crumb:
 
-        if text is None:
-            del self.realtime[ticker]
-            return 'Yahoo.getRealtimeSummary({}, {}) - getData'.format(ticker, datacode)
+            url = 'https://finance.yahoo.com/quote/{}?p={}'.format(ticker, ticker)
+            text = self.handleCookiesAndConsent(url, ticker, datacode, f'yahoo-{ticker}.html')
 
-        try:
-            r = '"crumb":"([^"]{11})"'
-            pattern = re.compile(r)
-            match = pattern.search(text)
-            if match:
-                self.crumb = match.group(1)
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
-            del self.realtime[ticker]
-            return 'Yahoo.getRealtimeSummary({}, {}) - crumb: {}'.format(ticker, datacode, e)
+            if text is None:
+                del self.realtime[ticker]
+                return 'Yahoo.getRealtime({}, {}) - handleCookiesAndConsent'.format(ticker, datacode)
 
-        try:
-            parser = NaiveHTMLParser()
-            root = parser.feed(text)
-            parser.close()
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
-            return 'Yahoo.getRealtimeSummary({}, {}) - HTML parsing: {}'.format(ticker, datacode, e)
-
-        try:
-            if not root:
+            try:
+                r = '"crumb":"([^"]{11})"'
+                pattern = re.compile(r)
+                match = pattern.search(text)
+                if match:
+                    self.crumb = match.group(1)
+            except BaseException as e:
                 logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
-                return 'Yahoo.getRealtimeSummary({}, {}) - root missing'.format(ticker, datacode)
+                del self.realtime[ticker]
+                return 'Yahoo.getRealtime({}, {}) - crumb: {}'.format(ticker, datacode, e)
+
+        if not self.crumb:
+            return 'Yahoo.getRealtime({}, {}) - crumb missing'.format(ticker, datacode)
+
+        try:
+
+            url = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/{}?formatted=true&' \
+                  'modules=summaryProfile,financialData,quoteType,recommendationTrend,earnings,equityPerformance,summaryDetail,defaultKeyStatistics,calendarEvents,esgScores,price,pageViews,financialsTemplate&' \
+                  'lang=en-US&region=US&crumb={}' \
+                .format(ticker, urllib.parse.quote_plus(self.crumb))
+
+            js = self.urlopen(url)
+
+        except HttpException as e:
+            logger.exception("HttpException querying ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
+            return None
+
+        try:
+
+            with open(os.path.join(self.basedir, 'yahoo-{}.json'.format(ticker)), "w", encoding="utf-8") as json_file:
+                print(f"<!-- '{self.last_url}' -->\r\n\r\n{js}", file=json_file)
+
+            parsed = json.loads(js)
+            parsed = parsed['quoteSummary']['result'][0]
+
+            summaryDetail = dict(sorted(parsed['summaryDetail'].items()))
+            price = dict(sorted(parsed['price'].items()))
+
+            if 'defaultKeyStatistics' in parsed:
+                defaultKeyStatistics = dict(sorted(parsed['defaultKeyStatistics'].items()))
+            else:
+                defaultKeyStatistics = {}
+
+            if 'summaryProfile' in parsed:
+                summaryProfile = dict(sorted(parsed['summaryProfile'].items()))
+            else:
+                summaryProfile = {}
+
+            quoteType = dict(sorted(parsed['quoteType'].items()))
+
+        except BaseException as e:
+            logger.exception("BaseException parsing ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
+            return 'Yahoo.getRealtimeSummary({}, {}) - exception: {}'.format(ticker, datacode, e)
+
+        try:
 
             tick[Datacode.TICKER] = ticker
             tick[Datacode.TIMESTAMP] = time.time()
-            tick[Datacode.YAHOO_SUMMARY_RECEIVED] = True
 
-            parsed = {}
-
-            found = root.findall(f".//fin-streamer[@data-symbol='{ticker}']")
-            for d in found:
-                if hasattr(d, 'attrib') and 'data-field' in d.attrib:
-                    value = default(d.attrib, 'value') or default(d.attrib, 'data-value')
-                    parsed[d.attrib['data-field']] = value.replace('−', '-').replace(',', '').strip()
-
-            # for futures "regularMarketVolume" is from actual future ticker (potentially different to requested one)
-            if 'regularMarketVolume' not in parsed:
-                found = root.findall(f".//fin-streamer[@data-field='regularMarketVolume']")
-                for d in found:
-                    if hasattr(d, 'attrib') and 'data-field' in d.attrib and 'data-symbol' in d.attrib:
-                        value = default(d.attrib, 'value') or default(d.attrib, 'data-value')
-                        parsed[d.attrib['data-field']] = value.replace('−', '-').replace(',', '').strip()
-                        tick[Datacode.TICKER] = default(d.attrib, 'data-symbol').strip()
-
-            found = root.findall(f".//td[@data-test]")
-            for d in found:
-                if d:
-                    span = d.find('./span')
-                    if hasattr(d, 'attrib') and hasattr(span, 'text'):
-                        parsed[d.attrib['data-test']] = default(span, 'text').replace('−', '-').replace(',', '').strip()
-                else:
-                    if hasattr(d, 'attrib') and hasattr(d, 'text'):
-                        parsed[d.attrib['data-test']] = default(d, 'text').replace('−', '-').replace(',', '').strip()
-
-            if 'regularMarketPrice' not in parsed:
+            if 'regularMarketPrice' not in price:
                 return None
 
-            tick[Datacode.PREV_CLOSE] = self.save_wrapper(lambda: float(parsed['PREV_CLOSE-value']))
-            tick[Datacode.OPEN] = self.save_wrapper(lambda: float(parsed['OPEN-value']))
-            tick[Datacode.CHANGE] = self.save_wrapper(lambda: float(parsed['regularMarketChange']))
-            tick[Datacode.CHANGE_IN_PERCENT] = self.save_wrapper(lambda: float(parsed['regularMarketChangePercent']))
+            tick[Datacode.PREV_CLOSE] = self.save_wrapper(lambda: float(price['regularMarketPreviousClose']['raw']))
+            tick[Datacode.OPEN] = self.save_wrapper(lambda: float(price['regularMarketOpen']['raw']))
+            tick[Datacode.CHANGE] = self.save_wrapper(lambda: float(price['regularMarketChange']['raw']))
+            tick[Datacode.CHANGE_IN_PERCENT] = self.save_wrapper(lambda: float(price['regularMarketChangePercent']['raw']))
 
-            t = default(parsed, 'DAYS_RANGE-value').split(' - ')
-            tick[Datacode.LOW] = self.save_wrapper(lambda: float(t[0]))
-            tick[Datacode.HIGH] = self.save_wrapper(lambda: float(t[1]))
+            tick[Datacode.LOW] = self.save_wrapper(lambda: float(price['regularMarketDayLow']['raw']))
+            tick[Datacode.HIGH] = self.save_wrapper(lambda: float(price['regularMarketDayHigh']['raw']))
 
-            tick[Datacode.LAST_PRICE] = self.save_wrapper(lambda: float(parsed['regularMarketPrice']))
-            tick[Datacode.VOLUME] = self.save_wrapper(lambda: float(parsed['regularMarketVolume']))
-            tick[Datacode.AVG_DAILY_VOL_3MONTH] = self.save_wrapper(lambda: float(parsed['AVERAGE_VOLUME_3MONTH-value']))
-            tick[Datacode.BETA] = self.save_wrapper(lambda: float(parsed['BETA_5Y-value']))
-            tick[Datacode.EPS] = self.save_wrapper(lambda: float(parsed['EPS_RATIO-value']))
-            tick[Datacode.PE_RATIO] = self.save_wrapper(lambda: float(parsed['PE_RATIO-value']))
-
-            t = default(parsed, 'DIVIDEND_AND_YIELD-value').replace('(', '').replace(')', '').replace('%', '').strip().split(' ')
-            tick[Datacode.DIV] = self.save_wrapper(lambda: float(t[0]))
-            tick[Datacode.DIV_YIELD] = self.save_wrapper(lambda: float(t[1])/100.0)
+            tick[Datacode.LAST_PRICE] = self.save_wrapper(lambda: float(price['regularMarketPrice']['raw']))
+            tick[Datacode.VOLUME] = self.save_wrapper(lambda: float(price['regularMarketVolume']['raw']))
+            tick[Datacode.AVG_DAILY_VOL_3MONTH] = self.save_wrapper(lambda: float(price['averageDailyVolume3Month']['raw']))
+            tick[Datacode.BETA] = self.save_wrapper(lambda: float(defaultKeyStatistics['beta']['raw']))
+            tick[Datacode.EPS] = self.save_wrapper(lambda: float(defaultKeyStatistics['trailingEps']['raw']))
+            tick[Datacode.PE_RATIO] = self.save_wrapper(lambda: float(summaryDetail['trailingPE']['raw']))
 
             tick[Datacode.EX_DIV_DATE] = self.save_wrapper(
-                lambda: dateutil.parser.parse(parsed['EX_DIVIDEND_DATE-value'], yearfirst=True, dayfirst=False).date())
+                lambda: dateutil.parser.parse(summaryDetail['exDividendDate']['fmt'], yearfirst=True, dayfirst=False).date())
 
-            t = default(parsed, 'FIFTY_TWO_WK_RANGE-value').split(' - ')
-            tick[Datacode.LOW_52_WEEK] = self.save_wrapper(lambda: float(t[0]))
-            tick[Datacode.HIGH_52_WEEK] = self.save_wrapper(lambda: float(t[1]))
+            tick[Datacode.LOW_52_WEEK] = self.save_wrapper(lambda: float(summaryDetail['fiftyTwoWeekLow']['raw']))
+            tick[Datacode.HIGH_52_WEEK] = self.save_wrapper(lambda: float(summaryDetail['fiftyTwoWeekHigh']['raw']))
 
-            tick[Datacode.MARKET_CAP] = self.save_wrapper(lambda: float(handle_abbreviations(parsed['MARKET_CAP-value'])))
+            tick[Datacode.MARKET_CAP] = self.save_wrapper(lambda: float(price['marketCap']['raw']))
 
-            t = default(parsed, 'BID-value').split(' x ')
-            tick[Datacode.BID] = self.save_wrapper(lambda: float(t[0]))
-            tick[Datacode.BIDSIZE] = self.save_wrapper(lambda: float(t[1]))
+            tick[Datacode.BID] = self.save_wrapper(lambda: float(summaryDetail['bid']['raw']))
+            tick[Datacode.BIDSIZE] = self.save_wrapper(lambda: float(summaryDetail['bidSize']['raw']))
 
-            t = default(parsed, 'ASK-value').split(' x ')
-            tick[Datacode.ASK] = self.save_wrapper(lambda: float(t[0]))
-            tick[Datacode.ASKSIZE] = self.save_wrapper(lambda: float(t[1]))
+            tick[Datacode.ASK] = self.save_wrapper(lambda: float(summaryDetail['ask']['raw']))
+            tick[Datacode.ASKSIZE] = self.save_wrapper(lambda: float(summaryDetail['askSize']['raw']))
 
-            tick[Datacode.EXPIRY_DATE] = self.save_wrapper(
-                lambda: dateutil.parser.parse(parsed['EXPIRE_DATE-value'], yearfirst=True, dayfirst=False).date())
+            if quoteType:
+                t = int(price['regularMarketTime'])
+                tz = pytz.timezone(quoteType['timeZoneFullName'])
 
-            tick[Datacode.SETTLEMENT_DATE] = self.save_wrapper(
-                lambda: dateutil.parser.parse(parsed['SETTLEMENT_DATE-value'], yearfirst=True, dayfirst=False).date())
+                tick[Datacode.TIMEZONE] = tz
+                dt = datetime.datetime.fromtimestamp(t, tz)
 
-            r = '<div id="quote-market-notice"[^>]*><span>([^>]*?)(. Market open.)?</span></div>'
-            match = re.compile(r, flags=re.DOTALL).search(text)
-            if match:
-                t = html.unescape(match.group(1)).strip().split(' ')
-                tick[Datacode.TIMEZONE] = self.save_wrapper(lambda: t[-1])
+                tick[Datacode.LAST_PRICE_DATE] = dt.date()
+                tick[Datacode.LAST_PRICE_TIME] = dt.time()
 
-            # if quoteType:
-            #     t = int(price['regularMarketTime'])
-            #     tz = pytz.timezone(quoteType['exchangeTimezoneName'])
-            #
-            #     tick[Datacode.TIMEZONE] = tz
-            #     dt = datetime.datetime.fromtimestamp(t, tz)
-            #
-            #     tick[Datacode.LAST_PRICE_DATE] = dt.date()
-            #     tick[Datacode.LAST_PRICE_TIME] = dt.time()
+            tick[Datacode.EXCHANGE] = self.save_wrapper(lambda: price['exchangeName'])
+            tick[Datacode.CURRENCY] = self.save_wrapper(lambda: price['currency'])
 
-            r = '<span>([ \\w]+?) - [^>]*Currency in ([\\w]+)[^>]*</span>'
-            match = re.compile(r, flags=re.DOTALL).search(text)
-            if match:
-                tick[Datacode.EXCHANGE] = self.save_wrapper(lambda: html.unescape(match.group(1)).strip())
-                tick[Datacode.CURRENCY] = self.save_wrapper(lambda: html.unescape(match.group(2)).strip())
+            tick[Datacode.DIV] = self.save_wrapper(lambda: float(summaryDetail['dividendRate']['raw']))
+            tick[Datacode.DIV_YIELD] = self.save_wrapper(lambda: float(summaryDetail['dividendYield']['raw']))
 
-            # fallback for dividend/yield on mutual funds and ETFs
+            # fallback to last dividend on mutual funds and ETFs
             if not tick[Datacode.DIV]:
-                tick[Datacode.DIV] = self.save_wrapper(lambda: float(parsed['LAST_DIVIDEND-value']))
-            if not tick[Datacode.DIV_YIELD]:
-                tick[Datacode.DIV_YIELD] = self.save_wrapper(lambda: float(parsed['TD_YIELD-value'].replace('%', '').strip())/100.0)
+                tick[Datacode.DIV] = self.save_wrapper(lambda: float(defaultKeyStatistics['lastDividendValue']['raw']))
 
-            tick[Datacode.NAME] = self.save_wrapper(
-                lambda: html.unescape(root.find('.//h1').text).strip())
+            if default(price, 'quoteType') == 'FUTURE':
+                tick[Datacode.TICKER] = self.save_wrapper(lambda: price['underlyingSymbol'])
+                tick[Datacode.NAME] = self.save_wrapper(lambda: price['shortName'])
+                tick[Datacode.SETTLEMENT_DATE] = self.save_wrapper(
+                    lambda: dateutil.parser.parse(summaryDetail['expireDate']['fmt'], yearfirst=True, dayfirst=False).date())
+            else:
+                tick[Datacode.NAME] = self.save_wrapper(lambda: price['longName'])
+                tick[Datacode.EXPIRY_DATE] = self.save_wrapper(
+                    lambda: dateutil.parser.parse(summaryDetail['expireDate']['fmt'], yearfirst=True, dayfirst=False).date())
+                tick[Datacode.SETTLEMENT_DATE] = None
 
             if not tick[Datacode.NAME]:
                 tick[Datacode.NAME] = tick[Datacode.TICKER]
 
+            tick[Datacode.SECTOR] = self.save_wrapper(lambda: summaryProfile['sector'])
+            tick[Datacode.INDUSTRY] = self.save_wrapper(lambda: summaryProfile['industry'])
+
+            tick[Datacode.SHARES_OUT] = self.save_wrapper(lambda: float(defaultKeyStatistics['sharesOutstanding']['raw']))
+            tick[Datacode.FREE_FLOAT] = self.save_wrapper(lambda: float(defaultKeyStatistics['floatShares']['raw']))
+            tick[Datacode.PAYOUT_RATIO] = self.save_wrapper(lambda: float(summaryDetail['payoutRatio']['raw']))
+
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
             del self.realtime[ticker]
-            return 'Yahoo.getRealtimeSummary({}, {}) - process: {}'.format(ticker, datacode, e)
-
-        return self._return_value(self.realtime[ticker], datacode)
-
-    def getRealtimeStatistics(self, ticker, datacode):
-
-        """
-        Retrieve realtime data from Yahoo Finance - Statistics tab
-        """
-
-        tick = self.realtime[ticker]
-
-        url = 'https://finance.yahoo.com/quote/{}/key-statistics?p={}'.format(ticker, ticker)
-        text = self.getData(url, ticker, datacode, f'yahoo-{ticker}-statistics.html')
-
-        if text is None:
-            del self.realtime[ticker]
-            return 'Yahoo.getRealtimeStatistics({}, {}) - getData'.format(ticker, datacode)
-
-        try:
-            parser = NaiveHTMLParser()
-            root = parser.feed(text)
-            parser.close()
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
-            del self.realtime[ticker]
-            return 'Yahoo.getRealtimeStatistics({}, {}) - HTML parsing: {}'.format(ticker, datacode, e)
-
-        statistics = root.find(".//section[@data-test='qsp-statistics']")
-
-        tick[Datacode.TICKER] = ticker
-        tick[Datacode.TIMESTAMP] = time.time()
-        tick[Datacode.YAHOO_STATISTIC_RECEIVED] = True
-
-        tick[Datacode.SHARES_OUT] = None
-        tick[Datacode.FREE_FLOAT] = None
-        tick[Datacode.PAYOUT_RATIO] = None
-
-        if statistics is None:
-            return None
-
-        parsed = {}
-
-        try:
-
-            # Valuation Measures
-            found = statistics.find('./div[2]/div[1]//table')
-            if found:
-                for d in found.findall('.//tr'):
-                    key = d.find('./td[1]/span').text
-                    if key is not None:
-                        parsed[key] = d.find('./td[2]').text
-
-            # Stock Price History
-            found = statistics.find('./div[2]/div[2]/div[1]/div[1]//table')
-            if found:
-                for d in found.findall('.//tr'):
-                    key = d.find('./td[1]/span').text
-                    if key is not None:
-                        parsed[key] = d.find('./td[2]').text
-
-            # Share Statistics
-            found = statistics.find('./div[2]/div[2]/div[1]/div[2]//table')
-            if found:
-                for d in found.findall('.//tr'):
-                    key = d.find('./td[1]/span').text
-                    if key is not None:
-                        parsed[key] = d.find('./td[2]').text
-
-            # Dividends & Splits
-            found = statistics.find('./div[2]/div[2]/div[1]/div[3]//table')
-            if found:
-                for d in found.findall('.//tr'):
-                    key = d.find('./td[1]/span').text
-                    if key is not None:
-                        parsed[key] = d.find('./td[2]').text
-
-        except KeyError:
-            pass
-
-        tick[Datacode.SHARES_OUT] = self.save_wrapper(
-            lambda: float(handle_abbreviations(parsed['Shares Outstanding'])))
-        tick[Datacode.FREE_FLOAT] = self.save_wrapper(
-            lambda: float(handle_abbreviations(parsed['Float'])))
-        tick[Datacode.PAYOUT_RATIO] = self.save_wrapper(
-            lambda: float(handle_abbreviations(parsed['Payout Ratio'].replace('%', '').strip()))/100.0)
-
-        return self._return_value(self.realtime[ticker], datacode)
-
-    def getRealtimeProfile(self, ticker, datacode):
-
-        """
-        Retrieve realtime data from Yahoo Finance - Profile tab
-        """
-
-        tick = self.realtime[ticker]
-
-        url = 'https://finance.yahoo.com/quote/{}/profile?p={}'.format(ticker, ticker)
-        text = self.getData(url, ticker, datacode, f'yahoo-{ticker}-profile.html')
-
-        if text is None:
-            del self.realtime[ticker]
-            return 'Yahoo.getRealtimeProfile({}, {}) - getData'.format(ticker, datacode)
-
-        try:
-            parser = NaiveHTMLParser()
-            root = parser.feed(text)
-            parser.close()
-        except BaseException as e:
-            logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
-            del self.realtime[ticker]
-            return 'Yahoo.getRealtimeProfile({}, {}) - HTML parsing: {}'.format(ticker, datacode, e)
-
-        tick[Datacode.TICKER] = ticker
-        tick[Datacode.TIMESTAMP] = time.time()
-        tick[Datacode.YAHOO_PROFILE_RECEIVED] = True
-
-        p = None
-
-        if root:
-            p = root.find(".//*[span='Sector(s)']")
-
-        tick[Datacode.SECTOR] = self.save_wrapper(lambda: p.find("./span[2]").text)
-        tick[Datacode.INDUSTRY] = self.save_wrapper(lambda: p.find("./span[4]").text)
+            return 'Yahoo.getRealtime({}, {}) - process: {}'.format(ticker, datacode, e)
 
         return self._return_value(self.realtime[ticker], datacode)
 
