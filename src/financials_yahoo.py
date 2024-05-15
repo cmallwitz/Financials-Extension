@@ -184,7 +184,7 @@ class Yahoo(BaseClient):
                 return 'Yahoo.getRealtime({}, {}) - handleCookiesAndConsent'.format(ticker, datacode)
 
             try:
-                r = '"crumb":"([^"]{11})"'
+                r = '/getcrumb.*"body":"([^"]{11})"'
                 pattern = re.compile(r)
                 match = pattern.search(text)
                 if match:
