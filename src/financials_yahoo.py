@@ -184,11 +184,11 @@ class Yahoo(BaseClient):
                 return 'Yahoo.getRealtime({}, {}) - handleCookiesAndConsent'.format(ticker, datacode)
 
             try:
-                r = '"crumb":"([^"]{11})"'
+                r = r'\bcrumb=([^"]{11})"'
                 pattern = re.compile(r)
                 match = pattern.search(text)
                 if match:
-                    self.crumb = match.group(1)
+                    self.crumb = urllib.parse.unquote(match.group(1))
             except BaseException as e:
                 logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
                 del self.realtime[ticker]
