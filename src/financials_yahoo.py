@@ -183,12 +183,21 @@ class Yahoo(BaseClient):
                 del self.realtime[ticker]
                 return 'Yahoo.getRealtime({}, {}) - handleCookiesAndConsent'.format(ticker, datacode)
 
+            # crumbs like 'TKkC\u002FZBwoUA' may contain unicode _text_ (not encoded code points)
             try:
-                r = r'\bcrumb=([^"]{11})"'
+                r = r'\bcrumb=([^"]{11,})"'
                 pattern = re.compile(r)
                 match = pattern.search(text)
                 if match:
-                    self.crumb = urllib.parse.unquote(match.group(1))
+                    self.crumb = urllib.parse.unquote(match.group(1).encode('unicode-escape').decode('ascii'))
+                    logger.debug(f"crumb='{match.group(1)}' self.crumb='{self.crumb}'")
+                else:
+                    r = r'"crumb"\s*:\s*"([^"]{11,})"'
+                    pattern = re.compile(r)
+                    match = pattern.search(text)
+                    if match:
+                        self.crumb = urllib.parse.unquote(match.group(1).encode('unicode-escape').decode('ascii'))
+                        logger.debug(f"crumb='{match.group(1)}' self.crumb='{self.crumb}'")
             except BaseException as e:
                 logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
                 del self.realtime[ticker]

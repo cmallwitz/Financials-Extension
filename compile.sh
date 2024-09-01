@@ -64,11 +64,11 @@ cp -f "${PWD}"/src/financials_coinbase.py "${PWD}"/build/
 
 TMPFILE=`mktemp`
 
-wget "https://files.pythonhosted.org/packages/36/7a/87837f39d0296e723bb9b62bbb257d0355c7f6128853c78955f57342a56d/python_dateutil-2.8.2-py2.py3-none-any.whl" -O $TMPFILE
+wget "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl" -O $TMPFILE
 unzip $TMPFILE dateutil/\* -d "${PWD}"/build/
 rm $TMPFILE
 
-wget "https://files.pythonhosted.org/packages/7f/99/ad6bd37e748257dd70d6f85d916cafe79c0b0f5e2e95b11f7fbc82bf3110/pytz-2023.3-py2.py3-none-any.whl" -O $TMPFILE
+wget "https://files.pythonhosted.org/packages/9c/3d/a121f284241f08268b21359bd425f7d4825cffc5ac5cd0e1b3d82ffd2b10/pytz-2024.1-py2.py3-none-any.whl" -O $TMPFILE
 unzip $TMPFILE pytz/\* -d "${PWD}"/build/
 rm $TMPFILE
 

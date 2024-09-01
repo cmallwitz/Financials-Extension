@@ -33,9 +33,20 @@ class RedirectException(HTTPException):
 
 
 class HttpException(HTTPException):
-    def __init__(self, url, status):
+    def __init__(self, url, response):
         self.url = url
-        self.status = status
+        self.response = response
+
+    def __str__(self):
+        if self.response is None:
+            return f"url='{self.url}'"
+        if type(self.response) is str:
+            return f"url='{self.url}' status='{self.response}'"
+        if self.response.headers:
+            h = '\n'.join(sorted(self.response.headers.__str__().splitlines(), key=lambda l: l.lower()))
+            return f"url='{self.url}' status={self.response.status} reason='{self.response.reason}'{h}\n"
+        else:
+            return f"url='{self.url}' status={self.response.status} reason='{self.response.reason}'"
 
 
 class BaseClient:
@@ -49,18 +60,16 @@ class BaseClient:
         os.makedirs(self.basedir, exist_ok=True)
 
         user_agents = [
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/110.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/111.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/116.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/118.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/120.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/121.0'
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:129.0) Gecko/20100101 Firefox/129.0',
         ]
 
         self.default_headers = {
@@ -168,9 +177,10 @@ class BaseClient:
                 raise RedirectException(location)
 
         if self.response.status >= 400:
-            logger.warning("last_url='%s' status=%s headers=%s", self.last_url, self.response.status,
+            logger.warning("last_url='%s' status=%s reason='%s' headers=%s", self.last_url, self.response.status,
+                           self.response.reason,
                            '\n'.join(sorted(self.response.headers.__str__().splitlines(), key=lambda l: l.lower())))
-            raise HttpException(url, self.response.status)
+            raise HttpException(url, self.response)
 
         if self.response.getheader('Content-Encoding') == 'gzip':
             text = gzip.decompress(text)

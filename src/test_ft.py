@@ -275,7 +275,7 @@ class Test(unittest.TestCase):
         self.assertTrue(testutils.is_date(s), 'test_DE_equity EX_DIV_DATE {}'.format(s))
 
         s = financials.getRealtime('ISHAX:GER', 'NAME', 'FT')
-        self.assertEqual('INTERSHOP Communications AG', s, 'test_DE_equity NAME {}'.format(s))
+        self.assertEqual('Intershop Communications AG', s, 'test_DE_equity NAME {}'.format(s))
 
         s = financials.getRealtime('ISHAX:GER', 'BETA', 'FT')
         self.assertTrue(testutils.is_positive_float(s), 'test_DE_equity BETA {}'.format(s))
