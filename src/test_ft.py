@@ -309,6 +309,13 @@ class Test(unittest.TestCase):
         self.assertEqual(str, type(s), 'test_DK_equity INDUSTRY {}'.format(s))
         self.assertEqual('Pharmaceuticals and Biotechnology', s, 'test_DK_equity INDUSTRY {}'.format(s))
 
+    def test_SE_equity(self):
+        s = financials.getRealtime('ACRI A:STO', 'name', 'FT')
+        self.assertEqual('Acrinova AB (publ)', s, 'test_SE_equity NAME {}'.format(s))
+
+        s = financials.getRealtime('SE0015660014', 'name', 'FT')
+        self.assertEqual('Acrinova AB (publ)', s, 'test_SE_equity NAME {}'.format(s))
+
     def test_TY_equity(self):
         s = financials.getRealtime('6503:TYO', 'OPEN', 'FT')
         self.assertEqual(float, type(s), 'test_TY_equity OPEN {}'.format(s))

@@ -16,6 +16,7 @@ import pathlib
 import random
 import select
 import urllib.request
+import urllib.parse
 from http import cookiejar
 from http.client import HTTPConnection, HTTPSConnection, HTTPException
 
@@ -162,7 +163,8 @@ class BaseClient:
         while 300 <= self.response.status < 400 and self.redirect_count >= 0:
 
             self.redirect_count -= 1
-            location = self.response.getheader('Location')
+            location = str(self.response.getheader('Location'))
+            location = location.replace(' ', '%20')  # FT bug workaround - this should not be necessary
 
             if location and redirect:
 
