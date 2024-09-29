@@ -20,7 +20,6 @@ import urllib.parse
 
 import dateutil.parser
 
-import jsonParser
 from baseclient import BaseClient, HttpException
 from datacode import Datacode
 from naivehtmlparser import NaiveHTMLParser
@@ -65,36 +64,49 @@ class Yahoo(BaseClient):
         self.crumb = None
         self.realtime = {}
         self.historicdata = {}
-        self.js = jsonParser.jsonObject
 
-    def _read_ticker_csv_file(self, ticker):
+    def _read_ticker_json_file(self, ticker):
 
-        fn = os.path.join(self.basedir, 'yahoo-{}.csv'.format(ticker))
+        fn = os.path.join(self.basedir, 'yahoo-hist-{}.json'.format(ticker))
 
         if not os.path.isfile(fn):
             return
 
-        with open(fn, newline='', encoding="utf-8") as csvfile:
-            reader = csv.DictReader(csvfile)
+        with open(fn, newline='', encoding="utf-8") as jsonfile:
+            js = jsonfile.read()
 
-            ticks = {}
+        parsed = json.loads(js)
+        parsed = parsed['chart']['result'][0]
 
-            for row in reader:
-                tick = self.get_ticker()
-                try:
-                    tick[Datacode.OPEN] = float(row['Open'])
-                    tick[Datacode.LOW] = float(row['Low'])
-                    tick[Datacode.HIGH] = float(row['High'])
-                    tick[Datacode.VOLUME] = float(row['Volume'])
-                    tick[Datacode.CLOSE] = float(row['Close'])
-                    tick[Datacode.ADJ_CLOSE] = float(row['Adj Close'])
-                except:
-                    pass
+        tz = datetime.timezone(datetime.timedelta(seconds=parsed['meta']['gmtoffset']), parsed['meta']['exchangeTimezoneName'])
 
-                if len(tick) > 0:
-                    ticks[row['Date']] = tick
+        rows = list(
+            zip((datetime.datetime.fromtimestamp(ts, tz).date() for ts in parsed['timestamp']),
+                parsed['indicators']['quote'][0]['open'],
+                parsed['indicators']['quote'][0]['low'],
+                parsed['indicators']['quote'][0]['high'],
+                parsed['indicators']['quote'][0]['volume'],
+                parsed['indicators']['quote'][0]['close'],
+                parsed['indicators']['adjclose'][0]['adjclose']))
 
-            self.historicdata[ticker] = ticks
+        ticks = {}
+
+        for row in rows:
+            tick = self.get_ticker()
+            try:
+                tick[Datacode.OPEN] = round(float(row[1]), 2)
+                tick[Datacode.LOW] = round(float(row[2]), 2)
+                tick[Datacode.HIGH] = round(float(row[3]), 2)
+                tick[Datacode.VOLUME] = round(float(row[4]), 2)
+                tick[Datacode.CLOSE] = round(float(row[5]), 2)
+                tick[Datacode.ADJ_CLOSE] = round(float(row[6]), 2)
+            except:
+                pass
+
+            if len(tick) > 0:
+                ticks[str(row[0])] = tick  # Date
+
+        self.historicdata[ticker] = ticks
 
 
     def handleCookiesAndConsent(self, url, ticker, datacode, html_file):
@@ -352,7 +364,7 @@ class Yahoo(BaseClient):
         # the moment we are asked for ADJ_CLOSE we ignore the ticker cache to refresh
 
         if Datacode.ADJ_CLOSE != datacode and ticker not in self.historicdata:
-            self._read_ticker_csv_file(ticker)
+            self._read_ticker_json_file(ticker)
 
         try:
             date_as_dt = dateutil.parser.parse(date, yearfirst=True, dayfirst=False)
@@ -406,16 +418,16 @@ class Yahoo(BaseClient):
 
         try:
 
-            url = 'https://query1.finance.yahoo.com/v7/finance/download/{}' \
+            url = 'https://query1.finance.yahoo.com/v8/finance/chart/{}' \
                   '?period1={}&period2={}&interval=1d&events=history&crumb={}' \
                 .format(ticker, t1, t2, urllib.parse.quote_plus(self.crumb))
 
             text = self.urlopen(url)
 
-            with open(os.path.join(self.basedir, 'yahoo-{}.csv'.format(ticker)), "w", encoding="utf-8") as csv_file:
+            with open(os.path.join(self.basedir, 'yahoo-hist-{}.json'.format(ticker)), "w", encoding="utf-8") as csv_file:
                 print(text, file=csv_file)
 
-            self._read_ticker_csv_file(ticker)
+            self._read_ticker_json_file(ticker)
 
         except HttpException:
             logger.exception("HttpException ticker=%s datacode=%s date=%s", ticker, datacode, date)

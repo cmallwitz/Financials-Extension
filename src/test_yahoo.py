@@ -220,16 +220,16 @@ class Test(unittest.TestCase):
 
         s = financials.getRealtime('ES=F', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_futures NAME {}'.format(s))
-        self.assertEqual('E-Mini S&P 500 Sep 24', s, 'test_realtime_US_futures NAME {}'.format(s))
+        self.assertEqual('E-Mini S&P 500 Dec 24', s, 'test_realtime_US_futures NAME {}'.format(s))
 
         s = financials.getRealtime('ES=F', Datacode.TICKER.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_futures TICKER {}'.format(s))
-        self.assertEqual('ESU24.CME', s, 'test_realtime_US_futures TICKER {}'.format(s))
+        self.assertEqual('ESZ24.CME', s, 'test_realtime_US_futures TICKER {}'.format(s))
 
         s = financials.getRealtime('ES=F', Datacode.SETTLEMENT_DATE.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
         self.assertTrue(testutils.is_date(s), 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
-        self.assertEqual("2024-09-20", s, 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
+        self.assertEqual("2024-12-20", s, 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
 
         s = financials.getRealtime('ES=F', Datacode.LAST_PRICE.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_futures LAST_PRICE {}'.format(s))
@@ -406,15 +406,15 @@ class Test(unittest.TestCase):
         self.assertIsNone(s, 'test_historic_US_equity LAST_PRICE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(159.837479, s, 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertAlmostEqual(159.84, s, 2, 'test_historic_US_equity CLOSE {}'.format(s))
 
         financials.yahoo.historicdata = {}
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(159.837479, s, 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertAlmostEqual(159.84, s, 2, 'test_historic_US_equity CLOSE {}'.format(s))
 
         directory = os.path.join(str(pathlib.Path.home()), '.financials-extension')
-        ibm = os.path.join(directory, 'yahoo-IBM.csv')
+        ibm = os.path.join(directory, 'yahoo-hist-IBM.json')
         try:
             os.unlink(ibm)
         except:
@@ -423,7 +423,7 @@ class Test(unittest.TestCase):
         financials.yahoo.historicdata = {}
 
         s = financials.getHistoric('IBM', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(159.837479, s, 'test_historic_US_equity CLOSE {}'.format(s))
+        self.assertAlmostEqual(159.84, s, 2, 'test_historic_US_equity CLOSE {}'.format(s))
 
         s = financials.getHistoric('IBM', Datacode.ADJ_CLOSE.value, '2017-01-03', 'YAHOO')
         self.assertEqual(float, type(s), 'test_historic_US_equity ADJ_CLOSE {}'.format(s))
@@ -431,7 +431,7 @@ class Test(unittest.TestCase):
     def test_historic_UK_ETF(self):
 
         directory = os.path.join(str(pathlib.Path.home()), '.financials-extension')
-        verx = os.path.join(directory, 'yahoo-VERX.L.csv')
+        verx = os.path.join(directory, 'yahoo-hist-VERX.L.json')
         try:
             os.unlink(verx)
         except:
@@ -443,10 +443,10 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'Not a trading day \'2017-01-01\'', 'test_historic_UK_ETF LAST_PRICE {}'.format(s))
 
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 23.24, 'test_historic_UK_ETF CLOSE {}'.format(s))
+        self.assertAlmostEqual(s, 23.24, 2, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2016-10-03', 'YAHOO')
-        self.assertEqual(s, 22.26, 'test_historic_UK_ETF CLOSE {}'.format(s))
+        self.assertAlmostEqual(s, 22.26, 2, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         #  Inception Date 2014-09-30
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, '2018-04-02', 'YAHOO')
@@ -457,13 +457,13 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'Not a trading day \'2015-01-01\'', 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, 42738, 'YAHOO')  # 2017-01-03
-        self.assertEqual(s, 23.24, 'test_historic_UK_ETF CLOSE {}'.format(s))
+        self.assertAlmostEqual(s, 23.24, 2, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, 42738.0, 'YAHOO')  # 2017-01-03
-        self.assertEqual(s, 23.24, 'test_historic_UK_ETF CLOSE {}'.format(s))
+        self.assertAlmostEqual(s, 23.24, 2, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
         s = financials.getHistoric('VERX.L', Datacode.CLOSE.value, 42646.0, 'YAHOO')  # 2016-10-03
-        self.assertEqual(s, 22.26, 'test_historic_UK_ETF CLOSE {}'.format(s))
+        self.assertAlmostEqual(s, 22.26, 2, 'test_historic_UK_ETF CLOSE {}'.format(s))
 
     def test_historic_DE_equity(self):
 
@@ -471,10 +471,10 @@ class Test(unittest.TestCase):
         self.assertEqual(s, 'Not a trading day \'2017-01-01\'', 'test_historic_DE_equity LAST_PRICE {}'.format(s))
 
         s = financials.getHistoric('SAP.DE', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 82.889999, 'test_historic_DE_equity CLOSE {}'.format(s))
+        self.assertAlmostEqual(s, 82.89, 2, 'test_historic_DE_equity CLOSE {}'.format(s))
 
         s = financials.getHistoric('LYY8.DE', Datacode.CLOSE.value, '2017-01-03', 'YAHOO')
-        self.assertEqual(s, 96.010002, 'test_historic_DE_equity CLOSE {}'.format(s))
+        self.assertAlmostEqual(s, 96.01, 2, 'test_historic_DE_equity CLOSE {}'.format(s))
 
     def test_realtime_errors(self):
 

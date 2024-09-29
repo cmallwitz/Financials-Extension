@@ -20,7 +20,6 @@ import json
 import dateutil.parser
 import pytz
 
-import jsonParser
 from baseclient import BaseClient, HttpException
 from datacode import Datacode
 
@@ -35,7 +34,6 @@ class Coinbase(BaseClient):
 
         self.crumb = None
         self.realtime = {}
-        self.js = jsonParser.jsonObject
 
     def getRealtime(self, ticker, datacode):
 

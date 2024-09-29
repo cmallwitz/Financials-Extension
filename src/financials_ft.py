@@ -16,7 +16,6 @@ import urllib.parse
 
 import dateutil.parser
 
-import jsonParser
 from baseclient import BaseClient
 from datacode import Datacode
 from tz import whois_timezone_info
@@ -48,7 +47,6 @@ class FT(BaseClient):
         self.crumb = None
         self.realtime = {}
         self.historicdata = {}
-        self.js = jsonParser.jsonObject
 
     def getRealtime(self, ticker: str, datacode: int):
 

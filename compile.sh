@@ -53,7 +53,6 @@ python3 "${PWD}"/src/generate_metainfo.py
 cp -f "${PWD}"/src/financials.py "${PWD}"/build/
 cp -f "${PWD}"/src/datacode.py "${PWD}"/build/
 cp -f "${PWD}"/src/baseclient.py "${PWD}"/build/
-cp -f "${PWD}"/src/jsonParser.py "${PWD}"/build/
 cp -f "${PWD}"/src/naivehtmlparser.py "${PWD}"/build/
 cp -f "${PWD}"/src/tz.py "${PWD}"/build/
 cp -f "${PWD}"/src/financials_ft.py "${PWD}"/build/
