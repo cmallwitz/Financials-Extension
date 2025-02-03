@@ -8,7 +8,6 @@
 #  version 3 of the License, or (at your option) any later version.
 
 
-import csv
 import datetime
 import json
 import logging
@@ -144,7 +143,8 @@ class Yahoo(BaseClient):
 
                 data = {'reject': 'reject'}
                 for d in inputs:
-                    data[d.attrib['name']] = d.attrib['value']
+                    if 'name' in d.attrib and 'value' in d.attrib:
+                        data[d.attrib['name']] = d.attrib['value']
 
                 try:
                     text = self.urlopen(self.last_url, redirect=True, data=urllib.parse.urlencode(data))
