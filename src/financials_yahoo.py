@@ -77,6 +77,14 @@ class Yahoo(BaseClient):
         parsed = json.loads(js)
         parsed = parsed['chart']['result'][0]
 
+        price_hint = 2
+        if 'priceHint' in parsed['meta']:
+            price_hint = str(parsed['meta']['priceHint'])
+            if price_hint and price_hint.isnumeric():
+                price_hint = int(price_hint)
+            else:
+                price_hint = 2
+
         tz = datetime.timezone(datetime.timedelta(seconds=parsed['meta']['gmtoffset']), parsed['meta']['exchangeTimezoneName'])
 
         rows = list(
@@ -93,12 +101,12 @@ class Yahoo(BaseClient):
         for row in rows:
             tick = self.get_ticker()
             try:
-                tick[Datacode.OPEN] = round(float(row[1]), 2)
-                tick[Datacode.LOW] = round(float(row[2]), 2)
-                tick[Datacode.HIGH] = round(float(row[3]), 2)
-                tick[Datacode.VOLUME] = round(float(row[4]), 2)
-                tick[Datacode.CLOSE] = round(float(row[5]), 2)
-                tick[Datacode.ADJ_CLOSE] = round(float(row[6]), 2)
+                tick[Datacode.OPEN] = round(float(row[1]), price_hint)
+                tick[Datacode.LOW] = round(float(row[2]), price_hint)
+                tick[Datacode.HIGH] = round(float(row[3]), price_hint)
+                tick[Datacode.VOLUME] = round(float(row[4]), price_hint)
+                tick[Datacode.CLOSE] = round(float(row[5]), price_hint)
+                tick[Datacode.ADJ_CLOSE] = round(float(row[6]), price_hint)
             except:
                 pass
 
@@ -240,7 +248,10 @@ class Yahoo(BaseClient):
             parsed = json.loads(js)
             parsed = parsed['quoteSummary']['result'][0]
 
-            summaryDetail = dict(sorted(parsed['summaryDetail'].items()))
+            summaryDetail = dict()
+            if 'summaryDetail' in parsed:
+                summaryDetail = dict(sorted(parsed['summaryDetail'].items()))
+
             price = dict(sorted(parsed['price'].items()))
 
             if 'defaultKeyStatistics' in parsed:
@@ -456,7 +467,6 @@ class Yahoo(BaseClient):
             return 'Yahoo.getHistoric({}, {}, {}) - process: {}'.format(ticker, datacode, date, e)
 
         return None
-
 
 def createInstance(ctx):
     return Yahoo(ctx)

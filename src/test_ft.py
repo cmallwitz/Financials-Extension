@@ -142,31 +142,31 @@ class Test(unittest.TestCase):
 
     def test_US_futures(self):
 
-        # https://markets.ft.com/data/commodities/tearsheet/summary?s=775326843 ESH25:IOM
+        # https://markets.ft.com/data/commodities/tearsheet/summary?s=823439664 ESH26:IOM - EMINI S&P MAR26
 
-        s = financials.getRealtime('775326843', Datacode.NAME.value, 'FT')
+        s = financials.getRealtime('823439664', Datacode.NAME.value, 'FT')
         self.assertEqual(str, type(s), 'test_realtime_US_futures NAME {}'.format(s))
-        self.assertEqual('EMINI S&P MAR25', s, 'test_US_futures NAME {}'.format(s))
+        self.assertEqual('EMINI S&P MAR26', s, 'test_US_futures NAME {}'.format(s))
 
-        s = financials.getRealtime('775326843', Datacode.LAST_PRICE.value, 'FT')
+        s = financials.getRealtime('823439664', Datacode.LAST_PRICE.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures LAST_PRICE {}'.format(s))
 
         # s = financials.getRealtime('775326843', Datacode.OPEN.value, 'FT')
         # self.assertEqual(float, type(s), 'test_US_futures OPEN {}'.format(s))
 
-        s = financials.getRealtime('775326843', Datacode.VOLUME.value, 'FT')
+        s = financials.getRealtime('823439664', Datacode.VOLUME.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures VOLUME {}'.format(s))
 
-        s = financials.getRealtime('775326843', Datacode.LOW_52_WEEK.value, 'FT')
+        s = financials.getRealtime('823439664', Datacode.LOW_52_WEEK.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures LOW_52_WEEK {}'.format(s))
 
-        s = financials.getRealtime('775326843', Datacode.HIGH_52_WEEK.value, 'FT')
+        s = financials.getRealtime('823439664', Datacode.HIGH_52_WEEK.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures HIGH_52_WEEK {}'.format(s))
 
-        s = financials.getRealtime('775326843', Datacode.CHANGE.value, 'FT')
+        s = financials.getRealtime('823439664', Datacode.CHANGE.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures CHANGE {}'.format(s))
 
-        s = financials.getRealtime('775326843', Datacode.CHANGE_IN_PERCENT.value, 'FT')
+        s = financials.getRealtime('823439664', Datacode.CHANGE_IN_PERCENT.value, 'FT')
         self.assertEqual(float, type(s), 'test_US_futures CHANGE_IN_PERCENT {}'.format(s))
 
     def test_UK_ETF(self):

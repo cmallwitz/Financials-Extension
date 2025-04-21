@@ -183,53 +183,53 @@ class Test(unittest.TestCase):
 
         # symbol from https://finance.yahoo.com/quote/IBM/options?p=IBM
         
-        s = financials.getRealtime('IBM250321C00260000', Datacode.PREV_CLOSE.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.PREV_CLOSE.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options PREV_CLOSE {}'.format(s))
 
-        s = financials.getRealtime('IBM250321C00260000', Datacode.NAME.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_options NAME {}'.format(s))
-        self.assertEqual('IBM Mar 2025 260.000 call', s, 'test_realtime_US_options NAME {}'.format(s))
+        self.assertEqual('IBM Jan 2026 230.000 call', s, 'test_realtime_US_options NAME {}'.format(s))
 
-        s = financials.getRealtime('IBM250321C00260000', Datacode.EXPIRY_DATE.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.EXPIRY_DATE.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
         self.assertTrue(testutils.is_date(s), 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
-        self.assertEqual("2025-03-21", s, 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
+        self.assertEqual("2026-01-16", s, 'test_realtime_US_options EXPIRY_DATE {}'.format(s))
 
-        s = financials.getRealtime('IBM250321C00260000', Datacode.LAST_PRICE.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.LAST_PRICE.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options LAST_PRICE {}'.format(s))
 
-        s = financials.getRealtime('IBM250321C00260000', Datacode.OPEN.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.OPEN.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options OPEN {}'.format(s))
 
-        s = financials.getRealtime('IBM250321C00260000', Datacode.VOLUME.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.VOLUME.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options VOLUME {}'.format(s))
 
-        s = financials.getRealtime('IBM250321C00260000', Datacode.BID.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.BID.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options BID {}'.format(s))
 
-        s = financials.getRealtime('IBM250321C00260000', Datacode.ASK.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.ASK.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_options ASK {}'.format(s))
 
-        s = financials.getRealtime('IBM250321C00260000', Datacode.PAYOUT_RATIO.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.PAYOUT_RATIO.value, 'YAHOO')
         self.assertIsNone(s, 'test_realtime_US_options PAYOUT_RATIO {}'.format(s))
 
-        s = financials.getRealtime('IBM250117C00165000', Datacode.SECTOR.value, 'YAHOO')
+        s = financials.getRealtime('IBM260116C00230000', Datacode.SECTOR.value, 'YAHOO')
         self.assertIsNone(s, 'test_realtime_US_options SECTOR {}'.format(s))
 
     def test_realtime_US_futures(self):
 
         s = financials.getRealtime('ES=F', Datacode.NAME.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_futures NAME {}'.format(s))
-        self.assertEqual('E-Mini S&P 500 Mar 25', s, 'test_realtime_US_futures NAME {}'.format(s))
+        self.assertEqual('E-Mini S&P 500 Jun 25', s, 'test_realtime_US_futures NAME {}'.format(s))
 
         s = financials.getRealtime('ES=F', Datacode.TICKER.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_futures TICKER {}'.format(s))
-        self.assertEqual('ESH25.CME', s, 'test_realtime_US_futures TICKER {}'.format(s))
+        self.assertEqual('ESM25.CME', s, 'test_realtime_US_futures TICKER {}'.format(s))
 
         s = financials.getRealtime('ES=F', Datacode.SETTLEMENT_DATE.value, 'YAHOO')
         self.assertEqual(str, type(s), 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
         self.assertTrue(testutils.is_date(s), 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
-        self.assertEqual("2025-03-21", s, 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
+        self.assertEqual("2025-06-20", s, 'test_realtime_US_futures SETTLEMENT_DATE {}'.format(s))
 
         s = financials.getRealtime('ES=F', Datacode.LAST_PRICE.value, 'YAHOO')
         self.assertEqual(float, type(s), 'test_realtime_US_futures LAST_PRICE {}'.format(s))
