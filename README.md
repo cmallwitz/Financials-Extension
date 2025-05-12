@@ -13,7 +13,20 @@ to their website. In a step back to before or rather a return to times long gone
 to be installed such that LibreOffice can find them. 
 
 Ideally install module 'curl_cffi' (although 'requests' works as well if you don't intend to use Yahoo as source)
-using e.g. on my Ubuntu as root: `pip3 install curl_cffi --upgrade`
+using e.g. on my Ubuntu:
+
+```sudo pip3 install curl_cffi --upgrade```
+
+Previously this worked on Windows - as LibreOffice on Windows ships with its own, minimal Python runtime a 
+few more steps are required:
+
+- Download the script https://bootstrap.pypa.io/get-pip.py to your computer
+
+- Start a Command Prompt (CMD) as Administrator on the command prompt run (change path as required)
+
+    ```"c:\Program Files\LibreOffice\program\python.exe" c:\temp\get-pip.py``` and then
+
+    ```"c:\Program Files\LibreOffice\program\python.exe" -m pip install curl_cffi --upgrade```
 
 If you want to use Yahoo as a source you need to download latest binary of [curl-impersonate](https://github.com/lwthiker/curl-impersonate/releases) e.g. 
 libcurl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz and untar it somewhere 
