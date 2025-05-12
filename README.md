@@ -9,11 +9,13 @@ spreadsheets - currently supporting Yahoo's (FX, crypto, equities, indices, futu
 ## Latest version vs Yahoo HTTPS fingerprinting
 
 Latest version 3.8.0 was created to bypass Yahoo's recently adding crazy HTTPS fingerprinting 
-to their website. If you don't use Yahoo, no further changes are required.
+to their website. In a step back to before or rather a return to times long gone some Python modules need
+to be installed such that LibreOffice can find them. 
 
-If you do use Yahoo as a source, here is what I had to do to get Yahoo working again on my Ubuntu system:
-- install system-wide Python module curl_cffi - on my system as root: `pip3 install curl_cffi --upgrade`
-- download latest binary of [curl-impersonate](https://github.com/lwthiker/curl-impersonate/releases) e.g. 
+Ideally install module 'curl_cffi' (although 'requests' works as well if you don't intend to use Yahoo as source)
+using e.g. on my Ubuntu as root: `pip3 install curl_cffi --upgrade`
+
+If you want to use Yahoo as a source you need to download latest binary of [curl-impersonate](https://github.com/lwthiker/curl-impersonate/releases) e.g. 
 libcurl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz and untar it somewhere 
 
 Now some of these bits need to be loaded/initialised before running LibreOffice: I used the below (adjust your location 
