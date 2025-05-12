@@ -76,7 +76,7 @@ class FT(BaseClient):
         url = f'https://markets.ft.com/data/{asset_class}/tearsheet/summary?s={urllib.parse.quote_plus(ticker)}'
 
         try:
-            text = self.urlopen(url, redirect=True, data=None, headers=None)
+            text = self.urlopen(url)
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s last_url=%s redirect_count=%s", ticker, datacode, self.last_url, self.redirect_count)
             del self.realtime[ticker]

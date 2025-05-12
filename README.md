@@ -1,14 +1,44 @@
 # Financials-Extension
 
-Version 3.3.0 includes improved cookie handling and somewhat improved logic to deal with network issues.   
-
 ## Overview
 
 This is a Python based extension for LibreOffice Calc to make market data available in Calc 
 spreadsheets - currently supporting Yahoo's (FX, crypto, equities, indices, futures, options) and Financial Times' 
 (FX, equities, indices, futures) websites using old-fashioned web scraping. 
 
-Starting with version 3.1.0, we received a contribution to get crypto data directly from Coinbase
+## Latest version vs Yahoo HTTPS fingerprinting
+
+Latest version 3.8.0 was created to bypass Yahoo's recently adding crazy HTTPS fingerprinting 
+to their website. If you don't use Yahoo, no further changes are required.
+
+If you do use Yahoo as a source, here is what I had to do to get Yahoo working again on my Ubuntu system:
+- install system-wide Python module curl_cffi - on my system as root: `pip3 install curl_cffi --upgrade`
+- download latest binary of [curl-impersonate](https://github.com/lwthiker/curl-impersonate/releases) e.g. 
+libcurl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz and untar it somewhere 
+
+Now some of these bits need to be loaded/initialised before running LibreOffice: I used the below (adjust your location 
+to libcurl-impersonate-chrome.so) to run LibreOffice Calc directly from command line:
+
+```
+LD_PRELOAD=/tmp/curl-impersonate/libcurl-impersonate-chrome.so CURL_IMPERSONATE=chrome101 /usr/lib/libreoffice/program/soffice.bin --calc
+```
+
+With this I can see the below in the output from `=GETREALTIME("SUPPORT")` and the examples.ods file from this repo 
+can load data for Yahoo again.
+```
+...
+requests=curl_cffi_0.10.0
+LD_PRELOAD=/tmp/curl-impersonate/libcurl-impersonate-chrome.so
+CURL_IMPERSONATE=chrome101
+curl_version="libcurl/8.1.1 BoringSSL zlib/1.2.11 brotli/1.0.9 nghttp2/1.56.0"
+```
+
+Similar things should be possible on Windows - let me know if [this](https://stackoverflow.com/questions/1178257/ld-preload-equivalent-for-windows-to-preload-shared-libraries)
+is helpful and share your experience.
+
+Background: for a normal Python script just installing curl_cffi is enough to bypass Yahoo's HTTPS fingerprinting. 
+Because LibreOffice is loading the stock curl library before executing the extension code directly, the above hack 
+is required. Unless someone tells me otherwise...
 
 ### Feedback requested:
 
@@ -31,7 +61,8 @@ Getting data should be as simple as having this in a cell:
 Codes 21 and 90 stand for "last price" and "close" (see below), respectively. 
 Only Yahoo has historic data available.
 
-There is a file **examples.ods** there too with usage examples and possible arguments to functions.
+There is a file **examples.ods** in the Release area too with usage examples 
+and possible arguments to functions.
 
 You have to check the respective websites to work out what symbol is the right one for you. Make sure today or the date 
 requested is a trading day (exchange is not closed). If a website doesn't have 
@@ -129,18 +160,19 @@ On my system (Ubuntu) I installed packages: libreoffice-dev libreoffice-java-com
 
 cd ~/tech/IdeaProjects/Financials-Extension/
 
-python3 -m unittest discover src
+\# Assuming curl-cffi is installed, LD_PRELOAD is not required here 
+
+CURL_IMPERSONATE=chrome101 python3 -m unittest discover src
 
 \# This builds file **Financials-Extension.oxt**
 
 ./compile.sh
 
 ### Tested with:
-- Windows 10 / LibreOffice Calc 7.1.2.2 / Python 3.8.8
-- Ubuntu 22.04.1 / LibreOffice Calc 7.3.7.2 / Python 3.10.6
-- MacOS 10.15.7 / LibreOffice Calc 7.2.0.4 / Python 3.8.10
+- Ubuntu 22.04.5 / LibreOffice Calc 7.3.7.2 / Python 3.10.12
 
-(Previous versions)
+(Previously)
+- Windows 10 / LibreOffice Calc 7.1.2.2 / Python 3.8.8
+- MacOS 10.15.7 / LibreOffice Calc 7.2.0.4 / Python 3.8.10
 - Debian 10.3  / LibreOffice Calc 6.1.5.2 / Python 3.7.3
 - Ubuntu 20.04.5 / LibreOffice Calc 6.4.7.2 / Python 3.8.10
-- Ubuntu 18.04.5 / LibreOffice Calc 6 / Python 3.6.9

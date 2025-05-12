@@ -67,7 +67,7 @@ wget "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543c
 unzip $TMPFILE dateutil/\* -d "${PWD}"/build/
 rm $TMPFILE
 
-wget "https://files.pythonhosted.org/packages/9c/3d/a121f284241f08268b21359bd425f7d4825cffc5ac5cd0e1b3d82ffd2b10/pytz-2024.1-py2.py3-none-any.whl" -O $TMPFILE
+wget "https://files.pythonhosted.org/packages/81/c4/34e93fe5f5429d7570ec1fa436f1986fb1f00c3e0f43a589fe2bbcd22c3f/pytz-2025.2-py2.py3-none-any.whl" -O $TMPFILE
 unzip $TMPFILE pytz/\* -d "${PWD}"/build/
 rm $TMPFILE
 
@@ -76,7 +76,7 @@ unzip $TMPFILE pyparsing.py -d "${PWD}"/build/
 rm $TMPFILE
 
 # Windows LibreOffice 7.1 Python is missing this...
-wget "https://files.pythonhosted.org/packages/d9/5a/e7c31adbe875f2abbb91bd84cf2dc52d792b5a01506781dbcf25c91daf11/six-1.16.0-py2.py3-none-any.whl" -O $TMPFILE
+wget "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl" -O $TMPFILE
 unzip $TMPFILE six.py -d "${PWD}"/build/
 rm $TMPFILE
 

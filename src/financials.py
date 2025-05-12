@@ -240,7 +240,8 @@ class FinancialsImpl(unohelper.Base, Financials):
             if e.tag.endswith('version'):
                 version = e.attrib['value']
 
-        s = 'ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}\nsys.path={}\nlocale={}\ndefaultlocale={}\ndateutil={}\npytz={}\npyparsing={}\nsix={}'.format(
+        s = ('ctx={}\nid(self)={}\nversion={}\nfile={}\ncwd={}\nhome={}\nuname={}\npid={}\nsys.executable={}\nsys.version={}\nsys.path={}\n' +
+             'locale={}\ndefaultlocale={}\ndateutil={}\npytz={}\npyparsing={}\nsix={}\nrequests={}').format(
             self.ctx,
             id(self),
             version,
@@ -258,7 +259,19 @@ class FinancialsImpl(unohelper.Base, Financials):
             pytz.__version__,
             pyparsing.__version__,
             six.__version__,
+            self.ft.version()
         )
+
+        ld_preload = os.environ.get('LD_PRELOAD')
+        if ld_preload:
+            s += f"\nLD_PRELOAD={ld_preload}"
+
+        curl_impersonate = os.environ.get('CURL_IMPERSONATE')
+        if curl_impersonate:
+            s += f"\nCURL_IMPERSONATE={curl_impersonate}"
+
+        if 'curl_cffi' in self.ft.version():
+            s += f"\ncurl_version=\"{self.ft.session.curl.version().decode()}\""
 
         if datacode:
             s = '{}\ntype(datacode)={}\nstr(datacode)={}'.format(

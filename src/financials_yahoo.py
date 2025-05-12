@@ -119,7 +119,7 @@ class Yahoo(BaseClient):
     def handleCookiesAndConsent(self, url, ticker, datacode, html_file):
 
         try:
-            text = self.urlopen(url, redirect=True)
+            text = self.urlopen(url)
         except BaseException as e:
             logger.exception("BaseException (1) ticker=%s datacode=%s last_url=%s redirect_count=%s %s",
                              ticker, datacode, self.last_url, self.redirect_count, e)
@@ -155,7 +155,7 @@ class Yahoo(BaseClient):
                         data[d.attrib['name']] = d.attrib['value']
 
                 try:
-                    text = self.urlopen(self.last_url, redirect=True, data=urllib.parse.urlencode(data))
+                    text = self.urlopen(self.last_url, data=data)
                 except BaseException as e:
                     logger.exception("BaseException (4) ticker=%s datacode=%s last_url=%s redirect_count=%s %s",
                                      ticker, datacode, self.last_url, self.redirect_count, e)
@@ -196,7 +196,7 @@ class Yahoo(BaseClient):
 
         if not self.crumb:
 
-            url = 'https://finance.yahoo.com/quote/{}?p={}'.format(ticker, ticker)
+            url = f'https://finance.yahoo.com/quote/{ticker}'
             text = self.handleCookiesAndConsent(url, ticker, datacode, f'yahoo-{ticker}.html')
 
             if text is None:

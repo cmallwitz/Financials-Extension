@@ -8,18 +8,11 @@
 #  version 3 of the License, or (at your option) any later version.
 
 
-import codecs
-import gzip
 import logging
 import os
 import pathlib
 import random
-import select
-import urllib.request
-import urllib.parse
-from http import cookiejar
-from http.client import HTTPConnection, HTTPSConnection, HTTPException
-
+from importlib import util
 from datacode import Datacode
 
 logger = logging.getLogger(__name__)
@@ -28,12 +21,24 @@ logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
 
 
-class RedirectException(HTTPException):
-    def __init__(self, location):
-        self.location = location
+curl_cffi_present = not util.find_spec("curl_cffi") is None
+requests_present = not util.find_spec("requests") is None
+
+if curl_cffi_present:
+    logger.debug("Importing curl_cffi...")
+    from curl_cffi import requests, __version__ as requests_version, __name__ as requests_name
+elif requests_present:
+    logger.debug("Importing requests...")
+    import requests
+    requests_version = requests.__version__
+    requests_name = requests.__name__
+else:
+    raise Exception("Neither curl_cffi nor requests found.")
+
+# import requests
 
 
-class HttpException(HTTPException):
+class HttpException(Exception):
     def __init__(self, url, response):
         self.url = url
         self.response = response
@@ -45,150 +50,63 @@ class HttpException(HTTPException):
             return f"url='{self.url}' status='{self.response}'"
         if self.response.headers:
             h = '\n'.join(sorted(self.response.headers.__str__().splitlines(), key=lambda l: l.lower()))
-            return f"url='{self.url}' status={self.response.status} reason='{self.response.reason}'{h}\n"
+            return f"url='{self.url}' status={self.response.status_code} reason='{self.response.reason}' headers={h}\n"
         else:
-            return f"url='{self.url}' status={self.response.status} reason='{self.response.reason}'"
+            return f"url='{self.url}' status={self.response.status_code} reason='{self.response.reason}'"
 
 
 class BaseClient:
     def __init__(self):
-        self.connections = {}
-        self.cookies = cookiejar.CookieJar()
         self.last_url = None
-        self.redirect_count = 0  # will be set later
+        self.redirect_count = 0
 
         self.basedir = os.path.join(str(pathlib.Path.home()), '.financials-extension')
         os.makedirs(self.basedir, exist_ok=True)
 
         user_agents = [
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:129.0) Gecko/20100101 Firefox/129.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0',
             'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0',
+            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:137.0) Gecko/20100101 Firefox/137.0',
         ]
 
-        self.default_headers = {
-            'User-Agent': random.sample(user_agents, 1)[0],
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Encoding': 'gzip, deflate',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Connection': 'keep-alive',
-            'Cache-Control': 'max-age=0'
-        }
+        if curl_cffi_present:
+            self.session = requests.Session()
+            if logger.isEnabledFor(logging.DEBUG) and self.session.curl:
+                self.session.curl.debug()
+        else:
+            self.session = requests.Session()
+            self.session.headers.update({'User-Agent': random.sample(user_agents, 1)[0],
+                                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                                         'Accept-Encoding': 'gzip, deflate',
+                                         'Accept-Language': 'en-US,en;q=0.5',
+                                         'Connection': 'keep-alive',
+                                         'Cache-Control': 'max-age=0',
+                                         })
 
-        self.response = None
+        self.session.max_redirects = 5
 
-    def request(self, method: str, url: str, data=None, headers={}, **kwargs):
-
-        _headers = self.default_headers.copy()
-        if headers:
-            for key, value in headers.items():
-                _headers[key] = value
-
-        if method == 'POST' and 'Content-Type' not in _headers:
-            _headers['Content-Type'] = 'application/x-www-form-urlencoded'
-
-        connection = None
-
-        scheme, _, host, path = url.split('/', 3)
-
-        if (scheme, host) in self.connections:
-            connection = self.connections.get((scheme, host))
-
-        if connection and select.select([connection.sock], [], [], 0)[0]:
-            connection.close()
-            connection = None
-
-        if not connection:
-            logger.debug('Creating connection --------------------------------------------------')
-            connection = HTTPConnection(host, **kwargs) if scheme == 'http:' else HTTPSConnection(host, **kwargs)
-
-        logger.debug('Creating request -----------------------------------------------------')
-        logger.debug("%s %s", method, url)
-
-        self.last_url = url
-
-        # generate and add cookie headers
-        request = urllib.request.Request(url)
-
-        self.cookies.add_cookie_header(request)
-        if request.get_header('Cookie'):
-            _headers['Cookie'] = request.get_header('Cookie')
-
-        for key, value in _headers.items():
-            logger.debug('Header: %s=%s', key, value)
-
-        # request
-        connection.request(method, '/' + path, data, _headers)
-        response = connection.getresponse()
-
-        logger.debug('Processing response --------------------------------------------------')
-
-        logger.debug('response.status=%s', response.status)
-        for key, value in response.getheaders():
-            logger.debug('Header: %s=%s', key, value)
-
-        self.cookies.extract_cookies(response, request)
-        self.connections[(scheme, host)] = connection
-
-        return response
-
-    def urlopen(self, url, redirect=True, data=None, headers={}, cookies=[], **kwargs):
-
-        if cookies:
-            for c in cookies:
-                self.cookies.set_cookie(c)
+    def urlopen(self, url, data=None):
 
         self.last_url = None
 
-        self.response = self.request('POST' if data else 'GET', url, data, headers, **kwargs)
-        text = self.response.read()
+        resp = self.session.request('POST' if data else 'GET', url, data=data)
 
-        # Allow redirects - used by Yahoo for some cookie based consent
-        self.redirect_count = 5
+        if 400 <= resp.status_code < 500:
+            if resp.headers.get('X-Cache') == 'Error from cloudfront':
+                resp = self.session.request('POST' if data else 'GET', url, data=data)
 
-        # (for Yahoo) AWS CloudFront occasionally returns an incorrect, cached error responses
-        # try mitigating by re-requesting straight away
-        if 400 <= self.response.status < 500:
-            if self.response.getheader('X-Cache') == 'Error from cloudfront':
-                self.response = self.request('POST' if data else 'GET', url, data, headers, **kwargs)
-                text = self.response.read()
+        if resp.status_code >= 400:
+            logger.warning("url='%s' status=%s reason='%s' headers=%s", resp.url,
+                           resp.status_code, resp.reason,
+                           '\n'.join(sorted(resp.headers.__str__().splitlines(), key=lambda l: l.lower())))
+            raise HttpException(url, resp)
 
-        while 300 <= self.response.status < 400 and self.redirect_count >= 0:
+        self.redirect_count = len(resp.history)
+        self.last_url = resp.url
 
-            self.redirect_count -= 1
-            location = str(self.response.getheader('Location'))
-            location = location.replace(' ', '%20')  # FT bug workaround - this should not be necessary
-
-            if location and redirect:
-
-                if location.startswith('/'):
-                    scheme, _, host, path = url.split('/', 3)
-                    location = '{}//{}{}'.format(scheme, host, location)
-
-                self.response = self.request('GET', location, None, headers, **kwargs)
-                text = self.response.read()
-
-            else:
-                raise RedirectException(location)
-
-        if self.response.status >= 400:
-            logger.warning("last_url='%s' status=%s reason='%s' headers=%s", self.last_url, self.response.status,
-                           self.response.reason,
-                           '\n'.join(sorted(self.response.headers.__str__().splitlines(), key=lambda l: l.lower())))
-            raise HttpException(url, self.response)
-
-        if self.response.getheader('Content-Encoding') == 'gzip':
-            text = gzip.decompress(text)
-
-        content_type = self.response.headers.get_content_charset()
-        if content_type is None:
-            content_type = 'utf-8'
-        text = codecs.decode(text, encoding=content_type, errors='ignore')
-
-        return text
+        return resp.text
 
     def get_ticker(self):
 
@@ -397,10 +315,11 @@ class BaseClient:
 
         return None
 
+    def version(self):
+        return requests_name + "_" + requests_version
+
+    def curl(self):
+        return curl_version
+
     def close(self):
-        for connection in self.connections.values():
-            try:
-                connection.close()
-            except BaseException:
-                pass
-        self.connections = {}
+        self.session.close()

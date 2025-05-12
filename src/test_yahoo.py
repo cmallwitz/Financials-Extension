@@ -24,7 +24,7 @@ import testutils
 financials = financials.createInstance(None)
 
 
-def urlopen_fail(self, url, redirect=True, data=None, headers={}, cookies=[], **kwargs):
+def urlopen_fail(self, url, data=None):
     raise baseclient.HttpException(url, 'ERROR: simulated urlopen() failed')
 
 
