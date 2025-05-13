@@ -59,7 +59,7 @@ cp -f "${PWD}"/src/financials_ft.py "${PWD}"/build/
 cp -f "${PWD}"/src/financials_yahoo.py "${PWD}"/build/
 cp -f "${PWD}"/src/financials_coinbase.py "${PWD}"/build/
 
-# this copies python modules dateutil, pytz, pyparsing to extension so it doesn't have to be installed by user
+# this copies python some modules to extension so they doesn't have to be installed by user
 
 TMPFILE=`mktemp`
 
@@ -75,9 +75,14 @@ wget "https://files.pythonhosted.org/packages/8a/bb/488841f56197b13700afd5658fc2
 unzip $TMPFILE pyparsing.py -d "${PWD}"/build/
 rm $TMPFILE
 
-# Windows LibreOffice 7.1 Python is missing this...
+# Windows LibreOffice Python is not including this by default...
 wget "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl" -O $TMPFILE
 unzip $TMPFILE six.py -d "${PWD}"/build/
+rm $TMPFILE
+
+# Windows LibreOffice Python is not including this by default...
+wget "https://files.pythonhosted.org/packages/f9/9b/335f9764261e915ed497fcdeb11df5dfd6f7bf257d4a6a2a686d80da4d54/requests-2.32.3-py3-none-any.whl" -O $TMPFILE
+unzip $TMPFILE requests/\* -d "${PWD}"/build/
 rm $TMPFILE
 
 echo "Package into oxt file..."

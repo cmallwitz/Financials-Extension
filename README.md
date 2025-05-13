@@ -9,17 +9,18 @@ spreadsheets - currently supporting Yahoo's (FX, crypto, equities, indices, futu
 ## Latest version vs Yahoo HTTPS fingerprinting
 
 Latest version 3.8.0 was created to bypass Yahoo's recently adding crazy HTTPS fingerprinting 
-to their website. In a step back to before or rather a return to times long gone some Python modules need
-to be installed such that LibreOffice can find them. 
+to their website. In a step back to before or rather a return to times long gone some Python 
+modules need to be installed such that LibreOffice can find them - otherwise Yahoo will not work. 
 
-Ideally install module 'curl_cffi' (although 'requests' works as well if you don't intend to use Yahoo as source)
-using e.g. on my Ubuntu:
+Update for version: 3.8.1 - this bundles the Python 'requests' module so users using 'FT' as source
+should not require anything else.
 
-```sudo pip3 install curl_cffi --upgrade```
+Everyone else needs to install module 'curl_cffi' e.g. on my Ubuntu system:
 
-Previously this worked on Windows - as LibreOffice on Windows ships with its own, minimal Python runtime a 
-few more steps are required:
+- ```sudo pip3 install curl_cffi --upgrade```
 
+For Windows something along those lines used to work for other dependencies
+ 
 - Download the script https://bootstrap.pypa.io/get-pip.py to your computer
 
 - Start a Command Prompt (CMD) as Administrator on the command prompt run (change path as required)
@@ -28,11 +29,12 @@ few more steps are required:
 
     ```"c:\Program Files\LibreOffice\program\python.exe" -m pip install curl_cffi --upgrade```
 
-If you want to use Yahoo as a source you need to download latest binary of [curl-impersonate](https://github.com/lwthiker/curl-impersonate/releases) e.g. 
-libcurl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz and untar it somewhere 
+Then you need to download latest binary of [curl-impersonate](https://github.com/lwthiker/curl-impersonate/releases) e.g.
+(currently) libcurl-impersonate-v0.6.1.x86_64-linux-gnu.tar.gz and untar it somewhere 
 
 Now some of these bits need to be loaded/initialised before running LibreOffice: I used the below (adjust your location 
-to libcurl-impersonate-chrome.so) to run LibreOffice Calc directly from command line:
+to libcurl-impersonate-chrome.so) to run LibreOffice Calc directly from command line - alternatively you could 
+define LD_PRELOAD and CURL_IMPERSONATE in your environment e.g. by putting them in your .bashrc  
 
 ```
 LD_PRELOAD=/tmp/curl-impersonate/libcurl-impersonate-chrome.so CURL_IMPERSONATE=chrome101 /usr/lib/libreoffice/program/soffice.bin --calc
@@ -40,6 +42,7 @@ LD_PRELOAD=/tmp/curl-impersonate/libcurl-impersonate-chrome.so CURL_IMPERSONATE=
 
 With this I can see the below in the output from `=GETREALTIME("SUPPORT")` and the examples.ods file from this repo 
 can load data for Yahoo again.
+
 ```
 ...
 requests=curl_cffi_0.10.0
@@ -51,13 +54,20 @@ curl_version="libcurl/8.1.1 BoringSSL zlib/1.2.11 brotli/1.0.9 nghttp2/1.56.0"
 Similar things should be possible on Windows - let me know if [this](https://stackoverflow.com/questions/1178257/ld-preload-equivalent-for-windows-to-preload-shared-libraries)
 is helpful and share your experience.
 
+User report for Linux Mint: the command to install curl_cffi is:
+```
+sudo apt install python3-pip
+sudo pip3 install curl_cffi --upgrade --break-system-packages
+```
+and then adding the following to /etc/environment:
+```
+LD_PRELOAD=/home/rvkpbv/bin/libcurl-impersonate-chrome.so
+CURL_IMPERSONATE=chrome101
+```
+
 Background: for a normal Python script just installing curl_cffi is enough to bypass Yahoo's HTTPS fingerprinting. 
 Because LibreOffice is loading the stock curl library before executing the extension code directly, the above hack 
 is required. Unless someone tells me otherwise...
-
-### Feedback requested:
-
-Please provide feedback about using the extension [here](https://github.com/cmallwitz/Financials-Extension/issues/10)
 
 ### Usage:
 
