@@ -168,6 +168,21 @@ class Yahoo(BaseClient):
 
         return text
 
+    def fetch_crumb(self):
+        """Refreshes the crumb using the current session."""
+        try:
+            # Grab cookies
+            self.session.get("https://finance.yahoo.com/quote/SPY", timeout=10)
+            
+            # Request crumb endpoint
+            response = self.session.get("https://query1.finance.yahoo.com/v1/test/getcrumb", timeout=10)
+            
+            if response.status_code == 200:
+                return response.text.strip()
+        except Exception as e:
+            logger.error(f"Failed to fetch crumb: {e}")
+        return None
+
     def getRealtime(self, ticker, datacode):
 
         """
@@ -195,33 +210,13 @@ class Yahoo(BaseClient):
         tick = self.realtime[ticker]
 
         if not self.crumb:
-
-            url = f'https://finance.yahoo.com/quote/{ticker}'
-            text = self.handleCookiesAndConsent(url, ticker, datacode, f'yahoo-{ticker}.html')
-
-            if text is None:
+            new_crumb = self.fetch_crumb()
+            if new_crumb:
+                self.crumb = new_crumb
+                logger.debug(f"Crumb successfully set: {self.crumb}")
+            else:
                 del self.realtime[ticker]
-                return 'Yahoo.getRealtime({}, {}) - handleCookiesAndConsent'.format(ticker, datacode)
-
-            # crumbs like 'TKkC\u002FZBwoUA' may contain unicode _text_ (not encoded code points)
-            try:
-                r = r'\bcrumb=([^"]{11,})"'
-                pattern = re.compile(r)
-                match = pattern.search(text)
-                if match:
-                    self.crumb = urllib.parse.unquote(match.group(1).encode('unicode-escape').decode('ascii'))
-                    logger.debug(f"crumb='{match.group(1)}' self.crumb='{self.crumb}'")
-                else:
-                    r = r'"crumb"\s*:\s*"([^"]{11,})"'
-                    pattern = re.compile(r)
-                    match = pattern.search(text)
-                    if match:
-                        self.crumb = urllib.parse.unquote(match.group(1).encode('unicode-escape').decode('ascii'))
-                        logger.debug(f"crumb='{match.group(1)}' self.crumb='{self.crumb}'")
-            except BaseException as e:
-                logger.exception("BaseException ticker=%s datacode=%s", ticker, datacode)
-                del self.realtime[ticker]
-                return 'Yahoo.getRealtime({}, {}) - crumb: {}'.format(ticker, datacode, e)
+                return f'Yahoo.getRealtime({ticker}, {datacode}) - failed to fetch crumb'
 
         if not self.crumb:
             return 'Yahoo.getRealtime({}, {}) - crumb missing'.format(ticker, datacode)
