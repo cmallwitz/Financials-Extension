@@ -322,6 +322,10 @@ class Yahoo(BaseClient):
             # fallback to last dividend on mutual funds and ETFs
             if not tick[Datacode.DIV]:
                 tick[Datacode.DIV] = self.save_wrapper(lambda: float(defaultKeyStatistics['lastDividendValue']['raw']))
+            # fallback to fund/ETF yield: Yahoo exposes ETF/mutual-fund yield under
+            # summaryDetail['yield'] (summaryDetail['dividendYield'] is null for funds)
+            if not tick[Datacode.DIV_YIELD]:
+                tick[Datacode.DIV_YIELD] = self.save_wrapper(lambda: float(summaryDetail['yield']['raw']))
 
             if default(price, 'quoteType') == 'FUTURE':
                 tick[Datacode.TICKER] = self.save_wrapper(lambda: price['underlyingSymbol'])
