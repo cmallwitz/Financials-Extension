@@ -24,16 +24,15 @@ logger = logging.getLogger(__name__)
 curl_cffi_present = not util.find_spec("curl_cffi") is None
 requests_present = not util.find_spec("requests") is None
 
+# Import both modules - we'll use curl_cffi with impersonate, falling back to requests if needed
+curl_cffi_requests = None
+standard_requests = None
+curl_cffi_version = None
+
 if curl_cffi_present:
-    logger.debug("Importing curl_cffi...")
-    from curl_cffi import requests, __version__ as requests_version, __name__ as requests_name
-elif requests_present:
-    logger.debug("Importing requests...")
-    import requests
-    requests_version = requests.__version__
-    requests_name = requests.__name__
-else:
-    raise Exception("Neither curl_cffi nor requests found.")
+    from curl_cffi import requests as curl_cffi_requests, __version__ as curl_cffi_version
+if requests_present:
+    import requests as standard_requests
 
 # import requests
 
@@ -71,19 +70,20 @@ class BaseClient:
             'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:137.0) Gecko/20100101 Firefox/137.0',
         ]
 
+        # Use curl_cffi if available, with impersonate set for 0.16.0+
         if curl_cffi_present:
-            self.session = requests.Session()
+            # curl_cffi 0.16.0+ requires impersonate to be set for Yahoo/FT to work
+            # Use CURL_IMPERSONATE if set, otherwise use chrome (curl_cffi's default)
+            impersonate_value = os.environ.get('CURL_IMPERSONATE') or 'chrome'
+            self.session = curl_cffi_requests.Session(impersonate=impersonate_value)
+            self.requests_name = "curl_cffi"
+            self.requests_version = curl_cffi_version or 'unknown'
             if logger.isEnabledFor(logging.DEBUG) and self.session.curl:
                 self.session.curl.debug()
+        elif requests_present:
+            self._create_requests_session()
         else:
-            self.session = requests.Session()
-            self.session.headers.update({'User-Agent': random.sample(user_agents, 1)[0],
-                                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                                         'Accept-Encoding': 'gzip, deflate',
-                                         'Accept-Language': 'en-US,en;q=0.5',
-                                         'Connection': 'keep-alive',
-                                         'Cache-Control': 'max-age=0',
-                                         })
+            raise Exception("Neither curl_cffi nor requests found.")
 
         self.session.max_redirects = 5
 
@@ -91,7 +91,18 @@ class BaseClient:
 
         self.last_url = None
 
-        resp = self.session.request('POST' if data else 'GET', url, data=data)
+        try:
+            resp = self.session.request('POST' if data else 'GET', url, data=data)
+        except Exception as e:
+            # If curl_cffi impersonate fails (e.g., "Impersonating chrome146 is not supported"),
+            # fall back to standard requests with headers
+            if curl_cffi_present and requests_present and 'Impersonating' in str(e):
+                logger.warning(f"curl_cffi request failed ({e}), falling back to requests")
+                self._create_requests_session()
+                # Retry the request
+                resp = self.session.request('POST' if data else 'GET', url, data=data)
+            else:
+                raise
 
         if 400 <= resp.status_code < 500:
             if resp.headers.get('X-Cache') == 'Error from cloudfront':
@@ -316,10 +327,25 @@ class BaseClient:
         return None
 
     def version(self):
-        return requests_name + "_" + requests_version
+        return self.requests_name + "_" + self.requests_version
 
     def curl(self):
-        return curl_version
+        if hasattr(self.session, 'curl'):
+            return self.session.curl
+        return None
+
+    def _create_requests_session(self):
+        """Create a standard requests session with proper headers."""
+        self.session = standard_requests.Session()
+        self.session.headers.update({'User-Agent': random.sample(user_agents, 1)[0],
+                                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                                     'Accept-Encoding': 'gzip, deflate',
+                                     'Accept-Language': 'en-US,en;q=0.5',
+                                     'Connection': 'keep-alive',
+                                     'Cache-Control': 'max-age=0',
+                                     })
+        self.requests_name = "requests"
+        self.requests_version = standard_requests.__version__
 
     def close(self):
         self.session.close()
