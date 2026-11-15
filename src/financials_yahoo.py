@@ -514,7 +514,7 @@ class Yahoo(BaseClient):
         # Ensure historical data up to target_date is loaded into self.historicdata
         # We invoke getHistoric for target_date. Even if target_date is a non-trading day,
         # getHistoric will ensure the ticker history is downloaded/cached if needed.
-        _ = self.getHistoric(ticker, datacode, target_date)
+        res = self.getHistoric(ticker, datacode, target_date)
 
         if ticker in self.historicdata:
             ticks = self.historicdata[ticker]
@@ -529,6 +529,9 @@ class Yahoo(BaseClient):
                 return 'Date before available history \'{:04d}-{:02d}\''.format(year, month)
 
             return 'No trading day in \'{:04d}-{:02d}\''.format(year, month)
+
+        if isinstance(res, str) and not res.startswith("Not a trading day"):
+            return res
 
         return 'No data available for ticker \'{}\''.format(ticker)
 

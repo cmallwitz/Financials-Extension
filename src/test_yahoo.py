@@ -558,6 +558,10 @@ class Test(unittest.TestCase):
         s = financials.getLatestValue('IBM', Datacode.CLOSE.value, 2024, cell_range, 'YAHOO')
         self.assertEqual(s, 'Cell range not allowed for month', 'test_get_latest_value range month')
 
+        # Valid historical quote check for past month
+        s = financials.getLatestValue('IBM', Datacode.CLOSE.value, 2017, 1, 'YAHOO')
+        self.assertEqual(float, type(s), 'test_get_latest_value valid quote: {}'.format(s))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
