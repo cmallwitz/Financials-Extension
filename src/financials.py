@@ -213,10 +213,95 @@ class FinancialsImpl(unohelper.Base, Financials):
                 return 'Date type not supported: {} \'{}\''.format(type(date), date)
 
             ticker = str(ticker).strip()
-            source = str(source).upper()
+            if not source or str(source).strip().upper() in ('', 'NONE'):
+                source = 'YAHOO'
+            else:
+                source = str(source).strip().upper()
 
             if source == 'YAHOO':
                 s = self.yahoo.getHistoric(str(ticker).strip(), datacode, date)
+            else:
+                s = 'Source \'{}\' not supported'.format(source)
+
+        except Exception as ex:
+            return str(ex)
+
+        try:
+            x = float(s)
+        except:
+            x = s
+
+        return x
+
+    @profile
+    def getLatestValue(self, ticker, datacode=None, year=None, month=None, source=None):
+
+        if ticker == 'SUPPORT':
+            return self.support(datacode)
+
+        if type(ticker) == tuple:
+            return 'Cell range not allowed for ticker'
+
+        if type(datacode) == tuple:
+            return 'Cell range not allowed for datacode'
+
+        if type(year) == tuple:
+            return 'Cell range not allowed for year'
+
+        if type(month) == tuple:
+            return 'Cell range not allowed for month'
+
+        if type(source) == tuple:
+            return 'Cell range not allowed for source'
+
+        try:
+            if not ticker:
+                return 'Ticker is empty'
+
+            if not datacode:
+                return 'Datacode is empty'
+
+            if not year:
+                return 'Year is empty'
+
+            if not month:
+                return 'Month is empty'
+
+            try:
+                dc = str(datacode).strip().upper()
+                if dc in Datacode.__members__:
+                    dc = Datacode[dc].value
+                datacode = int(float(dc))
+            except:
+                return 'Datacode {} is invalid'.format(datacode)
+
+            if not Datacode.has_value(datacode):
+                return 'Datacode {} not supported'.format(datacode)
+
+            try:
+                year = int(float(year))
+            except:
+                return 'Year {} is invalid'.format(year)
+
+            if year < 2000 or year > 2100:
+                return 'Year {} must be between 2000 and 2100'.format(year)
+
+            try:
+                month = int(float(month))
+            except:
+                return 'Month {} is invalid'.format(month)
+
+            if not (1 <= month <= 12):
+                return 'Month {} must be between 1 and 12'.format(month)
+
+            ticker = str(ticker).strip()
+            if not source or str(source).strip().upper() in ('', 'NONE'):
+                source = 'YAHOO'
+            else:
+                source = str(source).strip().upper()
+
+            if source == 'YAHOO':
+                s = self.yahoo.getLatestValue(str(ticker).strip(), datacode, year, month)
             else:
                 s = 'Source \'{}\' not supported'.format(source)
 

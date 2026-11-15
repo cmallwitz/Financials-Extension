@@ -64,25 +64,20 @@ class BaseClient:
         os.makedirs(self.basedir, exist_ok=True)
 
         user_agents = [
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:135.0) Gecko/20100101 Firefox/135.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0',
-            'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:137.0) Gecko/20100101 Firefox/137.0',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         ]
 
         if curl_cffi_present:
-            self.session = requests.Session()
+            self.session = requests.Session(impersonate="chrome124")
             if logger.isEnabledFor(logging.DEBUG) and self.session.curl:
                 self.session.curl.debug()
         else:
             self.session = requests.Session()
             self.session.headers.update({'User-Agent': random.sample(user_agents, 1)[0],
-                                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                                         'Accept-Encoding': 'gzip, deflate',
-                                         'Accept-Language': 'en-US,en;q=0.5',
-                                         'Connection': 'keep-alive',
-                                         'Cache-Control': 'max-age=0',
+                                         'Accept': '*/*',
+                                         'Accept-Language': 'en-US,en;q=0.9',
                                          })
 
         self.session.max_redirects = 5

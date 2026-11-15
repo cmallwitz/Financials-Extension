@@ -63,6 +63,7 @@ class Yahoo(BaseClient):
         self.crumb = None
         self.realtime = {}
         self.historicdata = {}
+        self.fetch_failures = {}  # ticker -> timestamp of last network failure
 
     def _read_ticker_json_file(self, ticker):
 
@@ -171,16 +172,18 @@ class Yahoo(BaseClient):
     def fetch_crumb(self):
         """Refreshes the crumb using the current session."""
         try:
-            # Grab cookies
-            self.session.get("https://finance.yahoo.com/quote/SPY", timeout=10)
+            # Request fc.yahoo.com to obtain cookies bypassing EU consent redirect
+            self.session.get("https://fc.yahoo.com", timeout=10)
             
-            # Request crumb endpoint
-            response = self.session.get("https://query1.finance.yahoo.com/v1/test/getcrumb", timeout=10)
+            # Request crumb endpoint via query2
+            response = self.session.get("https://query2.finance.yahoo.com/v1/test/getcrumb", timeout=10)
             
-            if response.status_code == 200:
+            if response.status_code == 200 and response.text and not response.text.startswith('{'):
                 return response.text.strip()
+            else:
+                logger.warning("Crumb fetch returned HTTP %s: %s", response.status_code, response.text[:120] if response.text else '')
         except Exception as e:
-            logger.error(f"Failed to fetch crumb: {e}")
+            logger.error("Failed to fetch crumb: %s", e)
         return None
 
     def getRealtime(self, ticker, datacode):
@@ -204,6 +207,10 @@ class Yahoo(BaseClient):
             else:
                 del self.realtime[ticker]
 
+        # Do not hammer Yahoo if network fetch failed recently for this ticker (60s backoff)
+        if ticker in self.fetch_failures and (time.time() - self.fetch_failures[ticker]) < 60:
+            return 'Yahoo rate-limited, retry later'
+
         if ticker not in self.realtime:
             self.realtime[ticker] = self.get_ticker()
 
@@ -213,27 +220,36 @@ class Yahoo(BaseClient):
             new_crumb = self.fetch_crumb()
             if new_crumb:
                 self.crumb = new_crumb
-                logger.debug(f"Crumb successfully set: {self.crumb}")
+                logger.debug("Crumb successfully set: %s", self.crumb)
             else:
                 del self.realtime[ticker]
-                return f'Yahoo.getRealtime({ticker}, {datacode}) - failed to fetch crumb'
+                self.fetch_failures[ticker] = time.time()
+                return 'Yahoo.getRealtime({}, {}) - failed to fetch crumb'.format(ticker, datacode)
 
         if not self.crumb:
             return 'Yahoo.getRealtime({}, {}) - crumb missing'.format(ticker, datacode)
 
         try:
 
+            quoted_ticker = urllib.parse.quote(ticker, safe='')
             url = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/{}?formatted=true&' \
                   'modules=summaryProfile,financialData,quoteType,recommendationTrend,earnings,equityPerformance,summaryDetail,defaultKeyStatistics,calendarEvents,esgScores,price,pageViews,financialsTemplate&' \
                   'lang=en-US&region=US&crumb={}' \
-                .format(ticker, urllib.parse.quote_plus(self.crumb))
+                .format(quoted_ticker, urllib.parse.quote_plus(self.crumb))
 
             js = self.urlopen(url)
 
         except HttpException as e:
             logger.exception("HttpException querying ticker=%s datacode=%s", ticker, datacode)
             del self.realtime[ticker]
+            self.fetch_failures[ticker] = time.time()
             return None
+
+        except BaseException as e:
+            logger.exception("BaseException querying ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
+            self.fetch_failures[ticker] = time.time()
+            return 'Yahoo.getRealtime({}, {}) - urlopen: {}'.format(ticker, datacode, e)
 
         try:
 
@@ -397,11 +413,20 @@ class Yahoo(BaseClient):
 
                 min_tick_date = int(dateutil.parser.parse(min(ticks), yearfirst=True, dayfirst=False).timestamp())  # remember current earliest date
 
-        if not self.crumb:
-            self.getRealtime(ticker, Datacode.LAST_PRICE)
+        # Do not hammer Yahoo if network fetch failed recently for this ticker (60s backoff)
+        if ticker in self.fetch_failures and (time.time() - self.fetch_failures[ticker]) < 60:
+            if ticker in self.historicdata:
+                ticks = self.historicdata[ticker]
+                if date in ticks:
+                    return self._return_value(ticks[date], datacode)
+                if min(ticks) <= date <= max(ticks):
+                    return 'Not a trading day \'{}\''.format(date)
+            return 'Yahoo rate-limited, retry later'
 
         if not self.crumb:
-            return 'Yahoo.getHistoric({}, {}, {}) - crumb missing'.format(ticker, datacode, date)
+            new_crumb = self.fetch_crumb()
+            if new_crumb:
+                self.crumb = new_crumb
 
         try:
             t1 = int(date_as_dt.timestamp())
@@ -424,9 +449,16 @@ class Yahoo(BaseClient):
 
         try:
 
-            url = 'https://query1.finance.yahoo.com/v8/finance/chart/{}' \
-                  '?period1={}&period2={}&interval=1d&events=history&crumb={}' \
-                .format(ticker, t1, t2, urllib.parse.quote_plus(self.crumb))
+            quoted_ticker = urllib.parse.quote(ticker, safe='')
+            if self.crumb:
+                url = 'https://query1.finance.yahoo.com/v8/finance/chart/{}' \
+                      '?period1={}&period2={}&interval=1d&events=history&crumb={}' \
+                    .format(quoted_ticker, t1, t2, urllib.parse.quote_plus(self.crumb))
+            else:
+                # query2 chart endpoint does not require a crumb
+                url = 'https://query2.finance.yahoo.com/v8/finance/chart/{}' \
+                      '?period1={}&period2={}&interval=1d&events=history' \
+                    .format(quoted_ticker, t1, t2)
 
             text = self.urlopen(url)
 
@@ -437,10 +469,12 @@ class Yahoo(BaseClient):
 
         except HttpException:
             logger.exception("HttpException ticker=%s datacode=%s date=%s", ticker, datacode, date)
+            self.fetch_failures[ticker] = time.time()
             return None
 
         except BaseException as e:
             logger.exception("BaseException ticker=%s datacode=%s date=%s", ticker, datacode, date)
+            self.fetch_failures[ticker] = time.time()
             return 'Yahoo.getHistoric({}, {}, {}) - urlopen: {}'.format(ticker, datacode, date, e)
 
         try:
@@ -462,6 +496,62 @@ class Yahoo(BaseClient):
             return 'Yahoo.getHistoric({}, {}, {}) - process: {}'.format(ticker, datacode, date, e)
 
         return None
+
+    def getLatestValue(self, ticker: str, datacode: int, year: int, month: int):
+        """
+        Retrieve the latest available trading quote for a given year and month.
+
+        :param ticker: the ticker symbol e.g. VOD.L
+        :param datacode: the requested datacode
+        :param year: year (e.g. 2025)
+        :param month: month (1-12)
+        :return: requested datacode value on the last trading day of that month
+        """
+        # remove white space
+        ticker = "".join(ticker.split())
+
+        # Determine the last calendar day of the given month
+        if month == 12:
+            last_date_of_month = datetime.date(year, 12, 31)
+        else:
+            last_date_of_month = datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
+
+        # Do not allow querying months completely in the future
+        today = datetime.date.today()
+        first_date_of_month = datetime.date(year, month, 1)
+        if first_date_of_month > today:
+            return 'Future date \'{:04d}-{:02d}\''.format(year, month)
+
+        # Target date is either the end of the month or today (if month is current)
+        target_date = min(last_date_of_month, today).isoformat()
+
+        # Ensure historical data up to target_date is loaded into self.historicdata
+        # We invoke getHistoric for target_date. Even if target_date is a non-trading day,
+        # getHistoric will ensure the ticker history is downloaded/cached if needed.
+        res = self.getHistoric(ticker, datacode, target_date)
+
+        # Propagate fetch failures immediately before checking cached data
+        if isinstance(res, str) and not res.startswith("Not a trading day"):
+            return res
+        if res is None:
+            return 'No data available for ticker \'{}\''.format(ticker)
+
+        if ticker in self.historicdata:
+            ticks = self.historicdata[ticker]
+            month_prefix = '{:04d}-{:02d}'.format(year, month)
+            # Find all trading days in ticks for this year and month that are <= target_date
+            month_ticks = [d for d in ticks if d.startswith(month_prefix) and d <= target_date]
+            if month_ticks:
+                latest_trading_day = max(month_ticks)
+                return self._return_value(ticks[latest_trading_day], datacode)
+
+            if target_date < min(ticks):
+                return 'Date before available history \'{:04d}-{:02d}\''.format(year, month)
+
+            return 'No trading day in \'{:04d}-{:02d}\''.format(year, month)
+
+        return 'No data available for ticker \'{}\''.format(ticker)
+
 
 def createInstance(ctx):
     return Yahoo(ctx)

@@ -14,7 +14,7 @@ import os
 cur_dir = os.getcwd()
 
 addin_id = "com.financials.getinfo"
-addin_version = "3.8.2"
+addin_version = "3.9.0"
 addin_displayname = "Financial Market Extension"
 addin_publisher_link = "https://github.com/cmallwitz/Financials-Extension"
 addin_publisher_name = "The Publisher"
@@ -115,6 +115,10 @@ define_function(financials_xml,
                 'getHistoric', 'Fetches Historic Financial Data.',
                 [('ticker', 'The ticker symbol.'), ('datacode', 'The data code.'), ('date', 'The date.'),
                  ('source', 'The source.')])
+define_function(financials_xml,
+                'getLatestValue', 'Fetches the Latest Financial Data for a given Month and Year.',
+                [('ticker', 'The ticker symbol.'), ('datacode', 'The data code.'), ('year', 'The year.'),
+                 ('month', 'The month (1-12).'), ('source', 'The source.')])
 
 financials_xml.write('</node>\n')
 financials_xml.write('</node>\n')

@@ -5,6 +5,7 @@ module com { module financials { module getinfo {
     {
       any getRealtime( [in] string ticket, [in] any datacode, [in] any source );
       any getHistoric( [in] string ticket, [in] any datacode, [in] any date, [in] any source );
+      any getLatestValue( [in] string ticket, [in] any datacode, [in] any year, [in] any month, [in] any source );
     };
 
 }; }; };

@@ -79,10 +79,13 @@ Getting data should be as simple as having this in a cell:
 - `=GETREALTIME("IBM:NYQ",21,"FT")`
 - `=GETREALTIME("EURUSD","LAST_PRICE","FT")`
 - `=GETHISTORIC("IBM",90,"2020-12-01","YAHOO")`
+- `=GETLATESTVALUE("IBM",90,2020,12,"YAHOO")`
 - `=GETREALTIME("ETH-USD","LAST_PRICE","COINBASE")`
 
 Codes 21 and 90 stand for "last price" and "close" (see below), respectively. 
 Only Yahoo has historic data available.
+
+`GETLATESTVALUE` returns the quote on the last available trading day for a given year and month (useful for month-end portfolio valuations and financial statements without having to find the exact last trading day).
 
 There is a file **examples.ods** in the same Release area with usage examples 
 and possible arguments to functions.
