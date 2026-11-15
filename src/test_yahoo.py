@@ -558,9 +558,24 @@ class Test(unittest.TestCase):
         s = financials.getLatestValue('IBM', Datacode.CLOSE.value, 2024, cell_range, 'YAHOO')
         self.assertEqual(s, 'Cell range not allowed for month', 'test_get_latest_value range month')
 
+        # Invalid year check
+        s = financials.getLatestValue('IBM', Datacode.CLOSE.value, 1999, 1, 'YAHOO')
+        self.assertEqual(s, 'Year 1999 must be between 2000 and 2100', 'test_get_latest_value invalid year low')
+
+        s = financials.getLatestValue('IBM', Datacode.CLOSE.value, 2105, 1, 'YAHOO')
+        self.assertEqual(s, 'Year 2105 must be between 2000 and 2100', 'test_get_latest_value invalid year high')
+
         # Valid historical quote check for past month
         s = financials.getLatestValue('IBM', Datacode.CLOSE.value, 2017, 1, 'YAHOO')
         self.assertEqual(float, type(s), 'test_get_latest_value valid quote: {}'.format(s))
+
+        # Default source (omitted source defaults to YAHOO)
+        s_default = financials.getLatestValue('IBM', Datacode.CLOSE.value, 2017, 1)
+        self.assertEqual(s, s_default, 'test_get_latest_value default source')
+
+        # Leap year month check (Feb 2024)
+        s_leap = financials.getLatestValue('IBM', Datacode.CLOSE.value, 2024, 2, 'YAHOO')
+        self.assertEqual(float, type(s_leap), 'test_get_latest_value leap year Feb 2024: {}'.format(s_leap))
 
 
 if __name__ == '__main__':

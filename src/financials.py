@@ -213,7 +213,10 @@ class FinancialsImpl(unohelper.Base, Financials):
                 return 'Date type not supported: {} \'{}\''.format(type(date), date)
 
             ticker = str(ticker).strip()
-            source = str(source).upper()
+            if not source or str(source).strip().upper() in ('', 'NONE'):
+                source = 'YAHOO'
+            else:
+                source = str(source).strip().upper()
 
             if source == 'YAHOO':
                 s = self.yahoo.getHistoric(str(ticker).strip(), datacode, date)
@@ -280,6 +283,9 @@ class FinancialsImpl(unohelper.Base, Financials):
             except:
                 return 'Year {} is invalid'.format(year)
 
+            if year < 2000 or year > 2100:
+                return 'Year {} must be between 2000 and 2100'.format(year)
+
             try:
                 month = int(float(month))
             except:
@@ -289,7 +295,10 @@ class FinancialsImpl(unohelper.Base, Financials):
                 return 'Month {} must be between 1 and 12'.format(month)
 
             ticker = str(ticker).strip()
-            source = str(source).upper()
+            if not source or str(source).strip().upper() in ('', 'NONE'):
+                source = 'YAHOO'
+            else:
+                source = str(source).strip().upper()
 
             if source == 'YAHOO':
                 s = self.yahoo.getLatestValue(str(ticker).strip(), datacode, year, month)

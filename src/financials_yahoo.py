@@ -180,8 +180,10 @@ class Yahoo(BaseClient):
             
             if response.status_code == 200 and response.text and not response.text.startswith('{'):
                 return response.text.strip()
+            else:
+                logger.warning("Crumb fetch returned HTTP %s: %s", response.status_code, response.text[:120] if response.text else '')
         except Exception as e:
-            logger.error(f"Failed to fetch crumb: {e}")
+            logger.error("Failed to fetch crumb: %s", e)
         return None
 
     def getRealtime(self, ticker, datacode):
@@ -205,6 +207,10 @@ class Yahoo(BaseClient):
             else:
                 del self.realtime[ticker]
 
+        # Do not hammer Yahoo if network fetch failed recently for this ticker (60s backoff)
+        if ticker in self.fetch_failures and (time.time() - self.fetch_failures[ticker]) < 60:
+            return 'Yahoo rate-limited, retry later'
+
         if ticker not in self.realtime:
             self.realtime[ticker] = self.get_ticker()
 
@@ -214,27 +220,36 @@ class Yahoo(BaseClient):
             new_crumb = self.fetch_crumb()
             if new_crumb:
                 self.crumb = new_crumb
-                logger.debug(f"Crumb successfully set: {self.crumb}")
+                logger.debug("Crumb successfully set: %s", self.crumb)
             else:
                 del self.realtime[ticker]
-                return f'Yahoo.getRealtime({ticker}, {datacode}) - failed to fetch crumb'
+                self.fetch_failures[ticker] = time.time()
+                return 'Yahoo.getRealtime({}, {}) - failed to fetch crumb'.format(ticker, datacode)
 
         if not self.crumb:
             return 'Yahoo.getRealtime({}, {}) - crumb missing'.format(ticker, datacode)
 
         try:
 
+            quoted_ticker = urllib.parse.quote(ticker, safe='')
             url = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/{}?formatted=true&' \
                   'modules=summaryProfile,financialData,quoteType,recommendationTrend,earnings,equityPerformance,summaryDetail,defaultKeyStatistics,calendarEvents,esgScores,price,pageViews,financialsTemplate&' \
                   'lang=en-US&region=US&crumb={}' \
-                .format(ticker, urllib.parse.quote_plus(self.crumb))
+                .format(quoted_ticker, urllib.parse.quote_plus(self.crumb))
 
             js = self.urlopen(url)
 
         except HttpException as e:
             logger.exception("HttpException querying ticker=%s datacode=%s", ticker, datacode)
             del self.realtime[ticker]
+            self.fetch_failures[ticker] = time.time()
             return None
+
+        except BaseException as e:
+            logger.exception("BaseException querying ticker=%s datacode=%s", ticker, datacode)
+            del self.realtime[ticker]
+            self.fetch_failures[ticker] = time.time()
+            return 'Yahoo.getRealtime({}, {}) - urlopen: {}'.format(ticker, datacode, e)
 
         try:
 
@@ -398,13 +413,6 @@ class Yahoo(BaseClient):
 
                 min_tick_date = int(dateutil.parser.parse(min(ticks), yearfirst=True, dayfirst=False).timestamp())  # remember current earliest date
 
-        if not self.crumb:
-            new_crumb = self.fetch_crumb()
-            if new_crumb:
-                self.crumb = new_crumb
-            else:
-                self.getRealtime(ticker, Datacode.LAST_PRICE)
-
         # Do not hammer Yahoo if network fetch failed recently for this ticker (60s backoff)
         if ticker in self.fetch_failures and (time.time() - self.fetch_failures[ticker]) < 60:
             if ticker in self.historicdata:
@@ -414,6 +422,11 @@ class Yahoo(BaseClient):
                 if min(ticks) <= date <= max(ticks):
                     return 'Not a trading day \'{}\''.format(date)
             return 'Yahoo rate-limited, retry later'
+
+        if not self.crumb:
+            new_crumb = self.fetch_crumb()
+            if new_crumb:
+                self.crumb = new_crumb
 
         try:
             t1 = int(date_as_dt.timestamp())
@@ -436,15 +449,16 @@ class Yahoo(BaseClient):
 
         try:
 
+            quoted_ticker = urllib.parse.quote(ticker, safe='')
             if self.crumb:
                 url = 'https://query1.finance.yahoo.com/v8/finance/chart/{}' \
                       '?period1={}&period2={}&interval=1d&events=history&crumb={}' \
-                    .format(ticker, t1, t2, urllib.parse.quote_plus(self.crumb))
+                    .format(quoted_ticker, t1, t2, urllib.parse.quote_plus(self.crumb))
             else:
                 # query2 chart endpoint does not require a crumb
                 url = 'https://query2.finance.yahoo.com/v8/finance/chart/{}' \
                       '?period1={}&period2={}&interval=1d&events=history' \
-                    .format(ticker, t1, t2)
+                    .format(quoted_ticker, t1, t2)
 
             text = self.urlopen(url)
 
@@ -516,6 +530,12 @@ class Yahoo(BaseClient):
         # getHistoric will ensure the ticker history is downloaded/cached if needed.
         res = self.getHistoric(ticker, datacode, target_date)
 
+        # Propagate fetch failures immediately before checking cached data
+        if isinstance(res, str) and not res.startswith("Not a trading day"):
+            return res
+        if res is None:
+            return 'No data available for ticker \'{}\''.format(ticker)
+
         if ticker in self.historicdata:
             ticks = self.historicdata[ticker]
             month_prefix = '{:04d}-{:02d}'.format(year, month)
@@ -529,9 +549,6 @@ class Yahoo(BaseClient):
                 return 'Date before available history \'{:04d}-{:02d}\''.format(year, month)
 
             return 'No trading day in \'{:04d}-{:02d}\''.format(year, month)
-
-        if isinstance(res, str) and not res.startswith("Not a trading day"):
-            return res
 
         return 'No data available for ticker \'{}\''.format(ticker)
 

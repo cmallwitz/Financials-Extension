@@ -70,7 +70,7 @@ class BaseClient:
         ]
 
         if curl_cffi_present:
-            self.session = requests.Session()
+            self.session = requests.Session(impersonate="chrome124")
             if logger.isEnabledFor(logging.DEBUG) and self.session.curl:
                 self.session.curl.debug()
         else:
