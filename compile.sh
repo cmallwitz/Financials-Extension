@@ -74,9 +74,8 @@ unzip $TMPFILE pytz/\* -d "${PWD}"/build/
 rm $TMPFILE
 
 # https://pypi.org/project/pyparsing/
-# lastest version of "single-file" pyparsing 2.x - used by Ubuntu 22.04 as python3-pyparsing
-wget "https://files.pythonhosted.org/packages/8a/bb/488841f56197b13700afd5658fc279a2025a39e22449b7cf29864669b15d/pyparsing-2.4.7-py2.py3-none-any.whl" -O $TMPFILE
-unzip $TMPFILE pyparsing.py -d "${PWD}"/build/
+wget "https://files.pythonhosted.org/packages/38/bb/d215ee7c73b61497b28a5503f9f53523f294fcc936762b7caf90e0c1c2b5/pyparsing-3.3.3-py3-none-any.whl" -O $TMPFILE
+unzip $TMPFILE pyparsing/\* -d "${PWD}"/build/
 rm $TMPFILE
 
 # https://pypi.org/project/six/
